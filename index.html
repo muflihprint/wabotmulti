@@ -12,7 +12,7 @@
  #qrImage { width: 230px; height: 230px; border: 1px solid #cbd5e1; padding: 8px; border-radius: 10px; }
  .header-bar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; border-bottom: 1px solid #e2e8f0; padding-bottom: 1rem; margin-bottom: 1rem; }
  label { display: block; font-size: 0.85rem; font-weight: 600; margin-top: 0.75rem; color: #334155; }
- input[type="text"], input[type="password"], input[type="number"], input[type="time"], textarea, select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; margin-top: 4px; font-family: inherit; font-size: 0.92rem; background: #fff; }
+ input[type="text"], input[type="password"], input[type="number"], input[type="time"], input[type="url"], textarea, select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; margin-top: 4px; font-family: inherit; font-size: 0.92rem; background: #fff; }
  .day-chip-group { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
  .day-chip { display: inline-flex; align-items: center; gap: 5px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 6px 10px; font-size: 0.82rem; font-weight: 600; color: #334155; cursor: pointer; margin-top: 0; }
  .day-chip:has(input:checked) { background: #eef2ff; border-color: #6366f1; color: #3730a3; }
@@ -33,6 +33,8 @@
  button.danger:hover { background: #b91c1c; }
  button.ai-btn { background: #7c3aed; }
  button.ai-btn:hover { background: #6d28d9; }
+ button.teal-btn { background: #0d9488; }
+ button.teal-btn:hover { background: #0f766e; }
  button.sm, .btn-link.sm { padding: 7px 11px; font-size: 0.8rem; }
 
  .wa-media-wrap { margin-bottom: 6px; }
@@ -189,8 +191,8 @@
    top: 10px;
    z-index: 50;
    display: grid;
-   grid-template-columns: repeat(4, 1fr);
-   gap: 8px;
+   grid-template-columns: repeat(5, 1fr);
+   gap: 6px;
    background: rgba(226, 232, 240, 0.94);
    backdrop-filter: blur(8px);
    padding: 6px;
@@ -203,21 +205,22 @@
    background: transparent;
    color: #475569;
    border: none;
-   padding: 10px;
+   padding: 10px 8px;
    border-radius: 8px;
-   font-size: 0.88rem;
+   font-size: 0.84rem;
    font-weight: 700;
    cursor: pointer;
    display: inline-flex;
    align-items: center;
    justify-content: center;
-   gap: 6px;
+   gap: 5px;
+   white-space: nowrap;
  }
  .tab-btn:hover { background: rgba(255, 255, 255, 0.65); color: #0f172a; }
  .tab-btn.active { background: #ffffff; color: #15803d; box-shadow: 0 2px 6px rgba(15, 23, 42, 0.1); }
  .tab-badge { background: #dc2626; color: #fff; font-size: 0.7rem; font-weight: 800; padding: 1px 6px; border-radius: 999px; }
  .tab-badge.green { background: #16a34a; }
- @media (max-width: 620px) { .tab-nav { grid-template-columns: repeat(2, 1fr); top: 6px; } }
+ @media (max-width: 760px) { .tab-nav { grid-template-columns: repeat(2, 1fr); top: 6px; } }
 
  .ai-mode-info { margin-top: 10px; padding: 10px 12px; border-radius: 8px; font-size: 0.84rem; line-height: 1.45; border: 1px solid #ddd6fe; background: #faf5ff; color: #4c1d95; }
  .ai-mode-info.off { border-color: #e2e8f0; background: #f8fafc; color: #334155; }
@@ -281,6 +284,52 @@
  .sync-pill.danger { background: #fee2e2; color: #b91c1c; border-color: #fca5a5; }
  .var-hint { font-size: 0.8rem; color: #64748b; margin-top: 4px; }
  code { background: #f1f5f9; padding: 2px 5px; border-radius: 4px; }
+
+ /* DATA TOKO / USAHA PREVIEW CARD */
+ .store-summary-card {
+   background: linear-gradient(135deg, #f0fdfa 0%, #f8fafc 100%);
+   border: 1px solid #99f6e4;
+   border-radius: 10px;
+   padding: 14px;
+   margin-top: 12px;
+ }
+ .store-preview-wa {
+   background: #ffffff;
+   border: 1px dashed #14b8a6;
+   border-radius: 8px;
+   padding: 10px 12px;
+   margin-top: 8px;
+   font-size: 0.85rem;
+   line-height: 1.5;
+   white-space: pre-wrap;
+   color: #0f172a;
+ }
+
+ /* IMPORT / EXPORT SUMMARY BOX */
+ .ie-summary-box {
+   background: #f8fafc;
+   border: 1px solid #cbd5e1;
+   border-radius: 10px;
+   padding: 11px 13px;
+   margin-top: 10px;
+   font-size: 0.84rem;
+   line-height: 1.5;
+ }
+ .ie-option-row {
+   display: flex;
+   align-items: flex-start;
+   gap: 9px;
+   background: #ffffff;
+   border: 1px solid #e2e8f0;
+   border-radius: 8px;
+   padding: 9px 11px;
+   margin-top: 8px;
+   cursor: pointer;
+ }
+ .ie-option-row:has(input:checked) {
+   background: #f0fdf4;
+   border-color: #86efac;
+ }
 
  /* DAFTAR KONTAK PENGECUALIAN (READ-ONLY) */
  .excluded-list-box {
@@ -392,7 +441,7 @@
  .modal-body {
    flex: 1;
    overflow-y: auto;
-   padding: 10px 16px;
+   padding: 12px 16px;
    background: #f8fafc;
  }
  .modal-footer {
@@ -520,6 +569,9 @@
    <button type="button" class="tab-btn" data-tab="tab-autoreply" onclick="switchTab('tab-autoreply')">
      <span>🤖 Auto-Reply & AI</span>
    </button>
+   <button type="button" class="tab-btn" data-tab="tab-store" onclick="switchTab('tab-store')">
+     <span>🏪 Data Toko</span>
+   </button>
    <button type="button" class="tab-btn" data-tab="tab-reports" onclick="switchTab('tab-reports')">
      <span>📊 Laporan</span>
    </button>
@@ -631,9 +683,9 @@
        <label for="bcMessageInput" style="margin: 0;">Isi Pesan Broadcast (Mendukung Spintax Anti-Spam)</label>
        <button type="button" class="secondary sm" onclick="insertBroadcastSample()">✨ Sisipkan Contoh Spintax</button>
      </div>
-     <textarea id="bcMessageInput" rows="4" oninput="previewBroadcastSample()" placeholder="{Halo|Hai|Assalamualaikum} Kak *{nama}* 👋, {salam}! Ada info promo terbaru dari *Muflih Print*..."></textarea>
+     <textarea id="bcMessageInput" rows="4" oninput="previewBroadcastSample()" placeholder="{Halo|Hai|Assalamualaikum} Kak *{nama}* 👋, {salam}! Ada info promo terbaru dari *{nama_toko}*..."></textarea>
      <div class="var-hint">
-       Gunakan variasi acak <code>{kata1|kata2|kata3}</code> agar teks tidak identik pada setiap penerima, serta variabel <code>{nama}</code> & <code>{salam}</code>.
+       Gunakan variasi acak <code>{kata1|kata2|kata3}</code> agar teks tidak identik pada setiap penerima, serta variabel <code>{nama}</code>, <code>{salam}</code>, <code>{nama_toko}</code>, <code>{web_toko}</code>.
      </div>
 
      <div id="bcLivePreviewBox" class="bc-preview-box hidden"></div>
@@ -728,6 +780,20 @@
 
  <!-- TAB 3: PENGATURAN AUTO-REPLY & AI -->
  <div id="tab-autoreply" class="tab-pane hidden">
+   <!-- BAR EKSPOR & IMPORT ATURAN AI / MANUAL -->
+   <div class="card" style="border-color: #93c5fd; background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%);">
+     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+       <div>
+         <h3 style="margin: 0; color: #1e3a8a; font-size: 0.98rem;">📦 Backup, Ekspor &amp; Import Aturan Auto-Reply (AI &amp; Manual)</h3>
+         <small style="color: #475569;">Cadangkan atau salin pengaturan AI, prompt bisnis, dan daftar balasan otomatis antar akun WhatsApp dalam format JSON</small>
+       </div>
+       <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+         <button type="button" class="edit sm" onclick="openExportRulesModal()">📤 Ekspor Aturan (JSON)</button>
+         <button type="button" class="teal-btn sm" onclick="openImportRulesModal()">📥 Import Aturan (JSON)</button>
+       </div>
+     </div>
+   </div>
+
    <div class="card" style="border-color: #c4b5fd;">
      <div class="header-bar" style="margin-bottom: 0.75rem;">
        <div>
@@ -942,7 +1008,10 @@
 
      <label for="replyInput">Format Pesan Balasan</label>
      <textarea id="replyInput" rows="5" placeholder="Halo Kak *{nama}* 👋..."></textarea>
-     <div class="var-hint">Variabel: <code>{sapaan_awal}</code>, <code>{salam}</code>, <code>{nama}</code>, <code>{nomor}</code>, <code>{pesan}</code>.</div>
+     <div class="var-hint">
+       Variabel: <code>{sapaan_awal}</code>, <code>{salam}</code>, <code>{nama}</code>, <code>{nomor}</code>, <code>{pesan}</code>,
+       <code>{nama_toko}</code>, <code>{alamat_toko}</code>, <code>{maps_toko}</code>, <code>{wa_toko}</code>, <code>{web_toko}</code>, <code>{nama_admin}</code>.
+     </div>
 
      <label id="followupCheckLabel" style="display: flex; align-items: center; gap: 8px; background: #eff6ff; border: 1px solid #bfdbfe; padding: 10px 12px; border-radius: 8px; cursor: pointer; margin-top: 0.75rem;">
        <input type="checkbox" id="expectsFollowupCheck" onchange="toggleRuleFormVisibility()" />
@@ -969,12 +1038,82 @@
    </div>
 
    <div class="card">
-     <h3 style="margin-top: 0;">Daftar Format Balasan Aktif</h3>
+     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 10px;">
+       <h3 style="margin: 0;">Daftar Format Balasan Aktif</h3>
+       <span id="rulesTotalPill" class="sync-pill">0 Aturan</span>
+     </div>
      <div id="rulesList"></div>
    </div>
  </div>
 
- <!-- TAB 4: LAPORAN CHAT MASUK & DURASI BALAS -->
+ <!-- TAB 4: DATA TOKO / USAHA PER AKUN WA -->
+ <div id="tab-store" class="tab-pane hidden">
+   <div class="card" style="border-color: #5eead4;">
+     <div class="header-bar" style="margin-bottom: 0.85rem;">
+       <div>
+         <h2 id="storeTabHeading" style="margin: 0;">🏪 Data Toko / Usaha — Muflih Print Utama</h2>
+         <small style="color: #64748b;">Profil toko/usaha khusus untuk akun WA aktif ini. Data ini otomatis dapat dipakai sebagai variabel balasan &amp; referensi AI.</small>
+       </div>
+       <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+         <span id="storeAccountBadge" class="sync-pill ok">Akun: bot_utama</span>
+       </div>
+     </div>
+
+     <div class="kw-grid">
+       <div>
+         <label for="storeNameInput">Nama Toko / Usaha</label>
+         <input type="text" id="storeNameInput" placeholder="Contoh: Muflih Print Makassar" oninput="markStoreFormDirty(); renderStorePreview();" />
+       </div>
+       <div>
+         <label for="storeAdminNameInput">Nama Admin / CS</label>
+         <input type="text" id="storeAdminNameInput" placeholder="Contoh: Admin Nanda" oninput="markStoreFormDirty(); renderStorePreview();" />
+       </div>
+     </div>
+
+     <div class="kw-grid">
+       <div>
+         <label for="storeWaNumberInput">Nomor WhatsApp Toko / Admin</label>
+         <input type="text" id="storeWaNumberInput" placeholder="Contoh: 081574009621" oninput="markStoreFormDirty(); renderStorePreview();" />
+       </div>
+       <div>
+         <label for="storeWebsiteInput">Situs / Alamat Web</label>
+         <input type="text" id="storeWebsiteInput" placeholder="Contoh: https://muflihprint.vercel.app" oninput="markStoreFormDirty(); renderStorePreview();" />
+       </div>
+     </div>
+
+     <label for="storeAddressInput">Alamat Lengkap Toko / Usaha</label>
+     <textarea id="storeAddressInput" rows="2" placeholder="Contoh: Jl. Barawaja No. 19, Makassar, Sulawesi Selatan" oninput="markStoreFormDirty(); renderStorePreview();"></textarea>
+
+     <label for="storeMapsUrlInput">Link Google Maps Lokasi</label>
+     <div class="key-input-row">
+       <input type="text" id="storeMapsUrlInput" placeholder="Contoh: https://maps.app.goo.gl/... atau https://maps.google.com/?q=..." oninput="markStoreFormDirty(); renderStorePreview();" />
+       <button type="button" class="secondary sm" onclick="openStoreMapsPreview()" title="Buka link Google Maps di tab baru">🗺️ Cek Maps</button>
+     </div>
+
+     <div class="var-hint" style="margin-top: 8px;">
+       Variabel otomatis yang dapat disisipkan di aturan Auto-Reply &amp; Broadcast akun ini:
+       <code>{nama_toko}</code>, <code>{nama_admin}</code>, <code>{wa_toko}</code>, <code>{web_toko}</code>, <code>{alamat_toko}</code>, <code>{maps_toko}</code>.
+     </div>
+
+     <div class="store-summary-card">
+       <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px;">
+         <strong style="font-size: 0.86rem; color: #0f766e;">📋 Pratinjau Kartu Informasi Toko (Siap Kirim WA / Referensi AI)</strong>
+         <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+           <button type="button" class="secondary sm" onclick="copyStoreCardText()">📋 Salin Teks Info</button>
+           <button type="button" class="ai-btn sm" onclick="injectStoreToAiKnowledge()">🧠 Masukkan ke Pengetahuan AI</button>
+         </div>
+       </div>
+       <div id="storeWaPreviewBox" class="store-preview-wa">Belum ada data toko yang diisi.</div>
+     </div>
+
+     <div style="margin-top: 14px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+       <button type="button" id="btnSaveStoreProfile" class="teal-btn" onclick="saveStoreProfile()">💾 Simpan Data Toko / Usaha</button>
+       <small id="storeUnsavedHint" style="color: #d97706; font-weight: 600; display: none;">● Perubahan data toko belum disimpan</small>
+     </div>
+   </div>
+ </div>
+
+ <!-- TAB 5: LAPORAN CHAT MASUK & DURASI BALAS -->
  <div id="tab-reports" class="tab-pane hidden">
    <div class="card">
      <div class="header-bar" style="margin-bottom: 1rem;">
@@ -1049,6 +1188,111 @@
    </div>
  </div>
 
+</div>
+
+<!-- MODAL EKSPOR ATURAN AUTO-REPLY AI & MANUAL -->
+<div id="exportRulesModal" class="modal-backdrop hidden" onclick="if (event.target === this) closeExportRulesModal()">
+  <div class="modal-box" style="max-width: 520px;" role="dialog" aria-modal="true" aria-labelledby="exportModalTitle">
+    <div class="modal-header">
+      <div>
+        <h3 id="exportModalTitle" style="margin: 0; font-size: 1.02rem; color: #0f172a;">📤 Ekspor Aturan Auto-Reply (AI &amp; Manual)</h3>
+        <small id="exportModalSub" style="color: #64748b;">Unduh konfigurasi &amp; aturan balasan akun WA aktif sebagai file JSON</small>
+      </div>
+      <button type="button" class="secondary sm" onclick="closeExportRulesModal()" aria-label="Tutup">✕</button>
+    </div>
+    <div class="modal-body" style="background: #ffffff;">
+      <label class="ie-option-row" style="margin-top: 0;">
+        <input type="checkbox" id="expIncludeManualCheck" checked style="margin-top: 3px;" />
+        <div>
+          <div style="font-weight: 700; font-size: 0.86rem;">🤖 Daftar Aturan Auto-Reply Manual (<span id="expManualCountText">0</span> aturan)</div>
+          <div style="font-size: 0.77rem; color: #475569; font-weight: 400;">Mencakup kata kunci persis, kata kunci mengandung, balasan default, konteks lanjutan, &amp; pengalihan admin.</div>
+        </div>
+      </label>
+
+      <label class="ie-option-row">
+        <input type="checkbox" id="expIncludeAiCheck" checked style="margin-top: 3px;" />
+        <div>
+          <div style="font-weight: 700; font-size: 0.86rem;">🧠 Pengaturan, System Prompt &amp; Pengetahuan Bisnis AI</div>
+          <div style="font-size: 0.77rem; color: #475569; font-weight: 400;">Mencakup mode AI, pilihan model, aturan dasar AI, pengetahuan bisnis, &amp; mode asisten admin (tanpa API Key demi keamanan).</div>
+        </div>
+      </label>
+
+      <label class="ie-option-row">
+        <input type="checkbox" id="expIncludeOffHoursCheck" checked style="margin-top: 3px;" />
+        <div>
+          <div style="font-weight: 700; font-size: 0.86rem;">🌙 Pengaturan Balasan Luar Jam Kerja</div>
+          <div style="font-size: 0.77rem; color: #475569; font-weight: 400;">Mencakup jam tutup/buka, hari libur, jeda cooldown, &amp; teks balasan jam tutup.</div>
+        </div>
+      </label>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="secondary sm" onclick="copyExportedRulesJson()">📋 Salin JSON</button>
+      <div style="display: flex; gap: 8px;">
+        <button type="button" class="secondary sm" onclick="closeExportRulesModal()">Batal</button>
+        <button type="button" class="edit sm" onclick="downloadExportedRulesJson()">⬇️ Unduh File .JSON</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL IMPORT ATURAN AUTO-REPLY AI & MANUAL -->
+<div id="importRulesModal" class="modal-backdrop hidden" onclick="if (event.target === this) closeImportRulesModal()">
+  <div class="modal-box" style="max-width: 560px;" role="dialog" aria-modal="true" aria-labelledby="importModalTitle">
+    <div class="modal-header">
+      <div>
+        <h3 id="importModalTitle" style="margin: 0; font-size: 1.02rem; color: #0f172a;">📥 Import Aturan Auto-Reply (AI &amp; Manual)</h3>
+        <small id="importModalSub" style="color: #64748b;">Unggah file backup .JSON atau tempel teks JSON ke akun WA aktif</small>
+      </div>
+      <button type="button" class="secondary sm" onclick="closeImportRulesModal()" aria-label="Tutup">✕</button>
+    </div>
+    <div class="modal-body" style="background: #ffffff;">
+      <label for="importRulesFileInput" style="margin-top: 0;">Pilih File Backup JSON</label>
+      <input type="file" id="importRulesFileInput" accept=".json,application/json" onchange="handleImportFileSelected(event)" style="padding: 8px; border: 1px dashed #94a3b8; border-radius: 8px; width: 100%; box-sizing: border-box; margin-top: 4px; background: #f8fafc;" />
+
+      <label for="importRulesRawJsonInput">Atau Tempel / Periksa Isi JSON</label>
+      <textarea id="importRulesRawJsonInput" rows="4" style="font-family: monospace; font-size: 0.78rem;" placeholder='{"format":"muflih_wa_autoreply_v1","rules":[...]}' oninput="parseImportJsonPreview()"></textarea>
+
+      <div id="importPreviewSummaryBox" class="ie-summary-box hidden"></div>
+
+      <div style="margin-top: 10px;">
+        <div style="font-size: 0.84rem; font-weight: 700; color: #334155; margin-bottom: 4px;">Mode Import Aturan Manual:</div>
+        <label class="ie-option-row" style="margin-top: 4px;">
+          <input type="radio" name="importMergeMode" value="append" checked style="margin-top: 3px;" />
+          <div>
+            <div style="font-weight: 700; font-size: 0.84rem;">➕ Gabungkan dengan Aturan yang Ada (Append)</div>
+            <div style="font-size: 0.76rem; color: #475569; font-weight: 400;">Aturan lama tetap dipertahankan; aturan baru dari file ditambahkan (duplikat persis dilewati otomatis).</div>
+          </div>
+        </label>
+        <label class="ie-option-row">
+          <input type="radio" name="importMergeMode" value="replace" style="margin-top: 3px;" />
+          <div>
+            <div style="font-weight: 700; font-size: 0.84rem; color: #b91c1c;">🔄 Timpa / Ganti Semua Aturan Lama (Replace)</div>
+            <div style="font-size: 0.76rem; color: #475569; font-weight: 400;">Menghapus seluruh aturan manual lama pada akun WA ini terlebih dahulu, lalu menggantinya dengan isi file JSON.</div>
+          </div>
+        </label>
+      </div>
+
+      <label class="ie-option-row" style="margin-top: 10px;">
+        <input type="checkbox" id="impApplyAiCheck" checked style="margin-top: 3px;" />
+        <div>
+          <div style="font-weight: 700; font-size: 0.84rem;">🧠 Terapkan Pengaturan &amp; Prompt AI (jika tersedia di file)</div>
+        </div>
+      </label>
+
+      <label class="ie-option-row">
+        <input type="checkbox" id="impApplyOffHoursCheck" checked style="margin-top: 3px;" />
+        <div>
+          <div style="font-weight: 700; font-size: 0.84rem;">🌙 Terapkan Pengaturan Luar Jam Kerja (jika tersedia di file)</div>
+        </div>
+      </label>
+
+      <div id="importProgressStatus" style="margin-top: 10px; font-size: 0.82rem; font-weight: 700; color: #0d9488; display: none;"></div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="secondary sm" onclick="closeImportRulesModal()">Batal</button>
+      <button type="button" id="btnExecuteImportRules" class="teal-btn sm" onclick="executeImportRules()" disabled>📥 Mulai Import Sekarang</button>
+    </div>
+  </div>
 </div>
 
 <!-- MODAL TAMBAH / UBAH NAMA AKUN WA -->
@@ -1143,6 +1387,7 @@ const STORAGE_URL_KEY = 'wa_local_server_url';
 const STORAGE_SECRET_KEY = 'wa_local_server_secret';
 const ACTIVE_TAB_KEY = 'wa_dashboard_active_tab';
 const ACTIVE_BOT_KEY = 'wa_dashboard_active_bot_id';
+const STORE_CACHE_PREFIX = 'wa_store_profile_';
 
 const SUPABASE_ENDPOINT_URL = 'https://zqxeoveanevsvynptckm.supabase.co/rest/v1/wa_server_endpoint?id=eq.utama&select=tunnel_url';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpxeGVvdmVhbmV2c3Z5bnB0Y2ttIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzUzODEsImV4cCI6MjA4OTg1MTM4MX0.eeIaytpW1wtWPJc2FbhufkDkhONUt9yypTZU4dTVmsM';
@@ -1191,6 +1436,7 @@ async function apiFetch(endpoint, options = {}) {
 
 let accountsCache = [];
 let accountModalMode = 'create';
+let latestBotConfig = null;
 let currentRules = [];
 let editingRuleId = null;
 let rawLogsCache = [];
@@ -1202,11 +1448,13 @@ let bcHistoryRowsCache = [];
 let cachedReportMetrics = null;
 let isAiFormDirty = false;
 let isOffHoursDirty = false;
+let isStoreFormDirty = false;
 let excludedNumbersList = [];
 let selectedExcludedSet = new Set();
+let parsedImportBundle = null;
 
 function switchTab(tabId) {
-  const validTabs = ['tab-chat', 'tab-broadcast', 'tab-autoreply', 'tab-reports'];
+  const validTabs = ['tab-chat', 'tab-broadcast', 'tab-autoreply', 'tab-store', 'tab-reports'];
   const targetId = validTabs.includes(tabId) ? tabId : 'tab-chat';
   document.querySelectorAll('.tab-pane').forEach(p => p.classList.toggle('hidden', p.id !== targetId));
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === targetId));
@@ -1264,12 +1512,33 @@ function normalizePhone(raw) {
   return digits.length >= 9 && digits.length <= 15 ? digits : null;
 }
 
+function getActiveStoreValues() {
+  return {
+    store_name: (document.getElementById('storeNameInput')?.value || '').trim(),
+    store_admin_name: (document.getElementById('storeAdminNameInput')?.value || '').trim(),
+    store_wa_number: (document.getElementById('storeWaNumberInput')?.value || '').trim(),
+    store_website: (document.getElementById('storeWebsiteInput')?.value || '').trim(),
+    store_address: (document.getElementById('storeAddressInput')?.value || '').trim(),
+    store_maps_url: (document.getElementById('storeMapsUrlInput')?.value || '').trim()
+  };
+}
+
 function renderClientSpintax(template, sampleName = 'Andi') {
+  const st = getActiveStoreValues();
   const spun = String(template || '').replace(/\{([^{}|]+\|[^{}]+)\}/g, (_, choicesStr) => {
     const opts = choicesStr.split('|').map(s => s.trim()).filter(Boolean);
     return opts.length ? opts[Math.floor(Math.random() * opts.length)] : '';
   });
-  return spun.replace(/\{nama\}/gi, sampleName).replace(/\{nomor\}/gi, '6281234567890').replace(/\{salam\}/gi, 'Selamat siang');
+  return spun
+    .replace(/\{nama\}/gi, sampleName)
+    .replace(/\{nomor\}/gi, '6281234567890')
+    .replace(/\{salam\}/gi, 'Selamat siang')
+    .replace(/\{nama_toko\}/gi, st.store_name || 'Nama Toko')
+    .replace(/\{nama_admin\}/gi, st.store_admin_name || 'Admin')
+    .replace(/\{wa_toko\}/gi, st.store_wa_number || '-')
+    .replace(/\{web_toko\}/gi, st.store_website || '-')
+    .replace(/\{alamat_toko\}/gi, st.store_address || '-')
+    .replace(/\{maps_toko\}/gi, st.store_maps_url || '-');
 }
 
 // ============================================================================
@@ -1291,7 +1560,6 @@ function renderAccountSelector(accounts, currentCfg) {
   }
 
   const selectEl = document.getElementById('accountSelect');
-  const prevVal = selectEl.value;
   selectEl.innerHTML = accountsCache.map(acc => {
     const icon = acc.status === 'connected' ? '🟢' : acc.status === 'qr_ready' ? '🟡' : '⚪';
     const waitInfo = acc.waiting_count > 0 ? ` [${acc.waiting_count} antre]` : '';
@@ -1324,6 +1592,8 @@ function renderAccountSelector(accounts, currentCfg) {
   document.getElementById('qrAccountHeading').textContent = `Hubungkan WhatsApp — ${activeName}`;
   document.getElementById('activeAccountHeaderTitle').textContent = `WhatsApp Bot & Broadcast — ${activeName}`;
   document.getElementById('activeAccountHeaderSub').textContent = `● Akun ID: ${ACTIVE_BOT_ID} • Terhubung ke Server & Database SQLite Laptop`;
+  document.getElementById('storeTabHeading').textContent = `🏪 Data Toko / Usaha — ${activeName}`;
+  document.getElementById('storeAccountBadge').textContent = `Akun: ${ACTIVE_BOT_ID}`;
   document.getElementById('btnDeleteAccount').classList.toggle('hidden', ACTIVE_BOT_ID === 'bot_utama');
 }
 
@@ -1332,11 +1602,12 @@ function switchWhatsAppAccount(newBotId) {
   ACTIVE_BOT_ID = newBotId;
   try { localStorage.setItem(ACTIVE_BOT_KEY, ACTIVE_BOT_ID); } catch (_) {}
 
-  // Reset form & cache sementara agar langsung memuat milik akun baru
   isAiFormDirty = false;
   isOffHoursDirty = false;
+  isStoreFormDirty = false;
   document.getElementById('aiUnsavedHint').style.display = 'none';
   document.getElementById('offHoursUnsavedHint').style.display = 'none';
+  document.getElementById('storeUnsavedHint').style.display = 'none';
   resetRuleForm();
 
   selectedChatNumber = null;
@@ -1426,6 +1697,7 @@ async function deleteCurrentAccount() {
 
   try {
     await apiFetch(`/api/accounts/${encodeURIComponent(ACTIVE_BOT_ID)}`, { method: 'DELETE' });
+    try { localStorage.removeItem(`${STORE_CACHE_PREFIX}${ACTIVE_BOT_ID}`); } catch (_) {}
     switchWhatsAppAccount('bot_utama');
   } catch (err) {
     alert(`Gagal menghapus akun: ${err.message}`);
@@ -1450,6 +1722,7 @@ async function pollState() {
     badge.textContent = `Terhubung (${SERVER_URL})`;
 
     const cfg = data.botConfig;
+    latestBotConfig = cfg;
     renderAccountSelector(data.accounts || [], cfg);
 
     const qrSec = document.getElementById('qrSection');
@@ -1485,6 +1758,7 @@ async function pollState() {
     renderRulesList();
     populateAiForm(cfg);
     populateOffHoursForm(cfg);
+    populateStoreForm(cfg);
     populateExcludedForm(cfg);
 
     renderAdminQueue(data.adminQueue || []);
@@ -1534,6 +1808,481 @@ async function triggerChatSync() {
     body: JSON.stringify({ bot_id: ACTIVE_BOT_ID })
   });
   pollState();
+}
+
+// ============================================================================
+// TAB DATA TOKO / USAHA PER AKUN WHATSAPP
+// ============================================================================
+function markStoreFormDirty() {
+  isStoreFormDirty = true;
+  document.getElementById('storeUnsavedHint').style.display = 'inline';
+}
+
+function populateStoreForm(cfg) {
+  if (isStoreFormDirty) return;
+
+  let localCached = {};
+  try {
+    localCached = JSON.parse(localStorage.getItem(`${STORE_CACHE_PREFIX}${ACTIVE_BOT_ID}`) || '{}');
+  } catch (_) {}
+
+  const storeName = cfg.store_name !== undefined ? cfg.store_name : (localCached.store_name || '');
+  const storeAdmin = cfg.store_admin_name !== undefined ? cfg.store_admin_name : (localCached.store_admin_name || '');
+  const storeWa = cfg.store_wa_number !== undefined ? cfg.store_wa_number : (localCached.store_wa_number || '');
+  const storeWeb = cfg.store_website !== undefined ? cfg.store_website : (localCached.store_website || '');
+  const storeAddr = cfg.store_address !== undefined ? cfg.store_address : (localCached.store_address || '');
+  const storeMaps = cfg.store_maps_url !== undefined ? cfg.store_maps_url : (localCached.store_maps_url || '');
+
+  if (document.activeElement !== document.getElementById('storeNameInput')) {
+    document.getElementById('storeNameInput').value = storeName || '';
+  }
+  if (document.activeElement !== document.getElementById('storeAdminNameInput')) {
+    document.getElementById('storeAdminNameInput').value = storeAdmin || '';
+  }
+  if (document.activeElement !== document.getElementById('storeWaNumberInput')) {
+    document.getElementById('storeWaNumberInput').value = storeWa || '';
+  }
+  if (document.activeElement !== document.getElementById('storeWebsiteInput')) {
+    document.getElementById('storeWebsiteInput').value = storeWeb || '';
+  }
+  if (document.activeElement !== document.getElementById('storeAddressInput')) {
+    document.getElementById('storeAddressInput').value = storeAddr || '';
+  }
+  if (document.activeElement !== document.getElementById('storeMapsUrlInput')) {
+    document.getElementById('storeMapsUrlInput').value = storeMaps || '';
+  }
+
+  renderStorePreview();
+}
+
+function buildFormattedStoreText() {
+  const st = getActiveStoreValues();
+  const lines = [];
+  if (st.store_name) lines.push(`🏪 *${st.store_name}*`);
+  if (st.store_address) lines.push(`📍 Alamat: ${st.store_address}`);
+  if (st.store_maps_url) lines.push(`🗺️ Google Maps: ${st.store_maps_url}`);
+  if (st.store_wa_number) {
+    const clean = normalizePhone(st.store_wa_number);
+    const waLink = clean ? `https://wa.me/${clean}` : st.store_wa_number;
+    lines.push(`📱 WhatsApp: ${st.store_wa_number}${clean ? ` (${waLink})` : ''}`);
+  }
+  if (st.store_website) lines.push(`🌐 Website / Katalog: ${st.store_website}`);
+  if (st.store_admin_name) lines.push(`👤 Admin: ${st.store_admin_name}`);
+  return lines.join('\n');
+}
+
+function renderStorePreview() {
+  const formatted = buildFormattedStoreText();
+  document.getElementById('storeWaPreviewBox').textContent =
+    formatted || 'Belum ada data toko yang diisi pada akun WhatsApp ini.';
+}
+
+function openStoreMapsPreview() {
+  const url = document.getElementById('storeMapsUrlInput').value.trim();
+  if (!url) return alert('Isi link Google Maps terlebih dahulu.');
+  const finalUrl = /^https?:\/\//i.test(url) ? url : `https://${url}`;
+  window.open(finalUrl, '_blank', 'noopener,noreferrer');
+}
+
+async function copyStoreCardText() {
+  const text = buildFormattedStoreText();
+  if (!text) return alert('Data toko masih kosong.');
+  try {
+    await navigator.clipboard.writeText(text);
+    alert('Teks informasi toko berhasil disalin ke clipboard!');
+  } catch (_) {
+    alert('Gagal menyalin otomatis. Silakan salin dari kotak pratinjau.');
+  }
+}
+
+function injectStoreToAiKnowledge() {
+  const st = getActiveStoreValues();
+  if (!st.store_name && !st.store_address && !st.store_wa_number && !st.store_website) {
+    return alert('Isi minimal satu data toko terlebih dahulu.');
+  }
+
+  const blockLines = ['[PROFIL TOKO / USAHA]'];
+  if (st.store_name) blockLines.push(`- Nama Toko/Usaha: ${st.store_name}`);
+  if (st.store_address) blockLines.push(`- Alamat: ${st.store_address}`);
+  if (st.store_maps_url) blockLines.push(`- Google Maps: ${st.store_maps_url}`);
+  if (st.store_wa_number) blockLines.push(`- Nomor WhatsApp: ${st.store_wa_number}`);
+  if (st.store_website) blockLines.push(`- Website / Katalog: ${st.store_website}`);
+  if (st.store_admin_name) blockLines.push(`- Nama Admin: ${st.store_admin_name}`);
+  const newBlock = blockLines.join('\n');
+
+  const knowledgeEl = document.getElementById('aiBusinessKnowledgeInput');
+  const existing = knowledgeEl.value.trim();
+  const markerRegex = /\[PROFIL TOKO \/ USAHA\][\s\S]*?(?=\n\n\[|$)/;
+
+  if (markerRegex.test(existing)) {
+    knowledgeEl.value = existing.replace(markerRegex, newBlock);
+  } else {
+    knowledgeEl.value = existing ? `${newBlock}\n\n${existing}` : newBlock;
+  }
+
+  markAiFormDirty();
+  switchTab('tab-autoreply');
+  knowledgeEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  alert('Data toko berhasil dimasukkan ke kolom Pengetahuan Bisnis AI. Klik "Simpan Pengaturan AI" untuk menerapkan.');
+}
+
+async function saveStoreProfile() {
+  const btn = document.getElementById('btnSaveStoreProfile');
+  btn.disabled = true;
+  btn.textContent = 'Menyimpan...';
+
+  const payload = {
+    bot_id: ACTIVE_BOT_ID,
+    ...getActiveStoreValues()
+  };
+
+  try {
+    localStorage.setItem(`${STORE_CACHE_PREFIX}${ACTIVE_BOT_ID}`, JSON.stringify(payload));
+  } catch (_) {}
+
+  try {
+    await apiFetch('/api/config', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+    isStoreFormDirty = false;
+    document.getElementById('storeUnsavedHint').style.display = 'none';
+    alert(`Data Toko / Usaha untuk akun ${ACTIVE_BOT_ID} berhasil disimpan!`);
+    pollState();
+  } catch (err) {
+    alert(`Gagal menyimpan data toko: ${err.message}`);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '💾 Simpan Data Toko / Usaha';
+  }
+}
+
+// ============================================================================
+// EKSPOR & IMPORT ATURAN AUTO-REPLY AI & MANUAL (JSON)
+// ============================================================================
+function openExportRulesModal() {
+  const activeAcc = accountsCache.find(a => a.id === ACTIVE_BOT_ID);
+  const label = activeAcc?.name || ACTIVE_BOT_ID;
+  document.getElementById('exportModalSub').textContent = `Sumber akun: ${label} (${ACTIVE_BOT_ID})`;
+  document.getElementById('expManualCountText').textContent = currentRules.length;
+  document.getElementById('exportRulesModal').classList.remove('hidden');
+}
+
+function closeExportRulesModal() {
+  document.getElementById('exportRulesModal').classList.add('hidden');
+}
+
+function buildExportBundleObject() {
+  const includeManual = document.getElementById('expIncludeManualCheck').checked;
+  const includeAi = document.getElementById('expIncludeAiCheck').checked;
+  const includeOffHours = document.getElementById('expIncludeOffHoursCheck').checked;
+
+  if (!includeManual && !includeAi && !includeOffHours) {
+    throw new Error('Pilih minimal satu komponen untuk diekspor.');
+  }
+
+  const activeAcc = accountsCache.find(a => a.id === ACTIVE_BOT_ID);
+  const bundle = {
+    format: 'muflih_wa_autoreply_v1',
+    exported_at: new Date().toISOString(),
+    source_account: {
+      id: ACTIVE_BOT_ID,
+      name: activeAcc?.name || ACTIVE_BOT_ID
+    }
+  };
+
+  if (includeAi) {
+    bundle.ai_config = {
+      ai_enabled: document.getElementById('aiEnabledCheck').checked,
+      ai_mode: document.getElementById('aiEnabledCheck').checked ? 'ai_only' : 'manual',
+      ai_model: document.getElementById('aiModelSelect').value,
+      ai_system_prompt: document.getElementById('aiSystemPromptInput').value.trim(),
+      ai_business_knowledge: document.getElementById('aiBusinessKnowledgeInput').value.trim(),
+      admin_mode_assist: document.getElementById('adminModeAssistCheck').checked
+    };
+  }
+
+  if (includeOffHours) {
+    const selectedDays = Array.from(document.querySelectorAll('#offHoursDaysGroup input:checked'))
+      .map(cb => cb.value)
+      .join(',');
+    bundle.off_hours_config = {
+      off_hours_start: document.getElementById('offHoursStartInput').value || '18:00',
+      off_hours_end: document.getElementById('offHoursEndInput').value || '08:00',
+      off_hours_cooldown_min: Number(document.getElementById('offHoursCooldownInput').value || 60),
+      off_hours_days: selectedDays,
+      off_hours_reply: document.getElementById('offHoursReplyInput').value.trim()
+    };
+  }
+
+  if (includeManual) {
+    bundle.rules = currentRules.map(r => ({
+      is_default: Boolean(r.is_default),
+      exact_keywords: r.exact_keywords || '',
+      contains_keywords: r.contains_keywords || '',
+      pause_bot: Boolean(r.pause_bot),
+      reply: r.reply || '',
+      expects_followup: Boolean(r.expects_followup),
+      followup_keywords: r.followup_keywords || '',
+      followup_reply: r.followup_reply || '',
+      followup_pause_bot: r.followup_pause_bot !== false
+    }));
+  }
+
+  return bundle;
+}
+
+function downloadExportedRulesJson() {
+  try {
+    const bundle = buildExportBundleObject();
+    const jsonStr = JSON.stringify(bundle, null, 2);
+    const blob = new Blob([jsonStr], { type: 'application/json;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const dateStamp = toWitaDateKey(Date.now());
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `autoreply-${ACTIVE_BOT_ID}-${dateStamp}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+    closeExportRulesModal();
+  } catch (err) {
+    alert(err.message);
+  }
+}
+
+async function copyExportedRulesJson() {
+  try {
+    const bundle = buildExportBundleObject();
+    const jsonStr = JSON.stringify(bundle, null, 2);
+    await navigator.clipboard.writeText(jsonStr);
+    alert('JSON aturan auto-reply berhasil disalin ke clipboard!');
+    closeExportRulesModal();
+  } catch (err) {
+    alert(`Gagal menyalin JSON: ${err.message}`);
+  }
+}
+
+function openImportRulesModal() {
+  const activeAcc = accountsCache.find(a => a.id === ACTIVE_BOT_ID);
+  const label = activeAcc?.name || ACTIVE_BOT_ID;
+  document.getElementById('importModalSub').textContent = `Target akun: ${label} (${ACTIVE_BOT_ID})`;
+  document.getElementById('importRulesFileInput').value = '';
+  document.getElementById('importRulesRawJsonInput').value = '';
+  document.getElementById('importPreviewSummaryBox').classList.add('hidden');
+  document.getElementById('importProgressStatus').style.display = 'none';
+  document.getElementById('btnExecuteImportRules').disabled = true;
+  parsedImportBundle = null;
+  document.getElementById('importRulesModal').classList.remove('hidden');
+}
+
+function closeImportRulesModal() {
+  document.getElementById('importRulesModal').classList.add('hidden');
+}
+
+function handleImportFileSelected(event) {
+  const file = event.target?.files?.[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    document.getElementById('importRulesRawJsonInput').value = String(e.target?.result || '');
+    parseImportJsonPreview();
+  };
+  reader.readAsText(file, 'UTF-8');
+}
+
+function parseImportJsonPreview() {
+  const raw = document.getElementById('importRulesRawJsonInput').value.trim();
+  const summaryBox = document.getElementById('importPreviewSummaryBox');
+  const execBtn = document.getElementById('btnExecuteImportRules');
+
+  if (!raw) {
+    parsedImportBundle = null;
+    summaryBox.classList.add('hidden');
+    execBtn.disabled = true;
+    return;
+  }
+
+  try {
+    const parsed = JSON.parse(raw);
+    // Dukung format bundle penuh maupun array aturan langsung
+    const normalizedBundle = Array.isArray(parsed)
+      ? { rules: parsed }
+      : (parsed && typeof parsed === 'object' ? parsed : null);
+
+    if (!normalizedBundle) throw new Error('Struktur JSON tidak dikenali.');
+
+    const rulesArr = Array.isArray(normalizedBundle.rules) ? normalizedBundle.rules : [];
+    const hasAi = Boolean(normalizedBundle.ai_config && typeof normalizedBundle.ai_config === 'object');
+    const hasOffHours = Boolean(normalizedBundle.off_hours_config && typeof normalizedBundle.off_hours_config === 'object');
+
+    if (rulesArr.length === 0 && !hasAi && !hasOffHours) {
+      throw new Error('JSON tidak berisi daftar aturan maupun pengaturan AI.');
+    }
+
+    parsedImportBundle = {
+      source_account: normalizedBundle.source_account || null,
+      rules: rulesArr,
+      ai_config: hasAi ? normalizedBundle.ai_config : null,
+      off_hours_config: hasOffHours ? normalizedBundle.off_hours_config : null
+    };
+
+    const aiCheck = document.getElementById('impApplyAiCheck');
+    aiCheck.disabled = !hasAi;
+    aiCheck.checked = hasAi;
+
+    const ohCheck = document.getElementById('impApplyOffHoursCheck');
+    ohCheck.disabled = !hasOffHours;
+    ohCheck.checked = hasOffHours;
+
+    const srcInfo = parsedImportBundle.source_account?.name
+      ? `<div><strong>Sumber File:</strong> ${escapeHtml(parsedImportBundle.source_account.name)} (${escapeHtml(parsedImportBundle.source_account.id || '-')})</div>`
+      : '';
+
+    summaryBox.innerHTML = `
+      <div style="color:#15803d; font-weight:700; margin-bottom:4px;">✅ File JSON Valid &amp; Siap Diimport</div>
+      ${srcInfo}
+      <div>• <strong>Aturan Auto-Reply Manual:</strong> ${rulesArr.length} aturan</div>
+      <div>• <strong>Pengaturan &amp; Prompt AI:</strong> ${hasAi ? '✅ Tersedia' : '— Tidak disertakan'}</div>
+      <div>• <strong>Pengaturan Luar Jam Kerja:</strong> ${hasOffHours ? '✅ Tersedia' : '— Tidak disertakan'}</div>
+    `;
+    summaryBox.classList.remove('hidden');
+    execBtn.disabled = false;
+  } catch (err) {
+    parsedImportBundle = null;
+    summaryBox.innerHTML = `<div style="color:#b91c1c; font-weight:700;">❌ Format JSON Tidak Valid: ${escapeHtml(err.message)}</div>`;
+    summaryBox.classList.remove('hidden');
+    execBtn.disabled = true;
+  }
+}
+
+async function executeImportRules() {
+  if (!parsedImportBundle) return;
+
+  const mergeMode = document.querySelector('input[name="importMergeMode"]:checked')?.value || 'append';
+  const applyAi = document.getElementById('impApplyAiCheck').checked && Boolean(parsedImportBundle.ai_config);
+  const applyOffHours = document.getElementById('impApplyOffHoursCheck').checked && Boolean(parsedImportBundle.off_hours_config);
+  const incomingRules = parsedImportBundle.rules || [];
+
+  if (mergeMode === 'replace' && incomingRules.length > 0) {
+    if (!confirm(`Mode Timpa akan menghapus ${currentRules.length} aturan lama pada akun ${ACTIVE_BOT_ID} dan menggantinya dengan ${incomingRules.length} aturan baru. Lanjutkan?`)) {
+      return;
+    }
+  }
+
+  const btn = document.getElementById('btnExecuteImportRules');
+  const statusEl = document.getElementById('importProgressStatus');
+  btn.disabled = true;
+  btn.textContent = '⏳ Mengimpor...';
+  statusEl.style.display = 'block';
+
+  try {
+    // 1. Terapkan konfigurasi AI & Luar Jam Kerja jika dicentang
+    const configPatch = { bot_id: ACTIVE_BOT_ID };
+    let hasConfigChange = false;
+
+    if (applyAi) {
+      const ac = parsedImportBundle.ai_config;
+      if (ac.ai_enabled !== undefined) configPatch.ai_enabled = Boolean(ac.ai_enabled);
+      if (ac.ai_mode) configPatch.ai_mode = ac.ai_mode;
+      if (ac.ai_model) configPatch.ai_model = ac.ai_model;
+      if (ac.ai_system_prompt !== undefined) configPatch.ai_system_prompt = ac.ai_system_prompt;
+      if (ac.ai_business_knowledge !== undefined) configPatch.ai_business_knowledge = ac.ai_business_knowledge;
+      if (ac.admin_mode_assist !== undefined) configPatch.admin_mode_assist = Boolean(ac.admin_mode_assist);
+      hasConfigChange = true;
+    }
+
+    if (applyOffHours) {
+      const oh = parsedImportBundle.off_hours_config;
+      if (oh.off_hours_start) configPatch.off_hours_start = oh.off_hours_start;
+      if (oh.off_hours_end) configPatch.off_hours_end = oh.off_hours_end;
+      if (oh.off_hours_cooldown_min !== undefined) configPatch.off_hours_cooldown_min = Number(oh.off_hours_cooldown_min);
+      if (oh.off_hours_days !== undefined) configPatch.off_hours_days = oh.off_hours_days;
+      if (oh.off_hours_reply !== undefined) configPatch.off_hours_reply = oh.off_hours_reply;
+      hasConfigChange = true;
+    }
+
+    if (hasConfigChange) {
+      statusEl.textContent = 'Menyimpan konfigurasi AI & jadwal jam kerja...';
+      await apiFetch('/api/config', {
+        method: 'POST',
+        body: JSON.stringify(configPatch)
+      });
+      if (applyAi) {
+        isAiFormDirty = false;
+        document.getElementById('aiUnsavedHint').style.display = 'none';
+      }
+      if (applyOffHours) {
+        isOffHoursDirty = false;
+        document.getElementById('offHoursUnsavedHint').style.display = 'none';
+      }
+    }
+
+    // 2. Jika mode Replace, hapus aturan lama terlebih dahulu
+    if (mergeMode === 'replace' && incomingRules.length > 0 && currentRules.length > 0) {
+      for (let i = 0; i < currentRules.length; i++) {
+        statusEl.textContent = `Menghapus aturan lama (${i + 1}/${currentRules.length})...`;
+        await apiFetch(`/api/rules/${currentRules[i].id}`, { method: 'DELETE' });
+      }
+    }
+
+    // 3. Tambahkan aturan baru dari file JSON
+    const existingSignatures = new Set(
+      mergeMode === 'replace'
+        ? []
+        : currentRules.map(r => `${r.is_default ? '1' : '0'}|${(r.exact_keywords || '').trim().toLowerCase()}|${(r.contains_keywords || '').trim().toLowerCase()}|${(r.reply || '').trim()}`)
+    );
+
+    let addedCount = 0;
+    let skippedDupCount = 0;
+
+    for (let i = 0; i < incomingRules.length; i++) {
+      const r = incomingRules[i];
+      if (!r || !String(r.reply || '').trim()) continue;
+
+      const sig = `${r.is_default ? '1' : '0'}|${String(r.exact_keywords || '').trim().toLowerCase()}|${String(r.contains_keywords || '').trim().toLowerCase()}|${String(r.reply || '').trim()}`;
+      if (existingSignatures.has(sig)) {
+        skippedDupCount++;
+        continue;
+      }
+
+      statusEl.textContent = `Mengimpor aturan (${i + 1}/${incomingRules.length})...`;
+      await apiFetch('/api/rules', {
+        method: 'POST',
+        body: JSON.stringify({
+          bot_id: ACTIVE_BOT_ID,
+          is_default: Boolean(r.is_default),
+          exact_keywords: String(r.exact_keywords || '').trim(),
+          contains_keywords: String(r.contains_keywords || '').trim(),
+          pause_bot: Boolean(r.pause_bot),
+          reply: String(r.reply || '').trim(),
+          expects_followup: Boolean(r.expects_followup),
+          followup_keywords: String(r.followup_keywords || '').trim(),
+          followup_reply: String(r.followup_reply || '').trim(),
+          followup_pause_bot: r.followup_pause_bot !== false
+        })
+      });
+      existingSignatures.add(sig);
+      addedCount++;
+    }
+
+    closeImportRulesModal();
+    await pollState();
+    alert(
+      `✅ Import Selesai pada akun ${ACTIVE_BOT_ID}!\n` +
+      `• Aturan ditambahkan: ${addedCount}\n` +
+      (skippedDupCount > 0 ? `• Duplikat dilewati: ${skippedDupCount}\n` : '') +
+      (applyAi ? `• Pengaturan & Prompt AI: Diperbarui\n` : '') +
+      (applyOffHours ? `• Pengaturan Luar Jam Kerja: Diperbarui` : '')
+    );
+  } catch (err) {
+    alert(`Gagal saat proses import: ${err.message}`);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '📥 Mulai Import Sekarang';
+    statusEl.style.display = 'none';
+  }
 }
 
 // ============================================================================
@@ -1857,11 +2606,14 @@ async function loadContacts(force = false) {
 }
 
 function insertBroadcastSample() {
+  const st = getActiveStoreValues();
+  const storeNamePart = st.store_name ? '*{nama_toko}*' : '*Muflih Print Makassar*';
+  const webPart = st.store_website ? '{web_toko}' : 'https://muflihprint.vercel.app';
   document.getElementById('bcMessageInput').value =
-    '{Halo|Hai|Assalamualaikum} Kak *{nama}* 👋, {salam}!\n\n' +
-    '{Kabar gembira|Info spesial} dari *Muflih Print Makassar* — pemesanan cetak undangan, stiker, & dokumen PDF bisa dilakukan secara online (COD) di:\n' +
-    '👉 https://muflihprint.vercel.app\n\n' +
-    '{Silakan balas pesan ini jika ingin tanya-tanya dulu ya, Kak!|Langsung hubungi kami kapan saja jika butuh bantuan cetak ya, Kak!} 😊';
+    `{Halo|Hai|Assalamualaikum} Kak *{nama}* 👋, {salam}!\n\n` +
+    `{Kabar gembira|Info spesial} dari ${storeNamePart} — pemesanan cetak undangan, stiker, & dokumen PDF bisa dilakukan secara online (COD) di:\n` +
+    `👉 ${webPart}\n\n` +
+    `{Silakan balas pesan ini jika ingin tanya-tanya dulu ya, Kak!|Langsung hubungi kami kapan saja jika butuh bantuan cetak ya, Kak!} 😊`;
   previewBroadcastSample();
 }
 
@@ -2167,8 +2919,10 @@ function populateOffHoursForm(cfg) {
 }
 
 function insertOffHoursSample() {
+  const st = getActiveStoreValues();
+  const storeLabel = st.store_name || 'Muflih Print';
   document.getElementById('offHoursReplyInput').value =
-    '──────────────\n🌙 *Info Jam Tutup:*\nSaat ini *Muflih Print* sedang tutup (Senin – Sabtu, 08.00 – 18.00 WITA, Ahad Libur). Pesan tetap kami terima dan akan dibalas saat jam buka. 🙏';
+    `──────────────\n🌙 *Info Jam Tutup:*\nSaat ini *${storeLabel}* sedang tutup (Senin – Sabtu, 08.00 – 18.00 WITA, Ahad Libur). Pesan tetap kami terima dan akan dibalas saat jam buka. 🙏`;
   markOffHoursDirty();
 }
 
@@ -2445,21 +3199,19 @@ async function applyExcludedModalSelection() {
 
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
-    const accModal = document.getElementById('accountModal');
-    if (accModal && !accModal.classList.contains('hidden')) {
-      closeAccountModal();
-      return;
-    }
-
-    const mediaModal = document.getElementById('mediaPreviewModal');
-    if (mediaModal && !mediaModal.classList.contains('hidden')) {
-      closeMediaPreviewModal();
-      return;
-    }
-
-    const excludedModal = document.getElementById('excludedContactModal');
-    if (excludedModal && !excludedModal.classList.contains('hidden')) {
-      closeExcludedContactModal();
+    const modals = [
+      ['exportRulesModal', closeExportRulesModal],
+      ['importRulesModal', closeImportRulesModal],
+      ['accountModal', closeAccountModal],
+      ['mediaPreviewModal', closeMediaPreviewModal],
+      ['excludedContactModal', closeExcludedContactModal]
+    ];
+    for (const [id, closeFn] of modals) {
+      const el = document.getElementById(id);
+      if (el && !el.classList.contains('hidden')) {
+        closeFn();
+        return;
+      }
     }
   }
 });
@@ -2564,6 +3316,7 @@ async function deleteRule(id) {
 }
 
 function renderRulesList() {
+  document.getElementById('rulesTotalPill').textContent = `${currentRules.length} Aturan`;
   const listEl = document.getElementById('rulesList');
   if (currentRules.length === 0) {
     listEl.innerHTML = '<div style="color:#64748b;">Belum ada aturan balasan.</div>';
