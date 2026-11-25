@@ -37,6 +37,91 @@
  button.teal-btn:hover { background: #0f766e; }
  button.sm, .btn-link.sm { padding: 7px 11px; font-size: 0.8rem; }
 
+ /* TOOLBAR VARIABEL DATA TOKO, LIVE PREVIEW & BANNER TERHUBUNG */
+ .store-var-toolbar {
+   display: flex;
+   flex-wrap: wrap;
+   align-items: center;
+   gap: 6px;
+   margin-top: 6px;
+   margin-bottom: 4px;
+ }
+ .store-var-toolbar-label {
+   font-size: 0.74rem;
+   font-weight: 700;
+   color: #64748b;
+   margin-right: 2px;
+ }
+ .store-var-chip {
+   background: #ecfdf5;
+   color: #047857;
+   border: 1px solid #a7f3d0;
+   border-radius: 6px;
+   padding: 3px 8px;
+   font-size: 0.74rem;
+   font-family: monospace;
+   font-weight: 700;
+   cursor: pointer;
+ }
+ .store-var-chip:hover {
+   background: #d1fae5;
+   border-color: #6ee7b7;
+ }
+ .store-live-preview {
+   margin-top: 8px;
+   padding: 10px 12px;
+   border-radius: 8px;
+   background: #f8fafc;
+   border: 1px dashed #94a3b8;
+   font-size: 0.82rem;
+   color: #1e293b;
+   white-space: pre-wrap;
+   line-height: 1.45;
+ }
+ .store-live-preview-title {
+   font-size: 0.7rem;
+   font-weight: 800;
+   text-transform: uppercase;
+   letter-spacing: 0.04em;
+   color: #047857;
+   margin-bottom: 4px;
+ }
+ .ai-store-banner {
+   margin-top: 10px;
+   padding: 11px 13px;
+   border-radius: 10px;
+   background: #ecfdf5;
+   border: 1px solid #86efac;
+   font-size: 0.82rem;
+   color: #064e3b;
+ }
+ .ai-store-banner.empty {
+   background: #fffbeb;
+   border-color: #fde68a;
+   color: #92400e;
+   display: flex;
+   align-items: center;
+   justify-content: space-between;
+   flex-wrap: wrap;
+   gap: 8px;
+ }
+ .ai-store-banner-head {
+   display: flex;
+   align-items: center;
+   justify-content: space-between;
+   flex-wrap: wrap;
+   gap: 6px;
+   margin-bottom: 6px;
+ }
+ .ai-store-grid {
+   display: grid;
+   grid-template-columns: repeat(2, 1fr);
+   gap: 4px 14px;
+   font-size: 0.78rem;
+   color: #334155;
+ }
+ @media (max-width: 640px) { .ai-store-grid { grid-template-columns: 1fr; } }
+
  .wa-media-wrap { margin-bottom: 6px; }
  .wa-media-img {
    max-width: 230px;
@@ -275,6 +360,7 @@
  .badge-contains { display: inline-block; font-size: 0.7rem; font-weight: 700; padding: 2px 7px; border-radius: 999px; background: #dcfce7; color: #15803d; text-transform: uppercase; }
  .badge-default { display: inline-block; font-size: 0.7rem; font-weight: 700; padding: 2px 7px; border-radius: 999px; background: #fef3c7; color: #b45309; text-transform: uppercase; }
  .badge-admin { display: inline-block; font-size: 0.7rem; font-weight: 700; padding: 2px 7px; border-radius: 999px; background: #ffedd5; color: #c2410c; text-transform: uppercase; }
+ .badge-store-linked { display: inline-block; font-size: 0.7rem; font-weight: 700; padding: 2px 7px; border-radius: 999px; background: #ccfbf1; color: #0f766e; }
  .kw-chip { display: inline-block; font-size: 0.78rem; font-weight: 600; padding: 2px 8px; border-radius: 6px; background: #e2e8f0; color: #1e293b; margin: 2px 4px 2px 0; }
  .kw-row { margin-bottom: 5px; display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
 
@@ -815,6 +901,9 @@
        <strong>Mode Saat Ini — AI Nonaktif:</strong> Balasan otomatis dikirim menggunakan pencocokan kata kunci &amp; balasan default pada daftar aturan di bawah tanpa AI.
      </div>
 
+     <!-- BANNER STATUS KONEKSI OTOMATIS KE TAB DATA TOKO -->
+     <div id="aiConnectedStoreBanner"></div>
+
      <div id="aiConfigFieldsBox" class="hidden" style="margin-top: 10px;">
        <div>
          <label for="aiModelSelect">Prioritas Model AI Utama</label>
@@ -875,17 +964,17 @@
          placeholder="Aturan perilaku AI, cara baca katalog harga, dan syarat pengalihan ke admin..."
        ></textarea>
 
-       <label for="aiBusinessKnowledgeInput">Pengetahuan & Aturan Khusus Bisnis (Alamat, Promo, S&amp;K)</label>
+       <label for="aiBusinessKnowledgeInput">Pengetahuan & Aturan Khusus Bisnis (Promo, S&amp;K)</label>
        <textarea
          id="aiBusinessKnowledgeInput"
          rows="9"
          style="font-family: monospace; font-size: 0.85rem;"
          oninput="markAiFormDirty()"
-         placeholder="Masukkan rincian promo cetak, syarat undangan, alamat toko, jam buka, nomor rekening..."
+         placeholder="Masukkan rincian promo cetak, syarat undangan, jam buka, nomor rekening... (Info alamat/kontak toko otomatis terhubung dari Tab Data Toko)"
        ></textarea>
 
        <div class="var-hint">
-         Edit bagian ini kapan saja dari browser untuk memperbarui promo, S&amp;K, atau info toko khusus nomor WA ini tanpa menyentuh kode server.
+         Edit bagian ini kapan saja dari browser. Data alamat, link Maps, website, dan kontak toko pada Tab Data Toko otomatis dibaca oleh AI tanpa perlu ditulis ulang di sini.
        </div>
      </div>
 
@@ -933,7 +1022,7 @@
 
      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; margin-top: 0.75rem;">
        <label for="offHoursReplyInput" style="margin: 0;">Keterangan Tambahan Saat Jam Tutup</label>
-       <button type="button" class="secondary sm" onclick="insertOffHoursSample()">✨ Isi Template Muflih Print</button>
+       <button type="button" class="secondary sm" onclick="insertOffHoursSample()">✨ Isi Template Terhubung Data Toko</button>
      </div>
      <textarea id="offHoursReplyInput" rows="4" oninput="markOffHoursDirty()"></textarea>
 
@@ -1007,7 +1096,7 @@
      </label>
 
      <label for="replyInput">Format Pesan Balasan</label>
-     <textarea id="replyInput" rows="5" placeholder="Halo Kak *{nama}* 👋..."></textarea>
+     <textarea id="replyInput" rows="5" placeholder="Halo Kak *{nama}* 👋, selamat datang di *{nama_toko}*..."></textarea>
      <div class="var-hint">
        Variabel: <code>{sapaan_awal}</code>, <code>{salam}</code>, <code>{nama}</code>, <code>{nomor}</code>, <code>{pesan}</code>,
        <code>{nama_toko}</code>, <code>{alamat_toko}</code>, <code>{maps_toko}</code>, <code>{wa_toko}</code>, <code>{web_toko}</code>, <code>{nama_admin}</code>.
@@ -1052,7 +1141,7 @@
      <div class="header-bar" style="margin-bottom: 0.85rem;">
        <div>
          <h2 id="storeTabHeading" style="margin: 0;">🏪 Data Toko / Usaha — Muflih Print Utama</h2>
-         <small style="color: #64748b;">Profil toko/usaha khusus untuk akun WA aktif ini. Data ini otomatis dapat dipakai sebagai variabel balasan &amp; referensi AI.</small>
+         <small style="color: #64748b;">Profil toko/usaha khusus untuk akun WA aktif ini. Data ini otomatis terhubung ke Auto-Reply AI &amp; Manual.</small>
        </div>
        <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
          <span id="storeAccountBadge" class="sync-pill ok">Akun: bot_utama</span>
@@ -1091,7 +1180,7 @@
      </div>
 
      <div class="var-hint" style="margin-top: 8px;">
-       Variabel otomatis yang dapat disisipkan di aturan Auto-Reply &amp; Broadcast akun ini:
+       Variabel otomatis yang terhubung langsung ke Auto-Reply &amp; Broadcast akun ini:
        <code>{nama_toko}</code>, <code>{nama_admin}</code>, <code>{wa_toko}</code>, <code>{web_toko}</code>, <code>{alamat_toko}</code>, <code>{maps_toko}</code>.
      </div>
 
@@ -1453,6 +1542,159 @@ let excludedNumbersList = [];
 let selectedExcludedSet = new Set();
 let parsedImportBundle = null;
 
+// ============================================================================
+// HELPER KONEKSI OTOMATIS TAB DATA TOKO -> AUTO-REPLY MANUAL, AI & BROADCAST
+// ============================================================================
+const STORE_VAR_DEFS = [
+  { key: '{nama_toko}', field: 'store_name', label: 'Nama Toko' },
+  { key: '{nama_admin}', field: 'store_admin_name', label: 'Nama Admin' },
+  { key: '{wa_toko}', field: 'store_wa_number', label: 'WA Toko' },
+  { key: '{web_toko}', field: 'store_website', label: 'Website/Katalog' },
+  { key: '{alamat_toko}', field: 'store_address', label: 'Alamat Toko' },
+  { key: '{maps_toko}', field: 'store_maps_url', label: 'Link Maps' }
+];
+
+function getMergedStoreConfig(cfg = latestBotConfig || window.currentBotConfig || {}) {
+  const formVals = getActiveStoreValues();
+  return {
+    store_name: formVals.store_name || cfg.store_name || '',
+    store_admin_name: formVals.store_admin_name || cfg.store_admin_name || '',
+    store_wa_number: formVals.store_wa_number || cfg.store_wa_number || '',
+    store_website: formVals.store_website || cfg.store_website || '',
+    store_address: formVals.store_address || cfg.store_address || '',
+    store_maps_url: formVals.store_maps_url || cfg.store_maps_url || ''
+  };
+}
+
+function previewWithStoreData(templateText, cfg) {
+  const activeStore = getMergedStoreConfig(cfg);
+  let result = String(templateText || '');
+  for (const item of STORE_VAR_DEFS) {
+    const val = String(activeStore[item.field] || '').trim();
+    const regex = new RegExp(item.key.replace(/[{}]/g, '\\$&'), 'gi');
+    result = result.replace(regex, val || `[${item.label} belum diisi]`);
+  }
+  return result;
+}
+
+function autoConvertStoreTextToVars(rawText, cfg) {
+  let text = String(rawText || '');
+  if (!text.trim()) return text;
+
+  const activeStore = getMergedStoreConfig(cfg);
+  const pairs = STORE_VAR_DEFS
+    .map((d) => ({
+      varTag: d.key,
+      value: String(activeStore[d.field] || '').trim()
+    }))
+    .filter((p) => p.value.length >= 4)
+    .sort((a, b) => b.value.length - a.value.length);
+
+  for (const { varTag, value } of pairs) {
+    const escaped = value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(escaped, 'gi');
+    text = text.replace(regex, varTag);
+  }
+  return text;
+}
+
+function insertStoreVarAtCursor(textareaId, varTag) {
+  const el = document.getElementById(textareaId);
+  if (!el) return;
+  const start = el.selectionStart ?? el.value.length;
+  const end = el.selectionEnd ?? el.value.length;
+  el.value = el.value.slice(0, start) + varTag + el.value.slice(end);
+  el.focus();
+  const nextPos = start + varTag.length;
+  el.setSelectionRange(nextPos, nextPos);
+  el.dispatchEvent(new Event('input', { bubbles: true }));
+}
+
+function mountStoreVarToolbar(textareaId, previewBoxId = '') {
+  const textarea = document.getElementById(textareaId);
+  if (!textarea || textarea.dataset.storeToolbarMounted === '1') return;
+  textarea.dataset.storeToolbarMounted = '1';
+
+  const toolbar = document.createElement('div');
+  toolbar.className = 'store-var-toolbar';
+  toolbar.innerHTML =
+    `<span class="store-var-toolbar-label">Sisipkan Data Toko:</span>` +
+    STORE_VAR_DEFS.map(
+      (d) =>
+        `<button type="button" class="store-var-chip" onclick="insertStoreVarAtCursor('${textareaId}', '${d.key}')">+ ${d.key}</button>`
+    ).join('');
+
+  textarea.parentNode.insertBefore(toolbar, textarea);
+
+  if (previewBoxId) {
+    let previewEl = document.getElementById(previewBoxId);
+    if (!previewEl) {
+      previewEl = document.createElement('div');
+      previewEl.id = previewBoxId;
+      previewEl.className = 'store-live-preview';
+      textarea.parentNode.insertBefore(previewEl, textarea.nextSibling);
+    }
+
+    const updatePreview = () => {
+      const raw = textarea.value.trim();
+      if (!raw) {
+        previewEl.innerHTML =
+          '<span style="color:#64748b; font-style:italic;">Pratinjau balasan otomatis sesuai Tab Data Toko akan tampil di sini...</span>';
+        return;
+      }
+      const rendered = previewWithStoreData(raw);
+      previewEl.innerHTML =
+        `<div class="store-live-preview-title">Pratinjau Live (Terhubung ke Tab Data Toko)</div>` +
+        escapeHtml(rendered);
+    };
+
+    textarea.addEventListener('input', updatePreview);
+    textarea.refreshStorePreview = updatePreview;
+    updatePreview();
+  }
+}
+
+function refreshAllStoreLivePreviews() {
+  ['replyInput', 'followupReplyInput', 'offHoursReplyInput'].forEach((id) => {
+    const el = document.getElementById(id);
+    if (el && typeof el.refreshStorePreview === 'function') {
+      el.refreshStorePreview();
+    }
+  });
+}
+
+function renderAiConnectedStoreBanner(containerId, cfg) {
+  const box = document.getElementById(containerId);
+  if (!box) return;
+
+  const activeStore = getMergedStoreConfig(cfg);
+  const filled = STORE_VAR_DEFS.filter((d) => String(activeStore[d.field] || '').trim() !== '');
+  if (filled.length === 0) {
+    box.innerHTML = `
+      <div class="ai-store-banner empty">
+        <span>⚠️ Data Toko untuk akun ini belum diisi. AI belum memiliki info alamat/kontak toko otomatis.</span>
+        <button type="button" class="warn sm" onclick="switchTab('tab-store')">🏪 Isi Data Toko</button>
+      </div>`;
+    return;
+  }
+
+  box.innerHTML = `
+    <div class="ai-store-banner">
+      <div class="ai-store-banner-head">
+        <strong>🏪 Terhubung Otomatis dengan Tab Data Toko (Tidak perlu ditulis ulang di Prompt AI)</strong>
+        <button type="button" class="teal-btn sm" onclick="switchTab('tab-store')">✏️ Edit Data Toko</button>
+      </div>
+      <div class="ai-store-grid">
+        ${filled
+          .map(
+            (d) =>
+              `<div><strong>${d.label}:</strong> ${escapeHtml(String(activeStore[d.field]))}</div>`
+          )
+          .join('')}
+      </div>
+    </div>`;
+}
+
 function switchTab(tabId) {
   const validTabs = ['tab-chat', 'tab-broadcast', 'tab-autoreply', 'tab-store', 'tab-reports'];
   const targetId = validTabs.includes(tabId) ? tabId : 'tab-chat';
@@ -1462,6 +1704,10 @@ function switchTab(tabId) {
 
   if ((targetId === 'tab-broadcast' || targetId === 'tab-autoreply') && contactsCache.length === 0) {
     loadContacts(true);
+  }
+  if (targetId === 'tab-autoreply') {
+    renderAiConnectedStoreBanner('aiConnectedStoreBanner', latestBotConfig);
+    refreshAllStoreLivePreviews();
   }
   if (targetId === 'tab-reports') loadReports();
 }
@@ -1524,7 +1770,7 @@ function getActiveStoreValues() {
 }
 
 function renderClientSpintax(template, sampleName = 'Andi') {
-  const st = getActiveStoreValues();
+  const st = getMergedStoreConfig();
   const spun = String(template || '').replace(/\{([^{}|]+\|[^{}]+)\}/g, (_, choicesStr) => {
     const opts = choicesStr.split('|').map(s => s.trim()).filter(Boolean);
     return opts.length ? opts[Math.floor(Math.random() * opts.length)] : '';
@@ -1723,6 +1969,7 @@ async function pollState() {
 
     const cfg = data.botConfig;
     latestBotConfig = cfg;
+    window.currentBotConfig = cfg;
     renderAccountSelector(data.accounts || [], cfg);
 
     const qrSec = document.getElementById('qrSection');
@@ -1756,10 +2003,20 @@ async function pollState() {
     rawLogsCache = data.recentLogs || [];
     currentRules = data.rules || [];
     renderRulesList();
+    populateStoreForm(cfg);
     populateAiForm(cfg);
     populateOffHoursForm(cfg);
-    populateStoreForm(cfg);
     populateExcludedForm(cfg);
+
+    // Pasang & perbarui koneksi otomatis Tab Data Toko -> Auto-Reply Manual, AI, Luar Jam Kerja & Broadcast
+    mountStoreVarToolbar('replyInput', 'ruleReplyLivePreview');
+    mountStoreVarToolbar('followupReplyInput', 'followupReplyLivePreview');
+    mountStoreVarToolbar('offHoursReplyInput', 'offHoursReplyLivePreview');
+    mountStoreVarToolbar('aiSystemPromptInput');
+    mountStoreVarToolbar('aiBusinessKnowledgeInput');
+    mountStoreVarToolbar('bcMessageInput');
+    renderAiConnectedStoreBanner('aiConnectedStoreBanner', cfg);
+    refreshAllStoreLivePreviews();
 
     renderAdminQueue(data.adminQueue || []);
     renderGroupedWhatsAppView();
@@ -1816,6 +2073,8 @@ async function triggerChatSync() {
 function markStoreFormDirty() {
   isStoreFormDirty = true;
   document.getElementById('storeUnsavedHint').style.display = 'inline';
+  renderAiConnectedStoreBanner('aiConnectedStoreBanner', latestBotConfig);
+  refreshAllStoreLivePreviews();
 }
 
 function populateStoreForm(cfg) {
@@ -1902,12 +2161,12 @@ function injectStoreToAiKnowledge() {
   }
 
   const blockLines = ['[PROFIL TOKO / USAHA]'];
-  if (st.store_name) blockLines.push(`- Nama Toko/Usaha: ${st.store_name}`);
-  if (st.store_address) blockLines.push(`- Alamat: ${st.store_address}`);
-  if (st.store_maps_url) blockLines.push(`- Google Maps: ${st.store_maps_url}`);
-  if (st.store_wa_number) blockLines.push(`- Nomor WhatsApp: ${st.store_wa_number}`);
-  if (st.store_website) blockLines.push(`- Website / Katalog: ${st.store_website}`);
-  if (st.store_admin_name) blockLines.push(`- Nama Admin: ${st.store_admin_name}`);
+  if (st.store_name) blockLines.push(`- Nama Toko/Usaha: {nama_toko}`);
+  if (st.store_address) blockLines.push(`- Alamat: {alamat_toko}`);
+  if (st.store_maps_url) blockLines.push(`- Google Maps: {maps_toko}`);
+  if (st.store_wa_number) blockLines.push(`- Nomor WhatsApp: {wa_toko}`);
+  if (st.store_website) blockLines.push(`- Website / Katalog: {web_toko}`);
+  if (st.store_admin_name) blockLines.push(`- Nama Admin: {nama_admin}`);
   const newBlock = blockLines.join('\n');
 
   const knowledgeEl = document.getElementById('aiBusinessKnowledgeInput');
@@ -1923,7 +2182,7 @@ function injectStoreToAiKnowledge() {
   markAiFormDirty();
   switchTab('tab-autoreply');
   knowledgeEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  alert('Data toko berhasil dimasukkan ke kolom Pengetahuan Bisnis AI. Klik "Simpan Pengaturan AI" untuk menerapkan.');
+  alert('Variabel Data Toko berhasil disisipkan ke kolom Pengetahuan Bisnis AI. Klik "Simpan Pengaturan AI" untuk menerapkan.');
 }
 
 async function saveStoreProfile() {
@@ -1945,9 +2204,15 @@ async function saveStoreProfile() {
       method: 'POST',
       body: JSON.stringify(payload)
     });
+    if (latestBotConfig) {
+      Object.assign(latestBotConfig, payload);
+      window.currentBotConfig = latestBotConfig;
+    }
     isStoreFormDirty = false;
     document.getElementById('storeUnsavedHint').style.display = 'none';
-    alert(`Data Toko / Usaha untuk akun ${ACTIVE_BOT_ID} berhasil disimpan!`);
+    renderAiConnectedStoreBanner('aiConnectedStoreBanner', latestBotConfig);
+    refreshAllStoreLivePreviews();
+    alert(`Data Toko / Usaha untuk akun ${ACTIVE_BOT_ID} berhasil disimpan dan otomatis terhubung ke Auto-Reply AI & Manual!`);
     pollState();
   } catch (err) {
     alert(`Gagal menyimpan data toko: ${err.message}`);
@@ -2106,7 +2371,6 @@ function parseImportJsonPreview() {
 
   try {
     const parsed = JSON.parse(raw);
-    // Dukung format bundle penuh maupun array aturan langsung
     const normalizedBundle = Array.isArray(parsed)
       ? { rules: parsed }
       : (parsed && typeof parsed === 'object' ? parsed : null);
@@ -2178,7 +2442,6 @@ async function executeImportRules() {
   statusEl.style.display = 'block';
 
   try {
-    // 1. Terapkan konfigurasi AI & Luar Jam Kerja jika dicentang
     const configPatch = { bot_id: ACTIVE_BOT_ID };
     let hasConfigChange = false;
 
@@ -2187,8 +2450,12 @@ async function executeImportRules() {
       if (ac.ai_enabled !== undefined) configPatch.ai_enabled = Boolean(ac.ai_enabled);
       if (ac.ai_mode) configPatch.ai_mode = ac.ai_mode;
       if (ac.ai_model) configPatch.ai_model = ac.ai_model;
-      if (ac.ai_system_prompt !== undefined) configPatch.ai_system_prompt = ac.ai_system_prompt;
-      if (ac.ai_business_knowledge !== undefined) configPatch.ai_business_knowledge = ac.ai_business_knowledge;
+      if (ac.ai_system_prompt !== undefined) {
+        configPatch.ai_system_prompt = autoConvertStoreTextToVars(ac.ai_system_prompt, latestBotConfig);
+      }
+      if (ac.ai_business_knowledge !== undefined) {
+        configPatch.ai_business_knowledge = autoConvertStoreTextToVars(ac.ai_business_knowledge, latestBotConfig);
+      }
       if (ac.admin_mode_assist !== undefined) configPatch.admin_mode_assist = Boolean(ac.admin_mode_assist);
       hasConfigChange = true;
     }
@@ -2199,7 +2466,9 @@ async function executeImportRules() {
       if (oh.off_hours_end) configPatch.off_hours_end = oh.off_hours_end;
       if (oh.off_hours_cooldown_min !== undefined) configPatch.off_hours_cooldown_min = Number(oh.off_hours_cooldown_min);
       if (oh.off_hours_days !== undefined) configPatch.off_hours_days = oh.off_hours_days;
-      if (oh.off_hours_reply !== undefined) configPatch.off_hours_reply = oh.off_hours_reply;
+      if (oh.off_hours_reply !== undefined) {
+        configPatch.off_hours_reply = autoConvertStoreTextToVars(oh.off_hours_reply, latestBotConfig);
+      }
       hasConfigChange = true;
     }
 
@@ -2219,7 +2488,6 @@ async function executeImportRules() {
       }
     }
 
-    // 2. Jika mode Replace, hapus aturan lama terlebih dahulu
     if (mergeMode === 'replace' && incomingRules.length > 0 && currentRules.length > 0) {
       for (let i = 0; i < currentRules.length; i++) {
         statusEl.textContent = `Menghapus aturan lama (${i + 1}/${currentRules.length})...`;
@@ -2227,7 +2495,6 @@ async function executeImportRules() {
       }
     }
 
-    // 3. Tambahkan aturan baru dari file JSON
     const existingSignatures = new Set(
       mergeMode === 'replace'
         ? []
@@ -2241,7 +2508,10 @@ async function executeImportRules() {
       const r = incomingRules[i];
       if (!r || !String(r.reply || '').trim()) continue;
 
-      const sig = `${r.is_default ? '1' : '0'}|${String(r.exact_keywords || '').trim().toLowerCase()}|${String(r.contains_keywords || '').trim().toLowerCase()}|${String(r.reply || '').trim()}`;
+      const convertedReply = autoConvertStoreTextToVars(String(r.reply || '').trim(), latestBotConfig);
+      const convertedFollowup = autoConvertStoreTextToVars(String(r.followup_reply || '').trim(), latestBotConfig);
+
+      const sig = `${r.is_default ? '1' : '0'}|${String(r.exact_keywords || '').trim().toLowerCase()}|${String(r.contains_keywords || '').trim().toLowerCase()}|${convertedReply}`;
       if (existingSignatures.has(sig)) {
         skippedDupCount++;
         continue;
@@ -2256,10 +2526,10 @@ async function executeImportRules() {
           exact_keywords: String(r.exact_keywords || '').trim(),
           contains_keywords: String(r.contains_keywords || '').trim(),
           pause_bot: Boolean(r.pause_bot),
-          reply: String(r.reply || '').trim(),
+          reply: convertedReply,
           expects_followup: Boolean(r.expects_followup),
           followup_keywords: String(r.followup_keywords || '').trim(),
-          followup_reply: String(r.followup_reply || '').trim(),
+          followup_reply: convertedFollowup,
           followup_pause_bot: r.followup_pause_bot !== false
         })
       });
@@ -2606,13 +2876,10 @@ async function loadContacts(force = false) {
 }
 
 function insertBroadcastSample() {
-  const st = getActiveStoreValues();
-  const storeNamePart = st.store_name ? '*{nama_toko}*' : '*Muflih Print Makassar*';
-  const webPart = st.store_website ? '{web_toko}' : 'https://muflihprint.vercel.app';
   document.getElementById('bcMessageInput').value =
     `{Halo|Hai|Assalamualaikum} Kak *{nama}* 👋, {salam}!\n\n` +
-    `{Kabar gembira|Info spesial} dari ${storeNamePart} — pemesanan cetak undangan, stiker, & dokumen PDF bisa dilakukan secara online (COD) di:\n` +
-    `👉 ${webPart}\n\n` +
+    `{Kabar gembira|Info spesial} dari *{nama_toko}* — pemesanan cetak undangan, stiker, & dokumen PDF bisa dilakukan secara online (COD) di:\n` +
+    `👉 {web_toko}\n\n` +
     `{Silakan balas pesan ini jika ingin tanya-tanya dulu ya, Kak!|Langsung hubungi kami kapan saja jika butuh bantuan cetak ya, Kak!} 😊`;
   previewBroadcastSample();
 }
@@ -2631,7 +2898,8 @@ document.getElementById('btnStartBroadcast').addEventListener('click', async () 
   await loadContacts(true);
   const title = document.getElementById('bcTitleInput').value.trim() || 'Broadcast Promo';
   const targetMode = document.getElementById('bcTargetSelect').value;
-  const message_template = document.getElementById('bcMessageInput').value.trim();
+  const rawTemplate = document.getElementById('bcMessageInput').value.trim();
+  const message_template = autoConvertStoreTextToVars(rawTemplate, latestBotConfig);
   const extraRaw = document.getElementById('bcExtraNumbersInput').value;
 
   if (!message_template) return alert('Isi pesan broadcast terlebih dahulu.');
@@ -2819,7 +3087,7 @@ function updateAiLiveBadge() {
     pill.classList.add('ai');
     pill.textContent = '🧠 AI Aktif';
     desc.classList.remove('off');
-    desc.innerHTML = '<strong>Mode AI Aktif:</strong> Semua balasan dijawab otomatis oleh AI menggunakan API Key &amp; pengetahuan khusus nomor WA ini.';
+    desc.innerHTML = '<strong>Mode AI Aktif:</strong> Semua balasan dijawab otomatis oleh AI menggunakan API Key &amp; profil Tab Data Toko nomor WA ini.';
   } else {
     pill.classList.remove('ai');
     pill.textContent = '⚪ AI Nonaktif';
@@ -2856,6 +3124,18 @@ function populateAiForm(cfg) {
 
 document.getElementById('btnSaveAiConfig').addEventListener('click', async () => {
   const ai_enabled = document.getElementById('aiEnabledCheck').checked;
+  const cleanSystemPrompt = autoConvertStoreTextToVars(
+    document.getElementById('aiSystemPromptInput').value.trim(),
+    latestBotConfig
+  );
+  const cleanKnowledge = autoConvertStoreTextToVars(
+    document.getElementById('aiBusinessKnowledgeInput').value.trim(),
+    latestBotConfig
+  );
+
+  document.getElementById('aiSystemPromptInput').value = cleanSystemPrompt;
+  document.getElementById('aiBusinessKnowledgeInput').value = cleanKnowledge;
+
   await apiFetch('/api/config', {
     method: 'POST',
     body: JSON.stringify({
@@ -2866,8 +3146,8 @@ document.getElementById('btnSaveAiConfig').addEventListener('click', async () =>
       groq_api_key: document.getElementById('aiGroqKeyInput').value.trim(),
       gemini_api_key: document.getElementById('aiGeminiKeyInput').value.trim(),
       openrouter_api_key: document.getElementById('aiOpenRouterKeyInput').value.trim(),
-      ai_system_prompt: document.getElementById('aiSystemPromptInput').value.trim(),
-      ai_business_knowledge: document.getElementById('aiBusinessKnowledgeInput').value.trim()
+      ai_system_prompt: cleanSystemPrompt,
+      ai_business_knowledge: cleanKnowledge
     })
   });
   isAiFormDirty = false;
@@ -2884,7 +3164,7 @@ async function testCurrentAccountAi() {
   btn.disabled = true;
   btn.textContent = '⏳ Menguji AI...';
   try {
-    const res = await apiFetch('/api/test-ai?q=' + encodeURIComponent('Halo kak, info harga cetak atau produk?'));
+    const res = await apiFetch('/api/test-ai?q=' + encodeURIComponent('Halo kak, info alamat toko dan harga cetak?'));
     alert(
       `✅ Tes AI Berhasil (${ACTIVE_BOT_ID})\n` +
       `Provider: ${res.provider_used || '-'}\n` +
@@ -2919,11 +3199,11 @@ function populateOffHoursForm(cfg) {
 }
 
 function insertOffHoursSample() {
-  const st = getActiveStoreValues();
-  const storeLabel = st.store_name || 'Muflih Print';
-  document.getElementById('offHoursReplyInput').value =
-    `──────────────\n🌙 *Info Jam Tutup:*\nSaat ini *${storeLabel}* sedang tutup (Senin – Sabtu, 08.00 – 18.00 WITA, Ahad Libur). Pesan tetap kami terima dan akan dibalas saat jam buka. 🙏`;
+  const el = document.getElementById('offHoursReplyInput');
+  el.value =
+    `──────────────\n🌙 *Info Jam Tutup:*\nSaat ini *{nama_toko}* sedang tutup (Senin – Sabtu, 08.00 – 18.00 WITA, Ahad Libur). Pesan tetap kami terima dan akan dibalas saat jam buka. 🙏`;
   markOffHoursDirty();
+  el.dispatchEvent(new Event('input', { bubbles: true }));
 }
 
 // --- DAFTAR KONTAK PENGECUALIAN (READ-ONLY DENGAN NAMA + HAPUS PER ITEM) ---
@@ -3218,6 +3498,12 @@ document.addEventListener('keydown', (e) => {
 
 document.getElementById('btnSaveOffHours').addEventListener('click', async () => {
   const selectedDays = Array.from(document.querySelectorAll('#offHoursDaysGroup input:checked')).map(cb => cb.value).join(',');
+  const cleanOffHoursReply = autoConvertStoreTextToVars(
+    document.getElementById('offHoursReplyInput').value.trim(),
+    latestBotConfig
+  );
+  document.getElementById('offHoursReplyInput').value = cleanOffHoursReply;
+
   await apiFetch('/api/config', {
     method: 'POST',
     body: JSON.stringify({
@@ -3226,11 +3512,12 @@ document.getElementById('btnSaveOffHours').addEventListener('click', async () =>
       off_hours_end: document.getElementById('offHoursEndInput').value,
       off_hours_cooldown_min: Number(document.getElementById('offHoursCooldownInput').value || 60),
       off_hours_days: selectedDays,
-      off_hours_reply: document.getElementById('offHoursReplyInput').value.trim()
+      off_hours_reply: cleanOffHoursReply
     })
   });
   isOffHoursDirty = false;
   document.getElementById('offHoursUnsavedHint').style.display = 'none';
+  refreshAllStoreLivePreviews();
   alert('Pengaturan luar jam kerja tersimpan!');
 });
 
@@ -3259,6 +3546,7 @@ function resetRuleForm() {
   document.getElementById('followupReplyInput').value = '';
   document.getElementById('followupPauseCheck').checked = true;
   toggleRuleFormVisibility();
+  refreshAllStoreLivePreviews();
 }
 
 function startEditRule(id) {
@@ -3280,20 +3568,30 @@ function startEditRule(id) {
   document.getElementById('followupReplyInput').value = r.followup_reply || '';
   document.getElementById('followupPauseCheck').checked = r.followup_pause_bot !== false;
   toggleRuleFormVisibility();
+  refreshAllStoreLivePreviews();
   document.getElementById('ruleFormCard').scrollIntoView({ behavior: 'smooth' });
 }
 
 document.getElementById('btnAddRule').addEventListener('click', async () => {
+  const cleanReply = autoConvertStoreTextToVars(
+    document.getElementById('replyInput').value.trim(),
+    latestBotConfig
+  );
+  const cleanFollowup = autoConvertStoreTextToVars(
+    document.getElementById('followupReplyInput').value.trim(),
+    latestBotConfig
+  );
+
   const payload = {
     bot_id: ACTIVE_BOT_ID,
     is_default: document.getElementById('isDefaultCheck').checked,
     exact_keywords: document.getElementById('exactKeywordInput').value.trim(),
     contains_keywords: document.getElementById('containsKeywordInput').value.trim(),
     pause_bot: document.getElementById('pauseBotCheck').checked,
-    reply: document.getElementById('replyInput').value.trim(),
+    reply: cleanReply,
     expects_followup: document.getElementById('expectsFollowupCheck').checked,
     followup_keywords: document.getElementById('followupKeywordsInput').value.trim(),
-    followup_reply: document.getElementById('followupReplyInput').value.trim(),
+    followup_reply: cleanFollowup,
     followup_pause_bot: document.getElementById('followupPauseCheck').checked
   };
 
@@ -3323,23 +3621,29 @@ function renderRulesList() {
     return;
   }
 
-  listEl.innerHTML = currentRules.map(r => `
-    <div class="rule-item">
-      <div style="flex:1;">
-        <div class="kw-row">
-          ${r.is_default ? '<span class="badge-default">Default / Info Umum</span>' : ''}
-          ${r.exact_keywords ? `<span class="badge-exact">Persis:</span> <span class="kw-chip">${escapeHtml(r.exact_keywords)}</span>` : ''}
-          ${r.contains_keywords ? `<span class="badge-contains">Mengandung:</span> <span class="kw-chip">${escapeHtml(r.contains_keywords)}</span>` : ''}
-          ${r.pause_bot ? '<span class="badge-admin">Alihkan Admin</span>' : ''}
+  const storeVarPattern = /\{(nama_toko|nama_admin|wa_toko|web_toko|alamat_toko|maps_toko)\}/i;
+
+  listEl.innerHTML = currentRules.map(r => {
+    const usesStoreVar = storeVarPattern.test(`${r.reply || ''} ${r.followup_reply || ''}`);
+    return `
+      <div class="rule-item">
+        <div style="flex:1;">
+          <div class="kw-row">
+            ${r.is_default ? '<span class="badge-default">Default / Info Umum</span>' : ''}
+            ${r.exact_keywords ? `<span class="badge-exact">Persis:</span> <span class="kw-chip">${escapeHtml(r.exact_keywords)}</span>` : ''}
+            ${r.contains_keywords ? `<span class="badge-contains">Mengandung:</span> <span class="kw-chip">${escapeHtml(r.contains_keywords)}</span>` : ''}
+            ${r.pause_bot ? '<span class="badge-admin">Alihkan Admin</span>' : ''}
+            ${usesStoreVar ? '<span class="badge-store-linked">🏪 Terhubung Data Toko</span>' : ''}
+          </div>
+          <div style="white-space:pre-wrap; font-size:0.86rem; color:#1e293b; margin-top:6px;">${escapeHtml(r.reply)}</div>
         </div>
-        <div style="white-space:pre-wrap; font-size:0.86rem; color:#1e293b; margin-top:6px;">${escapeHtml(r.reply)}</div>
+        <div style="display:flex; gap:6px;">
+          <button class="edit sm" onclick="startEditRule('${r.id}')">Edit</button>
+          <button class="danger sm" onclick="deleteRule('${r.id}')">Hapus</button>
+        </div>
       </div>
-      <div style="display:flex; gap:6px;">
-        <button class="edit sm" onclick="startEditRule('${r.id}')">Edit</button>
-        <button class="danger sm" onclick="deleteRule('${r.id}')">Hapus</button>
-      </div>
-    </div>
-  `).join('');
+    `;
+  }).join('');
 }
 
 // ============================================================================
