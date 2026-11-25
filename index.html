@@ -1,0 +1,2711 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WhatsApp Auto-Reply & Broadcast Dashboard (Multi-Akun) — Muflih Print</title>
+<style>
+ body { font-family: system-ui, -apple-system, sans-serif; max-width: 1080px; margin: 1.25rem auto; padding: 0 1rem; background: #f8fafc; color: #0f172a; }
+ .card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.25rem; margin-bottom: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.04); transition: border-color 0.25s ease, box-shadow 0.25s ease; }
+ .card.editing-highlight { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.16); }
+ .hidden { display: none !important; }
+ #qrImage { width: 230px; height: 230px; border: 1px solid #cbd5e1; padding: 8px; border-radius: 10px; }
+ .header-bar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; border-bottom: 1px solid #e2e8f0; padding-bottom: 1rem; margin-bottom: 1rem; }
+ label { display: block; font-size: 0.85rem; font-weight: 600; margin-top: 0.75rem; color: #334155; }
+ input[type="text"], input[type="password"], input[type="number"], input[type="time"], textarea, select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; margin-top: 4px; font-family: inherit; font-size: 0.92rem; background: #fff; }
+ .day-chip-group { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+ .day-chip { display: inline-flex; align-items: center; gap: 5px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 6px 10px; font-size: 0.82rem; font-weight: 600; color: #334155; cursor: pointer; margin-top: 0; }
+ .day-chip:has(input:checked) { background: #eef2ff; border-color: #6366f1; color: #3730a3; }
+ select.compact-select { width: auto; margin-top: 0; padding: 7px 12px; font-size: 0.85rem; font-weight: 600; color: #1e293b; }
+ .kw-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+ .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+ @media (max-width: 640px) { .kw-grid, .grid-3 { grid-template-columns: 1fr; } }
+ button, .btn-link { background: #16a34a; color: white; border: none; padding: 10px 16px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.9rem; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+ button:hover, .btn-link:hover { background: #15803d; }
+ button:disabled { opacity: 0.6; cursor: not-allowed; }
+ button.secondary { background: #475569; }
+ button.secondary:hover { background: #334155; }
+ button.edit { background: #2563eb; }
+ button.edit:hover { background: #1d4ed8; }
+ button.warn { background: #d97706; }
+ button.warn:hover { background: #b45309; }
+ button.danger { background: #dc2626; }
+ button.danger:hover { background: #b91c1c; }
+ button.ai-btn { background: #7c3aed; }
+ button.ai-btn:hover { background: #6d28d9; }
+ button.sm, .btn-link.sm { padding: 7px 11px; font-size: 0.8rem; }
+
+ .wa-media-wrap { margin-bottom: 6px; }
+ .wa-media-img {
+   max-width: 230px;
+   max-height: 230px;
+   border-radius: 7px;
+   display: block;
+   cursor: pointer;
+   object-fit: cover;
+   border: 1px solid rgba(15, 23, 42, 0.12);
+   background: #f8fafc;
+ }
+ .wa-media-bar {
+   display: flex;
+   gap: 6px;
+   flex-wrap: wrap;
+   margin-top: 5px;
+ }
+ .wa-doc-card {
+   background: rgba(15, 23, 42, 0.05);
+   border: 1px solid rgba(15, 23, 42, 0.14);
+   border-radius: 8px;
+   padding: 8px 10px;
+   margin-bottom: 6px;
+   min-width: 210px;
+ }
+ .wa-doc-title {
+   font-weight: 700;
+   font-size: 0.82rem;
+   color: #0f172a;
+   word-break: break-word;
+   display: flex;
+   align-items: center;
+   gap: 6px;
+ }
+ .wa-media-btn {
+   background: #ffffff;
+   color: #0f172a;
+   border: 1px solid #cbd5e1;
+   border-radius: 6px;
+   padding: 4px 9px;
+   font-size: 0.74rem;
+   font-weight: 700;
+   cursor: pointer;
+   text-decoration: none;
+   display: inline-flex;
+   align-items: center;
+   gap: 4px;
+ }
+ .wa-media-btn:hover { background: #f1f5f9; }
+ .wa-media-btn.primary { background: #16a34a; color: #ffffff; border-color: #16a34a; }
+ .wa-media-btn.primary:hover { background: #15803d; }
+
+ .server-bar {
+   background: #0f172a;
+   color: #f8fafc;
+   border-radius: 12px;
+   padding: 0.85rem 1.1rem;
+   margin-bottom: 0.85rem;
+   display: flex;
+   justify-content: space-between;
+   align-items: center;
+   flex-wrap: wrap;
+   gap: 10px;
+ }
+
+ /* ACCOUNT SWITCHER BAR (MULTI-WA) */
+ .account-switcher-bar {
+   background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%);
+   border: 1px solid #86efac;
+   border-radius: 12px;
+   padding: 0.85rem 1.1rem;
+   margin-bottom: 0.85rem;
+   display: flex;
+   justify-content: space-between;
+   align-items: center;
+   flex-wrap: wrap;
+   gap: 10px;
+   box-shadow: 0 1px 3px rgba(22, 163, 74, 0.08);
+ }
+ .account-select-wrap {
+   display: flex;
+   align-items: center;
+   gap: 8px;
+   flex-wrap: wrap;
+   flex: 1;
+   min-width: 240px;
+ }
+ .account-select-wrap select {
+   margin-top: 0;
+   width: auto;
+   min-width: 230px;
+   max-width: 100%;
+   font-weight: 700;
+   border-color: #16a34a;
+   color: #0f172a;
+   padding: 8px 12px;
+ }
+ .account-actions-wrap {
+   display: flex;
+   align-items: center;
+   gap: 6px;
+   flex-wrap: wrap;
+ }
+
+ /* AI KEY INPUT GROUP */
+ .ai-keys-box {
+   background: #faf5ff;
+   border: 1px solid #d8b4fe;
+   border-radius: 10px;
+   padding: 12px;
+   margin-top: 10px;
+ }
+ .key-input-row {
+   display: flex;
+   gap: 6px;
+   align-items: center;
+   margin-top: 4px;
+ }
+ .key-input-row input {
+   margin-top: 0;
+   font-family: monospace;
+   font-size: 0.84rem;
+ }
+ .key-toggle-btn {
+   background: #ffffff;
+   color: #334155;
+   border: 1px solid #cbd5e1;
+   padding: 9px 11px;
+   border-radius: 8px;
+   font-size: 0.8rem;
+   flex-shrink: 0;
+ }
+ .key-toggle-btn:hover {
+   background: #f1f5f9;
+ }
+
+ .top-app-bar {
+   background: #fff;
+   border: 1px solid #e2e8f0;
+   border-radius: 12px;
+   padding: 0.9rem 1.15rem;
+   margin-bottom: 0.85rem;
+   display: flex;
+   justify-content: space-between;
+   align-items: center;
+   flex-wrap: wrap;
+   gap: 10px;
+   box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+ }
+ .tab-nav {
+   position: sticky;
+   top: 10px;
+   z-index: 50;
+   display: grid;
+   grid-template-columns: repeat(4, 1fr);
+   gap: 8px;
+   background: rgba(226, 232, 240, 0.94);
+   backdrop-filter: blur(8px);
+   padding: 6px;
+   border-radius: 12px;
+   border: 1px solid #cbd5e1;
+   margin-bottom: 1.25rem;
+   box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+ }
+ .tab-btn {
+   background: transparent;
+   color: #475569;
+   border: none;
+   padding: 10px;
+   border-radius: 8px;
+   font-size: 0.88rem;
+   font-weight: 700;
+   cursor: pointer;
+   display: inline-flex;
+   align-items: center;
+   justify-content: center;
+   gap: 6px;
+ }
+ .tab-btn:hover { background: rgba(255, 255, 255, 0.65); color: #0f172a; }
+ .tab-btn.active { background: #ffffff; color: #15803d; box-shadow: 0 2px 6px rgba(15, 23, 42, 0.1); }
+ .tab-badge { background: #dc2626; color: #fff; font-size: 0.7rem; font-weight: 800; padding: 1px 6px; border-radius: 999px; }
+ .tab-badge.green { background: #16a34a; }
+ @media (max-width: 620px) { .tab-nav { grid-template-columns: repeat(2, 1fr); top: 6px; } }
+
+ .ai-mode-info { margin-top: 10px; padding: 10px 12px; border-radius: 8px; font-size: 0.84rem; line-height: 1.45; border: 1px solid #ddd6fe; background: #faf5ff; color: #4c1d95; }
+ .ai-mode-info.off { border-color: #e2e8f0; background: #f8fafc; color: #334155; }
+
+ .bc-safety-box { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 12px; margin-top: 10px; }
+ .bc-preview-box { background: #fefce8; border: 1px dashed #eab308; border-radius: 8px; padding: 10px 12px; margin-top: 8px; font-size: 0.84rem; color: #1e293b; white-space: pre-wrap; }
+ .bc-split-shell { display: grid; grid-template-columns: 320px 1fr; gap: 14px; align-items: start; }
+ .bc-sidebar { border: 1px solid #e2e8f0; border-radius: 10px; background: #f8fafc; padding: 10px; max-height: 560px; overflow-y: auto; }
+ .bc-detail-panel { border: 1px solid #e2e8f0; border-radius: 10px; background: #ffffff; padding: 12px; min-width: 0; }
+ .bc-campaign-item { border: 1px solid #e2e8f0; background: #ffffff; border-radius: 9px; padding: 10px 11px; margin-bottom: 8px; cursor: pointer; }
+ .bc-campaign-item.active { background: #f0fdf4; border-color: #16a34a; border-left: 4px solid #16a34a; }
+ .bc-progress-track { width: 100%; height: 8px; background: #e2e8f0; border-radius: 999px; overflow: hidden; margin: 7px 0; }
+ .bc-progress-fill { height: 100%; background: #16a34a; transition: width 0.3s ease; }
+ .bc-status-pill { display: inline-block; font-size: 0.68rem; font-weight: 700; padding: 2px 7px; border-radius: 999px; text-transform: uppercase; }
+ .bc-status-pill.running { background: #dcfce7; color: #15803d; }
+ .bc-status-pill.paused { background: #fef3c7; color: #b45309; }
+ .bc-status-pill.completed { background: #dbeafe; color: #1d4ed8; }
+ .bc-status-pill.cancelled { background: #fee2e2; color: #b91c1c; }
+ @media (max-width: 760px) { .bc-split-shell { grid-template-columns: 1fr; } .bc-sidebar { max-height: 300px; } }
+
+ .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 1.25rem; }
+ @media (max-width: 680px) { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
+ .kpi-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px; }
+ .kpi-label { font-size: 0.76rem; color: #64748b; font-weight: 600; }
+ .kpi-value { font-size: 1.35rem; font-weight: 800; color: #0f172a; margin-top: 4px; }
+ .kpi-sub { font-size: 0.72rem; color: #16a34a; margin-top: 2px; font-weight: 600; }
+
+ .report-split { display: grid; grid-template-columns: 1fr 1.25fr; gap: 16px; align-items: start; }
+ @media (max-width: 720px) { .report-split { grid-template-columns: 1fr; } }
+ .sub-panel { border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px; background: #fcfcfd; }
+ .sub-panel h4 { margin: 0 0 10px 0; font-size: 0.9rem; color: #1e293b; display: flex; justify-content: space-between; align-items: center; }
+
+ .duration-row { margin-bottom: 10px; }
+ .duration-meta { display: flex; justify-content: space-between; font-size: 0.82rem; font-weight: 600; margin-bottom: 4px; color: #334155; }
+ .bar-track { width: 100%; height: 9px; background: #e2e8f0; border-radius: 999px; overflow: hidden; }
+ .bar-fill { height: 100%; border-radius: 999px; }
+
+ .table-wrap { overflow-x: auto; max-height: 280px; }
+ table.report-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+ table.report-table th { background: #f1f5f9; color: #334155; font-weight: 700; text-align: left; padding: 8px 10px; border-bottom: 1px solid #cbd5e1; position: sticky; top: 0; }
+ table.report-table td { padding: 8px 10px; border-bottom: 1px solid #e2e8f0; color: #1e293b; }
+ .num-col { text-align: right !important; font-variant-numeric: tabular-nums; }
+
+ .rule-item { border: 1px solid #e2e8f0; background: #f8fafc; border-radius: 8px; padding: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+ .paused-item { border: 1px solid #fed7aa; background: #fff7ed; border-radius: 10px; padding: 12px 14px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+ .paused-item.replied { border-color: #cbd5e1; background: #f8fafc; }
+ .wa-phone-link { color: #15803d; font-weight: 700; text-decoration: none; border-bottom: 1px dashed #16a34a; }
+ .msg-preview { background: #fff; border: 1px solid #fed7aa; border-radius: 6px; padding: 6px 10px; margin-top: 6px; font-size: 0.85rem; color: #1e293b; }
+ .badge-wait { display: inline-block; font-size: 0.7rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: #dc2626; color: #fff; text-transform: uppercase; }
+ .badge-done { display: inline-block; font-size: 0.7rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: #dcfce7; color: #15803d; text-transform: uppercase; }
+ .badge-exact { display: inline-block; font-size: 0.7rem; font-weight: 700; padding: 2px 7px; border-radius: 999px; background: #dbeafe; color: #1d4ed8; text-transform: uppercase; }
+ .badge-contains { display: inline-block; font-size: 0.7rem; font-weight: 700; padding: 2px 7px; border-radius: 999px; background: #dcfce7; color: #15803d; text-transform: uppercase; }
+ .badge-default { display: inline-block; font-size: 0.7rem; font-weight: 700; padding: 2px 7px; border-radius: 999px; background: #fef3c7; color: #b45309; text-transform: uppercase; }
+ .badge-admin { display: inline-block; font-size: 0.7rem; font-weight: 700; padding: 2px 7px; border-radius: 999px; background: #ffedd5; color: #c2410c; text-transform: uppercase; }
+ .kw-chip { display: inline-block; font-size: 0.78rem; font-weight: 600; padding: 2px 8px; border-radius: 6px; background: #e2e8f0; color: #1e293b; margin: 2px 4px 2px 0; }
+ .kw-row { margin-bottom: 5px; display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+
+ .sync-pill { font-size: 0.75rem; font-weight: 600; padding: 3px 10px; border-radius: 999px; background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
+ .sync-pill.ok { background: #dcfce7; color: #15803d; border-color: #86efac; }
+ .sync-pill.ai { background: #f3e8ff; color: #6b21a8; border-color: #d8b4fe; }
+ .sync-pill.danger { background: #fee2e2; color: #b91c1c; border-color: #fca5a5; }
+ .var-hint { font-size: 0.8rem; color: #64748b; margin-top: 4px; }
+ code { background: #f1f5f9; padding: 2px 5px; border-radius: 4px; }
+
+ /* DAFTAR KONTAK PENGECUALIAN (READ-ONLY) */
+ .excluded-list-box {
+   border: 1px solid #e2e8f0;
+   background: #f8fafc;
+   border-radius: 10px;
+   padding: 10px;
+   max-height: 310px;
+   overflow-y: auto;
+   margin-top: 8px;
+ }
+ .excluded-item-row {
+   display: flex;
+   align-items: center;
+   justify-content: space-between;
+   gap: 10px;
+   background: #ffffff;
+   border: 1px solid #e2e8f0;
+   border-radius: 8px;
+   padding: 8px 12px;
+   margin-bottom: 7px;
+ }
+ .excluded-item-row:last-child {
+   margin-bottom: 0;
+ }
+ .excluded-manual-bar {
+   display: flex;
+   gap: 8px;
+   align-items: center;
+   margin-top: 10px;
+ }
+ .excluded-manual-bar input {
+   margin-top: 0;
+   flex: 1;
+ }
+
+ .wa-shell { display: grid; grid-template-columns: 300px 1fr; height: 540px; border: 1px solid #cbd5e1; border-radius: 12px; overflow: hidden; background: #fff; }
+ .wa-sidebar { display: flex; flex-direction: column; border-right: 1px solid #e2e8f0; background: #ffffff; min-height: 0; }
+ .wa-search-bar { padding: 8px 10px; background: #f0f2f5; border-bottom: 1px solid #e2e8f0; }
+ .wa-search-bar input { margin-top: 0; padding: 7px 12px; border-radius: 999px; font-size: 0.84rem; border: 1px solid #cbd5e1; background: #fff; }
+ .wa-contact-list { flex: 1; overflow-y: auto; }
+ .wa-contact-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-bottom: 1px solid #f1f5f9; cursor: pointer; }
+ .wa-contact-item:hover { background: #f8fafc; }
+ .wa-contact-item.active { background: #f0fdf4; border-left: 3px solid #16a34a; }
+ .wa-avatar { width: 40px; height: 40px; border-radius: 50%; color: #fff; font-weight: 700; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+ .wa-contact-meta { flex: 1; min-width: 0; }
+ .wa-contact-top { display: flex; justify-content: space-between; align-items: baseline; gap: 6px; }
+ .wa-contact-name { font-weight: 700; font-size: 0.88rem; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+ .wa-contact-time { font-size: 0.7rem; color: #64748b; flex-shrink: 0; }
+ .wa-contact-bottom { display: flex; justify-content: space-between; align-items: center; gap: 6px; margin-top: 3px; }
+ .wa-contact-preview { font-size: 0.78rem; color: #475569; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+ .wa-count-pill { background: #16a34a; color: #fff; font-size: 0.68rem; font-weight: 700; padding: 1px 6px; border-radius: 999px; }
+
+ .wa-chat-panel { position: relative; display: flex; flex-direction: column; background-color: #efeae2; background-image: radial-gradient(#d6cfc2 0.75px, transparent 0.75px); background-size: 16px 16px; min-height: 0; }
+ .wa-chat-header { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 14px; background: #f0f2f5; border-bottom: 1px solid #d1d7db; }
+ .wa-back-btn { display: none; background: #e2e8f0; color: #0f172a; padding: 6px 10px; font-size: 0.8rem; }
+ .wa-messages-scroll { flex: 1; overflow-y: auto; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; }
+ .wa-scroll-bottom-btn { position: absolute; right: 16px; bottom: 16px; background: #16a34a; color: #fff; border: none; border-radius: 999px; padding: 7px 14px; font-size: 0.78rem; font-weight: 700; box-shadow: 0 3px 10px rgba(0, 0, 0, 0.22); cursor: pointer; z-index: 10; }
+ .wa-date-divider { align-self: center; background: rgba(255, 255, 255, 0.92); color: #54656f; font-size: 0.72rem; font-weight: 600; padding: 4px 12px; border-radius: 8px; margin: 8px 0; }
+ .wa-bubble { max-width: 78%; padding: 7px 10px 6px 10px; border-radius: 8px; font-size: 0.86rem; line-height: 1.42; box-shadow: 0 1px 1px rgba(11, 20, 26, 0.12); word-wrap: break-word; white-space: pre-wrap; }
+ .wa-bubble.in { align-self: flex-start; background: #ffffff; color: #111b21; }
+ .wa-bubble.out-bot { align-self: flex-end; background: #d9fdd3; color: #111b21; }
+ .wa-bubble.out-admin { align-self: flex-end; background: #e7f8ff; color: #111b21; border: 1px solid #bae6fd; }
+ .wa-role-tag { display: block; font-size: 0.68rem; font-weight: 700; margin-bottom: 3px; }
+ .wa-role-tag.bot { color: #15803d; }
+ .wa-role-tag.admin { color: #0369a1; }
+ .wa-role-tag.handover { color: #c2410c; }
+ .wa-bubble-foot { display: flex; justify-content: flex-end; align-items: center; gap: 4px; font-size: 0.67rem; color: #667781; margin-top: 3px; }
+ .wa-empty-state { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: #54656f; padding: 20px; font-size: 0.88rem; }
+
+ /* MODAL UMUM */
+ .modal-backdrop {
+   position: fixed;
+   inset: 0;
+   background: rgba(15, 23, 42, 0.58);
+   backdrop-filter: blur(2px);
+   z-index: 999;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   padding: 12px;
+ }
+ .modal-box {
+   background: #ffffff;
+   border: 1px solid #cbd5e1;
+   border-radius: 14px;
+   width: 100%;
+   max-width: 560px;
+   max-height: 86vh;
+   display: flex;
+   flex-direction: column;
+   box-shadow: 0 20px 38px rgba(15, 23, 42, 0.25);
+   overflow: hidden;
+ }
+ .modal-header {
+   padding: 14px 16px;
+   border-bottom: 1px solid #e2e8f0;
+   display: flex;
+   justify-content: space-between;
+   align-items: flex-start;
+   gap: 10px;
+   background: #f8fafc;
+ }
+ .modal-tools {
+   padding: 10px 16px;
+   border-bottom: 1px solid #e2e8f0;
+   background: #ffffff;
+ }
+ .modal-body {
+   flex: 1;
+   overflow-y: auto;
+   padding: 10px 16px;
+   background: #f8fafc;
+ }
+ .modal-footer {
+   padding: 12px 16px;
+   border-top: 1px solid #e2e8f0;
+   background: #ffffff;
+   display: flex;
+   justify-content: space-between;
+   align-items: center;
+   flex-wrap: wrap;
+   gap: 8px;
+ }
+ .contact-pick-item {
+   display: flex;
+   align-items: center;
+   gap: 10px;
+   background: #ffffff;
+   border: 1px solid #e2e8f0;
+   border-radius: 10px;
+   padding: 9px 12px;
+   margin-bottom: 7px;
+   cursor: pointer;
+   margin-top: 0;
+   transition: border-color 0.15s ease, background 0.15s ease;
+ }
+ .contact-pick-item:hover {
+   border-color: #94a3b8;
+   background: #f1f5f9;
+ }
+ .contact-pick-item.selected {
+   background: #fef2f2;
+   border-color: #fca5a5;
+ }
+ .contact-pick-item input[type="checkbox"] {
+   width: 17px;
+   height: 17px;
+   accent-color: #dc2626;
+   cursor: pointer;
+   flex-shrink: 0;
+ }
+ .contact-source-badge {
+   font-size: 0.68rem;
+   font-weight: 700;
+   padding: 2px 7px;
+   border-radius: 999px;
+   background: #f1f5f9;
+   color: #475569;
+   flex-shrink: 0;
+ }
+ .contact-source-badge.phonebook {
+   background: #dcfce7;
+   color: #15803d;
+ }
+
+ @media (max-width: 680px) {
+   .wa-shell { grid-template-columns: 1fr; height: 500px; }
+   .wa-shell:not(.mobile-thread-open) .wa-chat-panel { display: none; }
+   .wa-shell.mobile-thread-open .wa-sidebar { display: none; }
+   .wa-back-btn { display: inline-flex; }
+   .wa-bubble { max-width: 86%; }
+ }
+</style>
+</head>
+<body>
+
+<div class="server-bar">
+  <div style="font-size: 0.84rem;">
+    <strong>🖥️ Koneksi Server Laptop:</strong>
+    <span id="serverConnBadge" style="color: #fbbf24; margin-left: 6px;">Menghubungkan...</span>
+  </div>
+  <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+    <span id="multiAccountSummaryPill" class="sync-pill ok">1 Akun WA</span>
+    <button type="button" class="secondary sm" onclick="syncServerUrlFromSupabase().then(pollState)">🔄 Segarkan Koneksi</button>
+  </div>
+</div>
+
+<!-- BAR PEMILIH & PENGELOLA AKUN WA (MULTI-SESSION) -->
+<div class="account-switcher-bar">
+  <div class="account-select-wrap">
+    <span style="font-weight: 800; font-size: 0.88rem; color: #15803d;">📱 Akun WA Aktif:</span>
+    <select id="accountSelect" onchange="switchWhatsAppAccount(this.value)">
+      <option value="bot_utama">Muflih Print Utama (bot_utama)</option>
+    </select>
+    <span id="accountStatusPill" class="sync-pill">Memeriksa...</span>
+  </div>
+  <div class="account-actions-wrap">
+    <button type="button" class="sm" onclick="openAccountModal('create')">+ Tambah Akun WA</button>
+    <button type="button" class="edit sm" onclick="openAccountModal('rename')">✏️ Ubah Nama</button>
+    <button type="button" id="btnDeleteAccount" class="danger sm hidden" onclick="deleteCurrentAccount()">🗑️ Hapus Akun</button>
+  </div>
+</div>
+
+<div id="qrSection" class="card" style="text-align: center;">
+ <h2 id="qrAccountHeading">Hubungkan Nomor WhatsApp Bot</h2>
+ <p style="color: #475569;">Buka WhatsApp di HP &rarr; Perangkat Tertaut &rarr; Tautkan Perangkat</p>
+ <img id="qrImage" src="" alt="Menunggu QR Code dari Server Laptop..." />
+ <p id="statusText" style="font-weight: 600; color: #16a34a;">Memeriksa status koneksi ke Server Laptop...</p>
+</div>
+
+<div id="dashboardSection" class="hidden">
+
+ <div class="top-app-bar">
+   <div>
+     <div id="activeAccountHeaderTitle" style="font-weight: 800; font-size: 1.05rem; color: #0f172a;">WhatsApp Bot & Broadcast — Muflih Print Utama</div>
+     <div id="activeAccountHeaderSub" style="font-size: 0.78rem; color: #16a34a; font-weight: 600;">● Terhubung ke Server & Database SQLite Laptop</div>
+   </div>
+   <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+     <label style="margin: 0; display: flex; align-items: center; gap: 6px; background: #f1f5f9; padding: 7px 12px; border-radius: 8px; cursor: pointer; font-size: 0.84rem;">
+       <input type="checkbox" id="toggleActive" checked />
+       <span>Auto-Reply Aktif</span>
+     </label>
+     <button id="btnLogout" class="danger sm">Putuskan WA</button>
+   </div>
+ </div>
+
+ <nav class="tab-nav" id="mainTabNav" role="tablist">
+   <button type="button" class="tab-btn active" data-tab="tab-chat" onclick="switchTab('tab-chat')">
+     <span>💬 Chat & Antrean</span>
+     <span id="tabChatBadge" class="tab-badge hidden">0</span>
+   </button>
+   <button type="button" class="tab-btn" data-tab="tab-broadcast" onclick="switchTab('tab-broadcast')">
+     <span>📣 Broadcast</span>
+     <span id="tabBroadcastBadge" class="tab-badge green hidden">Aktif</span>
+   </button>
+   <button type="button" class="tab-btn" data-tab="tab-autoreply" onclick="switchTab('tab-autoreply')">
+     <span>🤖 Auto-Reply & AI</span>
+   </button>
+   <button type="button" class="tab-btn" data-tab="tab-reports" onclick="switchTab('tab-reports')">
+     <span>📊 Laporan</span>
+   </button>
+ </nav>
+
+ <!-- TAB 1: CHAT & ANTREAN ADMIN -->
+ <div id="tab-chat" class="tab-pane">
+   <div id="pausedCard" class="card hidden" style="border-color: #fb923c;">
+     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;">
+       <div>
+         <h3 style="margin: 0; color: #c2410c;">
+           📥 Antrean Chat Admin
+           <span id="waitingCountBadge" class="badge-wait" style="margin-left: 6px;">0 Menunggu</span>
+           <span id="adminAssistActiveBadge" class="sync-pill ok hidden" style="margin-left: 6px;">🤝 Asisten Auto-Reply Aktif</span>
+         </h3>
+         <small style="color: #64748b;">Klik nomor untuk membuka chat langsung di WhatsApp</small>
+       </div>
+       <button type="button" class="sm" onclick="resumeBotForAllUsers()">✅ Aktifkan Bot Lagi (Semua Nomor)</button>
+     </div>
+     <div id="pausedList"></div>
+   </div>
+
+   <div class="card">
+     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;">
+       <div>
+         <h2 style="margin: 0;">💬 Riwayat Chat WhatsApp (Per Nomor)</h2>
+         <span id="syncStatusPill" class="sync-pill" style="display: inline-block; margin-top: 4px;">Database Lokal Aktif</span>
+       </div>
+       <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+         <select id="logFilterSelect" class="compact-select" style="font-size: 0.8rem; padding: 6px 10px;" onchange="renderGroupedWhatsAppView()">
+           <option value="all" selected>Semua Kontak</option>
+           <option value="bot_reply">Dibalas Bot / AI</option>
+           <option value="admin_direct">Dibalas Admin</option>
+           <option value="incoming_only">Dialihkan / Masuk</option>
+         </select>
+         <button class="secondary sm" onclick="triggerChatSync()">🔄 Sinkronkan</button>
+       </div>
+     </div>
+
+     <div id="waShell" class="wa-shell">
+       <div class="wa-sidebar">
+         <div class="wa-search-bar">
+           <input type="text" id="chatSearchInput" placeholder="🔍 Cari nama, nomor, atau isi chat..." oninput="renderGroupedWhatsAppView()" />
+         </div>
+         <div id="waContactList" class="wa-contact-list">
+           <div style="padding: 16px; color: #64748b; font-size: 0.85rem;">Memuat daftar chat...</div>
+         </div>
+       </div>
+
+       <div class="wa-chat-panel">
+         <div id="waChatHeader" class="wa-chat-header hidden">
+           <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
+             <button type="button" class="wa-back-btn" onclick="closeMobileChat()">&larr; Kembali</button>
+             <div id="waHeaderAvatar" class="wa-avatar" style="width: 36px; height: 36px; font-size: 0.82rem;">WA</div>
+             <div style="min-width: 0;">
+               <div id="waHeaderName" style="font-weight: 700; font-size: 0.92rem; color: #111b21;">-</div>
+               <div id="waHeaderSub" style="font-size: 0.75rem; color: #54656f;">-</div>
+             </div>
+           </div>
+           <a id="waHeaderOpenLink" href="#" target="_blank" rel="noopener noreferrer" class="btn-link sm hidden">💬 Balas di WA</a>
+         </div>
+
+         <div id="waMessagesContainer" class="wa-messages-scroll">
+           <div class="wa-empty-state">
+             <div style="font-size: 2rem; margin-bottom: 8px;">💬</div>
+             <div>Pilih salah satu nomor di sebelah kiri untuk melihat riwayat percakapan.</div>
+           </div>
+         </div>
+         <button type="button" id="waScrollBottomBtn" class="wa-scroll-bottom-btn hidden" onclick="scrollChatToBottom()">⬇️ Pesan baru</button>
+       </div>
+     </div>
+   </div>
+ </div>
+
+ <!-- TAB 2: BROADCAST PESAN (ANTI-SPAM) -->
+ <div id="tab-broadcast" class="tab-pane hidden">
+   <div class="card" style="border-color: #86efac;">
+     <div class="header-bar" style="margin-bottom: 0.75rem;">
+       <div>
+         <h2 style="margin: 0;">📣 Broadcast Pesan (Anti-Spam)</h2>
+         <small style="color: #64748b;">Kirim info promo ke seluruh kontak akun WA aktif dengan jeda acak & variasi kalimat otomatis</small>
+       </div>
+       <div style="display: flex; gap: 8px; align-items: center;">
+         <span id="contactCountPill" class="sync-pill ok">0 Kontak</span>
+         <button type="button" class="secondary sm" onclick="loadContacts(true)">🔄 Muat Kontak</button>
+       </div>
+     </div>
+
+     <div class="kw-grid">
+       <div>
+         <label for="bcTitleInput">Nama / Judul Broadcast</label>
+         <input type="text" id="bcTitleInput" placeholder="Contoh: Promo Cetak Undangan & Stiker" />
+       </div>
+       <div>
+         <label for="bcTargetSelect">Target Penerima</label>
+         <select id="bcTargetSelect">
+           <option value="all_active" selected>Seluruh Kontak Tersimpan</option>
+           <option value="never_broadcasted">Kontak yang Belum Pernah Dikirimi Broadcast</option>
+           <option value="chat_only">Hanya Kontak dari Riwayat Chat</option>
+           <option value="manual_only">Hanya Nomor Tambahan di Bawah</option>
+         </select>
+       </div>
+     </div>
+
+     <label for="bcExtraNumbersInput">Tambah Nomor Ekstra / Manual (Opsional, pisahkan koma atau baris baru)</label>
+     <textarea id="bcExtraNumbersInput" rows="2" placeholder="Contoh: 081234567890, 085299887766"></textarea>
+
+     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; margin-top: 0.75rem;">
+       <label for="bcMessageInput" style="margin: 0;">Isi Pesan Broadcast (Mendukung Spintax Anti-Spam)</label>
+       <button type="button" class="secondary sm" onclick="insertBroadcastSample()">✨ Sisipkan Contoh Spintax</button>
+     </div>
+     <textarea id="bcMessageInput" rows="4" oninput="previewBroadcastSample()" placeholder="{Halo|Hai|Assalamualaikum} Kak *{nama}* 👋, {salam}! Ada info promo terbaru dari *Muflih Print*..."></textarea>
+     <div class="var-hint">
+       Gunakan variasi acak <code>{kata1|kata2|kata3}</code> agar teks tidak identik pada setiap penerima, serta variabel <code>{nama}</code> & <code>{salam}</code>.
+     </div>
+
+     <div id="bcLivePreviewBox" class="bc-preview-box hidden"></div>
+
+     <div class="bc-safety-box">
+       <div style="font-weight: 700; font-size: 0.85rem; color: #15803d; margin-bottom: 6px;">🛡️ Pengaturan Perlindungan Anti-Spam</div>
+       <div class="grid-3">
+         <div>
+           <label for="bcMinDelayInput" style="margin-top: 0;">Jeda Minimal (Detik)</label>
+           <input type="number" id="bcMinDelayInput" value="15" min="8" max="300" />
+         </div>
+         <div>
+           <label for="bcMaxDelayInput" style="margin-top: 0;">Jeda Maksimal (Detik)</label>
+           <input type="number" id="bcMaxDelayInput" value="35" min="12" max="600" />
+         </div>
+         <div>
+           <label for="bcBatchSizeInput" style="margin-top: 0;">Istirahat Tiap (Pesan)</label>
+           <input type="number" id="bcBatchSizeInput" value="15" min="5" max="50" />
+         </div>
+       </div>
+       <div class="kw-grid" style="margin-top: 8px;">
+         <div>
+           <label for="bcBatchPauseInput" style="margin-top: 0;">Durasi Istirahat Batch (Menit)</label>
+           <input type="number" id="bcBatchPauseInput" value="3" min="1" max="30" />
+         </div>
+         <div>
+           <label for="bcDailyLimitInput" style="margin-top: 0;">Batas Aman Harian (Pesan/Hari)</label>
+           <input type="number" id="bcDailyLimitInput" value="100" min="10" max="500" />
+         </div>
+       </div>
+       <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin-top: 10px;">
+         <input type="checkbox" id="bcSafeHoursCheck" checked />
+         <span>Kirim hanya pada jam operasional aman (<strong>08:00 – 21:00 WITA</strong>)</span>
+       </label>
+     </div>
+
+     <div style="display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap;">
+       <button type="button" id="btnStartBroadcast">🚀 Mulai Kirim Broadcast</button>
+       <button type="button" class="secondary" onclick="previewBroadcastSample()">👁️ Lihat Variasi Pesan</button>
+     </div>
+   </div>
+
+   <div class="card">
+     <div class="header-bar" style="margin-bottom: 0.9rem;">
+       <div>
+         <h3 style="margin: 0;">📋 Daftar & Riwayat Broadcast</h3>
+         <small style="color: #64748b;">Klik salah satu broadcast di sebelah kiri untuk melihat detail penerima di sebelah kanan</small>
+       </div>
+       <span id="bcCampaignCountPill" class="sync-pill">0 Broadcast</span>
+     </div>
+
+     <div class="bc-split-shell">
+       <div class="bc-sidebar">
+         <div id="bcCampaignList">
+           <div style="padding: 16px; color: #64748b; font-size: 0.85rem;">Belum ada riwayat broadcast.</div>
+         </div>
+       </div>
+
+       <div id="bcHistoryPanel" class="bc-detail-panel">
+         <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 8px; margin-bottom: 10px;">
+           <div>
+             <h3 id="bcHistoryTitle" style="margin: 0; font-size: 1rem;">📋 Riwayat Pengiriman Broadcast</h3>
+             <small id="bcHistorySubtitle" style="color: #64748b;">Pilih broadcast di sebelah kiri...</small>
+           </div>
+           <select id="bcHistoryStatusFilter" class="compact-select" style="font-size: 0.8rem; padding: 6px 10px;" onchange="renderBroadcastHistoryTable()">
+             <option value="all">Semua Status</option>
+             <option value="sent" selected>Terkirim (Sent)</option>
+             <option value="failed">Gagal / Dilewati</option>
+             <option value="pending">Menunggu Antrean</option>
+           </select>
+         </div>
+
+         <input type="text" id="bcHistorySearchInput" placeholder="🔍 Cari nama, nomor, atau isi pesan broadcast..." oninput="renderBroadcastHistoryTable()" style="margin-bottom: 10px;" />
+
+         <div class="table-wrap" style="max-height: 430px; border: 1px solid #e2e8f0; border-radius: 8px;">
+           <table class="report-table">
+             <thead>
+               <tr>
+                 <th style="width: 105px;">Waktu (WITA)</th>
+                 <th style="width: 155px;">Penerima</th>
+                 <th style="width: 90px;">Status</th>
+                 <th>Isi Pesan Terkirim / Keterangan</th>
+               </tr>
+             </thead>
+             <tbody id="bcHistoryTableBody"></tbody>
+           </table>
+         </div>
+       </div>
+     </div>
+   </div>
+ </div>
+
+ <!-- TAB 3: PENGATURAN AUTO-REPLY & AI -->
+ <div id="tab-autoreply" class="tab-pane hidden">
+   <div class="card" style="border-color: #c4b5fd;">
+     <div class="header-bar" style="margin-bottom: 0.75rem;">
+       <div>
+         <h2 style="margin: 0;">🧠 Opsi & Akun AI Khusus Nomor WA Ini</h2>
+         <small style="color: #64748b;">Setiap nomor WA dapat memakai API Key AI (Groq / Gemini / OpenRouter), prompt, dan pengetahuan bisnis terpisah</small>
+       </div>
+       <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+         <span id="aiRulesRefCountPill" class="sync-pill">📚 0 Aturan Auto-Reply</span>
+         <span id="aiLiveStatusPill" class="sync-pill">⚪ AI Nonaktif</span>
+       </div>
+     </div>
+
+     <label style="display: flex; align-items: center; gap: 8px; background: #f5f3ff; border: 1px solid #ddd6fe; padding: 11px 12px; border-radius: 8px; cursor: pointer; margin-top: 0;">
+       <input type="checkbox" id="aiEnabledCheck" onchange="markAiFormDirty(); updateAiLiveBadge();" />
+       <span><strong>Aktifkan AI pada Auto-Reply</strong> (Jika aktif, balasan chat hanya dari AI mengacu pada pesan auto-reply &amp; akun AI nomor WA ini)</span>
+     </label>
+
+     <div id="aiModeDescriptionBox" class="ai-mode-info off">
+       <strong>Mode Saat Ini — AI Nonaktif:</strong> Balasan otomatis dikirim menggunakan pencocokan kata kunci &amp; balasan default pada daftar aturan di bawah tanpa AI.
+     </div>
+
+     <div id="aiConfigFieldsBox" class="hidden" style="margin-top: 10px;">
+       <div>
+         <label for="aiModelSelect">Prioritas Model AI Utama</label>
+         <select id="aiModelSelect" onchange="markAiFormDirty()">
+           <optgroup label="⚡ Groq AI (Utama — Super Cepat & Gratis)">
+             <option value="qwen/qwen3.8-27b" selected>qwen/qwen3.8-27b (Terbaik untuk Bahasa Indonesia)</option>
+             <option value="openai/gpt-oss-120b">openai/gpt-oss-120b (Akurasi Katalog &amp; Harga Tinggi)</option>
+             <option value="openai/gpt-oss-20b">openai/gpt-oss-20b (Ringan &amp; Hemat Kuota Token)</option>
+           </optgroup>
+           <optgroup label="✨ Google Gemini (Cadangan 1)">
+             <option value="gemini-3.8-flash">gemini-3.8-flash (Konteks 1 Juta Token)</option>
+             <option value="gemini-3.5-flash-lite">gemini-3.5-flash-lite (Super Ringan &amp; Hemat)</option>
+           </optgroup>
+         </select>
+       </div>
+
+       <!-- KREDENSIAL AKUN AI PER NOMOR WA -->
+       <div class="ai-keys-box">
+         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px;">
+           <strong style="font-size: 0.86rem; color: #5b21b6;">🔑 API Key Akun AI Khusus untuk Akun WA Ini</strong>
+           <span id="aiCustomKeyBadge" class="sync-pill">Memakai Default .env</span>
+         </div>
+         <div class="var-hint" style="margin-top: 3px;">
+           Isi dengan API Key akun AI khusus nomor WA ini agar kuota token/rate-limit terpisah dari akun WA lain. Jika dikosongkan, server otomatis memakai API Key default dari file <code>.env</code>.
+         </div>
+
+         <div class="grid-3" style="margin-top: 8px;">
+           <div>
+             <label for="aiGroqKeyInput" style="margin-top: 0;">1. Groq API Key (Utama)</label>
+             <div class="key-input-row">
+               <input type="password" id="aiGroqKeyInput" placeholder="gsk_... (kosong = pakai .env)" oninput="markAiFormDirty(); updateCustomKeyBadge();" />
+               <button type="button" class="key-toggle-btn" onclick="toggleSecretInput('aiGroqKeyInput', this)" title="Tampilkan/Sembunyikan">👁️</button>
+             </div>
+           </div>
+           <div>
+             <label for="aiGeminiKeyInput" style="margin-top: 0;">2. Gemini API Key (Cadangan 1)</label>
+             <div class="key-input-row">
+               <input type="password" id="aiGeminiKeyInput" placeholder="AIza... (kosong = pakai .env)" oninput="markAiFormDirty(); updateCustomKeyBadge();" />
+               <button type="button" class="key-toggle-btn" onclick="toggleSecretInput('aiGeminiKeyInput', this)" title="Tampilkan/Sembunyikan">👁️</button>
+             </div>
+           </div>
+           <div>
+             <label for="aiOpenRouterKeyInput" style="margin-top: 0;">3. OpenRouter Key (Cadangan 2)</label>
+             <div class="key-input-row">
+               <input type="password" id="aiOpenRouterKeyInput" placeholder="sk-or-... (kosong = pakai .env)" oninput="markAiFormDirty(); updateCustomKeyBadge();" />
+               <button type="button" class="key-toggle-btn" onclick="toggleSecretInput('aiOpenRouterKeyInput', this)" title="Tampilkan/Sembunyikan">👁️</button>
+             </div>
+           </div>
+         </div>
+       </div>
+
+       <label for="aiSystemPromptInput">Aturan Dasar & Gaya Bahasa AI</label>
+       <textarea
+         id="aiSystemPromptInput"
+         rows="10"
+         style="font-family: monospace; font-size: 0.85rem;"
+         oninput="markAiFormDirty()"
+         placeholder="Aturan perilaku AI, cara baca katalog harga, dan syarat pengalihan ke admin..."
+       ></textarea>
+
+       <label for="aiBusinessKnowledgeInput">Pengetahuan & Aturan Khusus Bisnis (Alamat, Promo, S&amp;K)</label>
+       <textarea
+         id="aiBusinessKnowledgeInput"
+         rows="9"
+         style="font-family: monospace; font-size: 0.85rem;"
+         oninput="markAiFormDirty()"
+         placeholder="Masukkan rincian promo cetak, syarat undangan, alamat toko, jam buka, nomor rekening..."
+       ></textarea>
+
+       <div class="var-hint">
+         Edit bagian ini kapan saja dari browser untuk memperbarui promo, S&amp;K, atau info toko khusus nomor WA ini tanpa menyentuh kode server.
+       </div>
+     </div>
+
+     <div style="margin-top: 12px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+       <button type="button" id="btnSaveAiConfig" class="ai-btn">💾 Simpan Pengaturan AI</button>
+       <button type="button" id="btnTestAccountAi" class="secondary sm" onclick="testCurrentAccountAi()">🧪 Tes AI Akun Ini</button>
+       <small id="aiUnsavedHint" style="color: #d97706; font-weight: 600; display: none;">● Perubahan AI belum disimpan</small>
+     </div>
+   </div>
+
+   <div class="card" style="border-color: #a5b4fc;">
+     <div class="header-bar" style="margin-bottom: 0.75rem;">
+       <div>
+         <h2 style="margin: 0;">🌙 Balasan Khusus di Luar Jam Kerja</h2>
+         <small style="color: #64748b;">Otomatis aktif saat toko tutup atau hari libur (Zona Waktu WITA)</small>
+       </div>
+       <span id="offHoursLiveStatusPill" class="sync-pill">🟢 Siaga</span>
+     </div>
+
+     <div class="grid-3" style="margin-top: 0;">
+       <div>
+         <label for="offHoursStartInput">Jam Tutup / Mulai Luar Jam Kerja</label>
+         <input type="time" id="offHoursStartInput" value="18:00" oninput="markOffHoursDirty()" />
+       </div>
+       <div>
+         <label for="offHoursEndInput">Jam Buka / Selesai Luar Jam Kerja</label>
+         <input type="time" id="offHoursEndInput" value="08:00" oninput="markOffHoursDirty()" />
+       </div>
+       <div>
+         <label for="offHoursCooldownInput">Jeda Ulang per Nomor (Menit)</label>
+         <input type="number" id="offHoursCooldownInput" value="60" min="0" max="1440" oninput="markOffHoursDirty()" />
+       </div>
+     </div>
+
+     <label>Hari Libur Penuh (24 Jam di Luar Jam Kerja)</label>
+     <div class="day-chip-group" id="offHoursDaysGroup">
+       <label class="day-chip"><input type="checkbox" value="0" checked onchange="markOffHoursDirty()" /> Minggu</label>
+       <label class="day-chip"><input type="checkbox" value="1" onchange="markOffHoursDirty()" /> Senin</label>
+       <label class="day-chip"><input type="checkbox" value="2" onchange="markOffHoursDirty()" /> Selasa</label>
+       <label class="day-chip"><input type="checkbox" value="3" onchange="markOffHoursDirty()" /> Rabu</label>
+       <label class="day-chip"><input type="checkbox" value="4" onchange="markOffHoursDirty()" /> Kamis</label>
+       <label class="day-chip"><input type="checkbox" value="5" onchange="markOffHoursDirty()" /> Jumat</label>
+       <label class="day-chip"><input type="checkbox" value="6" onchange="markOffHoursDirty()" /> Sabtu</label>
+     </div>
+
+     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; margin-top: 0.75rem;">
+       <label for="offHoursReplyInput" style="margin: 0;">Keterangan Tambahan Saat Jam Tutup</label>
+       <button type="button" class="secondary sm" onclick="insertOffHoursSample()">✨ Isi Template Muflih Print</button>
+     </div>
+     <textarea id="offHoursReplyInput" rows="4" oninput="markOffHoursDirty()"></textarea>
+
+     <div style="margin-top: 12px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+       <button type="button" id="btnSaveOffHours">💾 Simpan Pengaturan Luar Jam Kerja</button>
+       <small id="offHoursUnsavedHint" style="color: #d97706; font-weight: 600; display: none;">● Perubahan belum disimpan</small>
+     </div>
+   </div>
+
+   <div class="card" style="border-color: #fca5a5;">
+     <div class="header-bar" style="margin-bottom: 0.75rem;">
+       <div>
+         <h2 style="margin: 0;">🚫 Daftar Kontak WA Dikecualikan (Bypass Auto-Reply)</h2>
+         <small style="color: #64748b;">Kontak pada daftar ini tidak dapat diedit manual dan tidak akan pernah dibalas otomatis oleh bot maupun AI</small>
+       </div>
+       <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+         <span id="excludedCountPill" class="sync-pill danger">0 Kontak</span>
+         <button type="button" class="secondary sm" onclick="openExcludedContactModal()">👥 Pilih dari Daftar Kontak</button>
+       </div>
+     </div>
+
+     <div id="excludedContactsReadonlyList" class="excluded-list-box">
+       <div style="padding: 16px; text-align: center; color: #64748b; font-size: 0.85rem;">Belum ada kontak yang dikecualikan.</div>
+     </div>
+
+     <div class="excluded-manual-bar">
+       <input type="text" id="manualExcludedInput" placeholder="Tambah nomor manual (contoh: 081234567890)..." onkeydown="if (event.key === 'Enter') { event.preventDefault(); addManualExcludedContact(); }" />
+       <button type="button" class="danger sm" onclick="addManualExcludedContact()">+ Tambah Nomor</button>
+     </div>
+   </div>
+
+   <div id="ruleFormCard" class="card">
+     <div class="header-bar">
+       <div>
+         <h2 style="margin: 0;">🤖 Aturan & Referensi Pesan Auto-Reply</h2>
+         <small style="color: #64748b;">Digunakan langsung saat AI nonaktif, atau dijadikan referensi utama jawaban saat AI aktif</small>
+       </div>
+     </div>
+
+     <label style="display: flex; align-items: flex-start; gap: 10px; background: #f0fdf4; border: 1px solid #86efac; padding: 11px 12px; border-radius: 8px; cursor: pointer; margin-top: 0; margin-bottom: 1rem;">
+       <input type="checkbox" id="adminModeAssistCheck" style="margin-top: 3px;" onchange="toggleAdminModeAssist(this.checked)" />
+       <div>
+         <div style="font-weight: 700; color: #15803d;">🤝 Bantu Admin Balas Chat Saat Mode Admin</div>
+         <div style="font-size: 0.78rem; color: #334155; font-weight: 400; margin-top: 2px;">
+           Meski nomor sedang dialihkan ke Admin, bot/AI tetap membantu menjawab otomatis jika pertanyaan pelanggan sesuai dengan daftar auto-reply (tanpa balasan default).
+         </div>
+       </div>
+     </label>
+
+     <h3 id="formTitle" style="margin-bottom: 0.5rem;">Tambah Format Balasan Baru</h3>
+
+     <label style="display: flex; align-items: center; gap: 8px; background: #fffbeb; border: 1px solid #fde68a; padding: 10px 12px; border-radius: 8px; cursor: pointer; margin-top: 0.5rem;">
+       <input type="checkbox" id="isDefaultCheck" onchange="toggleRuleFormVisibility()" />
+       <span>Jadikan sebagai <strong>Balasan Default / Info Umum</strong></span>
+     </label>
+
+     <div id="keywordFieldsGrid" class="kw-grid">
+       <div>
+         <label for="exactKeywordInput">Kata Kunci Sama Persis (Pisahkan koma)</label>
+         <input type="text" id="exactKeywordInput" placeholder="Contoh: 1, 1." />
+       </div>
+       <div>
+         <label for="containsKeywordInput">Mengandung Kata Kunci (Pisahkan koma)</label>
+         <input type="text" id="containsKeywordInput" placeholder="Contoh: alamat, lokasi, maps" />
+       </div>
+     </div>
+
+     <label id="pauseBotLabel" style="display: flex; align-items: center; gap: 8px; background: #fff7ed; border: 1px solid #fed7aa; padding: 10px 12px; border-radius: 8px; cursor: pointer; margin-top: 0.75rem;">
+       <input type="checkbox" id="pauseBotCheck" />
+       <span><strong>Alihkan ke Admin:</strong> Jeda balasan otomatis untuk nomor ini selama 60 menit</span>
+     </label>
+
+     <label for="replyInput">Format Pesan Balasan</label>
+     <textarea id="replyInput" rows="5" placeholder="Halo Kak *{nama}* 👋..."></textarea>
+     <div class="var-hint">Variabel: <code>{sapaan_awal}</code>, <code>{salam}</code>, <code>{nama}</code>, <code>{nomor}</code>, <code>{pesan}</code>.</div>
+
+     <label id="followupCheckLabel" style="display: flex; align-items: center; gap: 8px; background: #eff6ff; border: 1px solid #bfdbfe; padding: 10px 12px; border-radius: 8px; cursor: pointer; margin-top: 0.75rem;">
+       <input type="checkbox" id="expectsFollowupCheck" onchange="toggleRuleFormVisibility()" />
+       <span><strong>Tunggu Jawaban Lanjutan (Konteks)</strong></span>
+     </label>
+
+     <div id="followupFieldsBox" class="hidden" style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 12px; margin-top: 8px;">
+       <label for="followupKeywordsInput" style="margin-top: 0;">Kata Kunci Jawaban Berkaitan</label>
+       <input type="text" id="followupKeywordsInput" placeholder="Contoh: undangan, stiker, brosur" />
+
+       <label for="followupReplyInput">Balasan Lanjutan Jika Berkaitan</label>
+       <textarea id="followupReplyInput" rows="3"></textarea>
+
+       <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin-top: 8px;">
+         <input type="checkbox" id="followupPauseCheck" checked />
+         <span>Otomatis alihkan ke Antrean Admin setelah balasan lanjutan terkirim</span>
+       </label>
+     </div>
+
+     <div style="display: flex; gap: 8px; margin-top: 12px;">
+       <button id="btnAddRule">+ Simpan Aturan Balasan</button>
+       <button id="btnCancelEdit" class="secondary hidden" onclick="resetRuleForm()">Batal Edit</button>
+     </div>
+   </div>
+
+   <div class="card">
+     <h3 style="margin-top: 0;">Daftar Format Balasan Aktif</h3>
+     <div id="rulesList"></div>
+   </div>
+ </div>
+
+ <!-- TAB 4: LAPORAN CHAT MASUK & DURASI BALAS -->
+ <div id="tab-reports" class="tab-pane hidden">
+   <div class="card">
+     <div class="header-bar" style="margin-bottom: 1rem;">
+       <div>
+         <h2 style="margin: 0;">📊 Laporan Chat Masuk & Durasi Balas</h2>
+         <small style="color: #64748b;">Statistik chat harian (WITA) & kecepatan respons balasan pada akun WA ini</small>
+       </div>
+       <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+         <select id="reportPeriodSelect" class="compact-select" onchange="loadReports()">
+           <option value="1">Hari Ini</option>
+           <option value="7" selected>7 Hari Terakhir</option>
+           <option value="14">14 Hari Terakhir</option>
+           <option value="30">30 Hari Terakhir</option>
+         </select>
+         <button class="secondary sm" onclick="loadReports()">Refresh</button>
+       </div>
+     </div>
+
+     <div class="kpi-grid">
+       <div class="kpi-box">
+         <div class="kpi-label">Chat Masuk (Sesi Nomor)</div>
+         <div id="kpiUniqueChats" class="kpi-value">0</div>
+         <div id="kpiNewContactsSub" class="kpi-sub">0 kontak baru pertama kali</div>
+       </div>
+       <div class="kpi-box">
+         <div class="kpi-label">Total Pesan Masuk</div>
+         <div id="kpiTotalIncoming" class="kpi-value">0</div>
+         <div id="kpiAdminReqSub" class="kpi-sub" style="color:#c2410c;">0 butuh admin</div>
+       </div>
+       <div class="kpi-box">
+         <div class="kpi-label">Rata-Rata Balas Admin</div>
+         <div id="kpiAvgAdminTime" class="kpi-value">-</div>
+         <div id="kpiAdminCountSub" class="kpi-sub" style="color:#7e22ce;">0 balasan admin</div>
+       </div>
+       <div class="kpi-box">
+         <div class="kpi-label">Rata-Rata Balas Bot</div>
+         <div id="kpiAvgBotTime" class="kpi-value">-</div>
+         <div id="kpiBotCountSub" class="kpi-sub">0 balasan otomatis</div>
+       </div>
+     </div>
+
+     <div class="report-split">
+       <div class="sub-panel">
+         <h4>
+           <span>⏱️ Durasi Balas Chat</span>
+           <select id="durationScopeSelect" class="compact-select" style="font-size: 0.78rem; padding: 4px 8px;" onchange="renderDurationBuckets()">
+             <option value="admin" selected>Khusus Admin Langsung</option>
+             <option value="all">Semua (Bot + Admin)</option>
+           </select>
+         </h4>
+         <div id="durationBucketsBox"></div>
+       </div>
+
+       <div class="sub-panel">
+         <h4><span>📅 Chat Masuk per Hari (WITA)</span></h4>
+         <div class="table-wrap">
+           <table class="report-table">
+             <thead>
+               <tr>
+                 <th>Tanggal</th>
+                 <th class="num-col">Nomor Chat</th>
+                 <th class="num-col">Kontak Baru</th>
+                 <th class="num-col">Total Pesan</th>
+                 <th class="num-col">Ke Admin</th>
+               </tr>
+             </thead>
+             <tbody id="dailyReportBody"></tbody>
+           </table>
+         </div>
+       </div>
+     </div>
+   </div>
+ </div>
+
+</div>
+
+<!-- MODAL TAMBAH / UBAH NAMA AKUN WA -->
+<div id="accountModal" class="modal-backdrop hidden" onclick="if (event.target === this) closeAccountModal()">
+  <div class="modal-box" style="max-width: 440px;" role="dialog" aria-modal="true" aria-labelledby="accountModalTitle">
+    <div class="modal-header">
+      <div>
+        <h3 id="accountModalTitle" style="margin: 0; font-size: 1.02rem; color: #0f172a;">+ Tambah Akun WhatsApp Baru</h3>
+        <small id="accountModalSub" style="color: #64748b;">Buat profil sesi WA baru dengan aturan & akun AI terpisah</small>
+      </div>
+      <button type="button" class="secondary sm" onclick="closeAccountModal()" aria-label="Tutup">✕</button>
+    </div>
+    <div class="modal-body" style="background: #ffffff; padding: 14px 16px;">
+      <label for="accountNameModalInput" style="margin-top: 0;">Nama / Label Akun WhatsApp</label>
+      <input type="text" id="accountNameModalInput" placeholder="Contoh: Vi Printing Makassar atau CS Undangan" onkeydown="if (event.key === 'Enter') { event.preventDefault(); submitAccountModal(); }" />
+      <div class="var-hint" style="margin-top: 6px;">
+        Setelah disimpan, pilih akun baru tersebut lalu pindai QR Code dari HP WhatsApp yang ingin ditautkan.
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="secondary sm" onclick="closeAccountModal()">Batal</button>
+      <button type="button" id="btnSubmitAccountModal" class="sm" onclick="submitAccountModal()">💾 Simpan Akun</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PILIH KONTAK UNTUK PENGECUALIAN AUTO-REPLY -->
+<div id="excludedContactModal" class="modal-backdrop hidden" onclick="if (event.target === this) closeExcludedContactModal()">
+  <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="excludedModalTitle">
+    <div class="modal-header">
+      <div>
+        <h3 id="excludedModalTitle" style="margin: 0; font-size: 1.02rem; color: #0f172a;">👥 Pilih Kontak untuk Dikecualikan</h3>
+        <small style="color: #64748b;">Centang kontak yang tidak akan dibalas otomatis oleh bot maupun AI</small>
+      </div>
+      <div style="display: flex; gap: 6px; align-items: center;">
+        <button type="button" class="secondary sm" onclick="refreshExcludedModalContacts()" title="Muat ulang daftar kontak">🔄</button>
+        <button type="button" class="secondary sm" onclick="closeExcludedContactModal()" aria-label="Tutup">✕</button>
+      </div>
+    </div>
+
+    <div class="modal-tools">
+      <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <input type="text" id="excludedModalSearchInput" placeholder="🔍 Cari nama kontak atau nomor WA..." oninput="renderExcludedModalList()" style="margin-top: 0; flex: 1; min-width: 190px;" />
+        <select id="excludedModalFilterSelect" class="compact-select" onchange="renderExcludedModalList()">
+          <option value="all" selected>Semua Kontak</option>
+          <option value="selected">Sudah Dicentang</option>
+          <option value="unselected">Belum Dicentang</option>
+        </select>
+      </div>
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; margin-top: 8px;">
+        <small id="excludedModalResultInfo" style="color: #475569; font-weight: 600;">0 kontak ditemukan</small>
+        <div style="display: flex; gap: 6px;">
+          <button type="button" class="secondary sm" style="padding: 4px 9px; font-size: 0.75rem;" onclick="toggleSelectFilteredExcluded(true)">☑️ Centang Hasil</button>
+          <button type="button" class="secondary sm" style="padding: 4px 9px; font-size: 0.75rem;" onclick="toggleSelectFilteredExcluded(false)">⬜ Batal Hasil</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="excludedModalList" class="modal-body">
+      <div style="padding: 20px; text-align: center; color: #64748b; font-size: 0.86rem;">Memuat daftar kontak...</div>
+    </div>
+
+    <div class="modal-footer">
+      <span id="excludedModalSelectedCount" class="sync-pill danger">0 Nomor Dipilih</span>
+      <div style="display: flex; gap: 8px;">
+        <button type="button" class="secondary sm" onclick="closeExcludedContactModal()">Batal</button>
+        <button type="button" class="danger sm" id="btnApplyExcludedModal" onclick="applyExcludedModalSelection()">💾 Terapkan & Simpan</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PREVIEW GAMBAR & PDF -->
+<div id="mediaPreviewModal" class="modal-backdrop hidden" onclick="if (event.target === this) closeMediaPreviewModal()">
+  <div class="modal-box" style="max-width: 880px; height: 86vh;" role="dialog" aria-modal="true">
+    <div class="modal-header">
+      <div style="min-width: 0;">
+        <h3 id="mediaPreviewTitle" style="margin: 0; font-size: 0.98rem; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Preview Lampiran</h3>
+        <small id="mediaPreviewSub" style="color: #64748b;">Lampiran Chat WhatsApp</small>
+      </div>
+      <div style="display: flex; gap: 6px; align-items: center; flex-shrink: 0;">
+        <button type="button" id="btnDownloadPreviewMedia" class="sm">⬇️ Unduh File</button>
+        <button type="button" class="secondary sm" onclick="closeMediaPreviewModal()" aria-label="Tutup">✕</button>
+      </div>
+    </div>
+    <div id="mediaPreviewBody" class="modal-body" style="padding: 10px; display: flex; align-items: center; justify-content: center; background: #0f172a;"></div>
+  </div>
+</div>
+
+<script>
+const STORAGE_URL_KEY = 'wa_local_server_url';
+const STORAGE_SECRET_KEY = 'wa_local_server_secret';
+const ACTIVE_TAB_KEY = 'wa_dashboard_active_tab';
+const ACTIVE_BOT_KEY = 'wa_dashboard_active_bot_id';
+
+const SUPABASE_ENDPOINT_URL = 'https://zqxeoveanevsvynptckm.supabase.co/rest/v1/wa_server_endpoint?id=eq.utama&select=tunnel_url';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpxeGVvdmVhbmV2c3Z5bnB0Y2ttIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzUzODEsImV4cCI6MjA4OTg1MTM4MX0.eeIaytpW1wtWPJc2FbhufkDkhONUt9yypTZU4dTVmsM';
+
+let SERVER_URL = localStorage.getItem(STORAGE_URL_KEY) || (window.location.hostname === 'localhost' ? 'http://localhost:3000' : '');
+let SERVER_SECRET = localStorage.getItem(STORAGE_SECRET_KEY) || 'muflihprint_rahasia_2026';
+let ACTIVE_BOT_ID = localStorage.getItem(ACTIVE_BOT_KEY) || 'bot_utama';
+
+async function syncServerUrlFromSupabase() {
+  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') return;
+  try {
+    const res = await fetch(SUPABASE_ENDPOINT_URL, {
+      headers: {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`
+      }
+    });
+    if (!res.ok) return;
+    const rows = await res.json();
+    const latestUrl = String(rows?.[0]?.tunnel_url || '').trim().replace(/\/+$/, '');
+    if (latestUrl && latestUrl !== SERVER_URL) {
+      SERVER_URL = latestUrl;
+      localStorage.setItem(STORAGE_URL_KEY, SERVER_URL);
+    }
+  } catch (_) {}
+}
+
+function appendBotQuery(endpoint) {
+  const sep = endpoint.includes('?') ? '&' : '?';
+  return `${endpoint}${sep}bot_id=${encodeURIComponent(ACTIVE_BOT_ID)}`;
+}
+
+async function apiFetch(endpoint, options = {}) {
+  if (!SERVER_URL) throw new Error('URL Server Laptop belum diisi.');
+  const headers = {
+    'Content-Type': 'application/json',
+    'x-api-key': SERVER_SECRET,
+    ...(options.headers || {})
+  };
+  const finalEndpoint = appendBotQuery(endpoint);
+  const res = await fetch(`${SERVER_URL}${finalEndpoint}`, { ...options, headers });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+  return data;
+}
+
+let accountsCache = [];
+let accountModalMode = 'create';
+let currentRules = [];
+let editingRuleId = null;
+let rawLogsCache = [];
+let contactsCache = [];
+let selectedChatNumber = null;
+let bcCampaignsCache = [];
+let activeHistoryBroadcastId = null;
+let bcHistoryRowsCache = [];
+let cachedReportMetrics = null;
+let isAiFormDirty = false;
+let isOffHoursDirty = false;
+let excludedNumbersList = [];
+let selectedExcludedSet = new Set();
+
+function switchTab(tabId) {
+  const validTabs = ['tab-chat', 'tab-broadcast', 'tab-autoreply', 'tab-reports'];
+  const targetId = validTabs.includes(tabId) ? tabId : 'tab-chat';
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.toggle('hidden', p.id !== targetId));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === targetId));
+  try { localStorage.setItem(ACTIVE_TAB_KEY, targetId); } catch (_) {}
+
+  if ((targetId === 'tab-broadcast' || targetId === 'tab-autoreply') && contactsCache.length === 0) {
+    loadContacts(true);
+  }
+  if (targetId === 'tab-reports') loadReports();
+}
+
+function escapeHtml(str) {
+  return String(str || '').replace(/[&<>"']/g, m => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
+}
+
+function formatWitaTime(isoOrMs) {
+  return new Date(isoOrMs).toLocaleTimeString('id-ID', { timeZone: 'Asia/Makassar', hour: '2-digit', minute: '2-digit' });
+}
+
+function toWitaDateKey(isoOrMs) {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Makassar', year: 'numeric', month: '2-digit', day: '2-digit'
+  }).formatToParts(new Date(isoOrMs));
+  return `${parts.find(p => p.type === 'year').value}-${parts.find(p => p.type === 'month').value}-${parts.find(p => p.type === 'day').value}`;
+}
+
+function formatWitaDateLabel(dateKey) {
+  const todayKey = toWitaDateKey(Date.now());
+  const yesterdayKey = toWitaDateKey(Date.now() - 86400000);
+  if (dateKey === todayKey) return 'Hari Ini';
+  if (dateKey === yesterdayKey) return 'Kemarin';
+  const [y, m, d] = dateKey.split('-').map(Number);
+  return new Date(Date.UTC(y, m - 1, d, 4, 0, 0)).toLocaleDateString('id-ID', {
+    timeZone: 'Asia/Makassar', weekday: 'short', day: '2-digit', month: 'short', year: 'numeric'
+  });
+}
+
+function formatDuration(sec) {
+  if (sec === null || sec === undefined || isNaN(sec)) return '-';
+  const s = Math.round(sec);
+  if (s < 60) return `${s} detik`;
+  const m = Math.floor(s / 60);
+  const remS = s % 60;
+  if (m < 60) return remS > 0 ? `${m} mnt ${remS} dtk` : `${m} menit`;
+  const h = Math.floor(m / 60);
+  const remM = m % 60;
+  return remM > 0 ? `${h} jam ${remM} mnt` : `${h} jam`;
+}
+
+function normalizePhone(raw) {
+  const digits = String(raw || '').replace(/\D/g, '');
+  if (!digits) return null;
+  if (digits.startsWith('0')) return '62' + digits.slice(1);
+  if (digits.startsWith('8')) return '62' + digits;
+  return digits.length >= 9 && digits.length <= 15 ? digits : null;
+}
+
+function renderClientSpintax(template, sampleName = 'Andi') {
+  const spun = String(template || '').replace(/\{([^{}|]+\|[^{}]+)\}/g, (_, choicesStr) => {
+    const opts = choicesStr.split('|').map(s => s.trim()).filter(Boolean);
+    return opts.length ? opts[Math.floor(Math.random() * opts.length)] : '';
+  });
+  return spun.replace(/\{nama\}/gi, sampleName).replace(/\{nomor\}/gi, '6281234567890').replace(/\{salam\}/gi, 'Selamat siang');
+}
+
+// ============================================================================
+// MULTI-AKUN WHATSAPP SWITCHER & MODAL
+// ============================================================================
+function renderAccountSelector(accounts, currentCfg) {
+  accountsCache = Array.isArray(accounts) && accounts.length > 0
+    ? accounts
+    : [{
+        id: currentCfg?.id || ACTIVE_BOT_ID,
+        name: currentCfg?.account_name || (ACTIVE_BOT_ID === 'bot_utama' ? 'Muflih Print Utama' : ACTIVE_BOT_ID),
+        status: currentCfg?.status || 'disconnected',
+        waiting_count: 0
+      }];
+
+  if (!accountsCache.some(a => a.id === ACTIVE_BOT_ID)) {
+    ACTIVE_BOT_ID = accountsCache[0].id;
+    try { localStorage.setItem(ACTIVE_BOT_KEY, ACTIVE_BOT_ID); } catch (_) {}
+  }
+
+  const selectEl = document.getElementById('accountSelect');
+  const prevVal = selectEl.value;
+  selectEl.innerHTML = accountsCache.map(acc => {
+    const icon = acc.status === 'connected' ? '🟢' : acc.status === 'qr_ready' ? '🟡' : '⚪';
+    const waitInfo = acc.waiting_count > 0 ? ` [${acc.waiting_count} antre]` : '';
+    const label = acc.name || acc.id;
+    return `<option value="${escapeHtml(acc.id)}">${icon} ${escapeHtml(label)} (${escapeHtml(acc.id)})${waitInfo}</option>`;
+  }).join('');
+
+  if (selectEl.value !== ACTIVE_BOT_ID) {
+    selectEl.value = ACTIVE_BOT_ID;
+  }
+
+  const connectedCount = accountsCache.filter(a => a.status === 'connected').length;
+  document.getElementById('multiAccountSummaryPill').textContent = `${connectedCount}/${accountsCache.length} Akun WA Aktif`;
+
+  const activeAcc = accountsCache.find(a => a.id === ACTIVE_BOT_ID) || accountsCache[0];
+  const activeName = activeAcc?.name || currentCfg?.account_name || ACTIVE_BOT_ID;
+  const statusPill = document.getElementById('accountStatusPill');
+
+  if (currentCfg?.status === 'connected') {
+    statusPill.className = 'sync-pill ok';
+    statusPill.textContent = '🟢 Terhubung';
+  } else if (currentCfg?.status === 'qr_ready') {
+    statusPill.className = 'sync-pill ai';
+    statusPill.textContent = '🟡 Menunggu Scan QR';
+  } else {
+    statusPill.className = 'sync-pill danger';
+    statusPill.textContent = '⚪ Terputus';
+  }
+
+  document.getElementById('qrAccountHeading').textContent = `Hubungkan WhatsApp — ${activeName}`;
+  document.getElementById('activeAccountHeaderTitle').textContent = `WhatsApp Bot & Broadcast — ${activeName}`;
+  document.getElementById('activeAccountHeaderSub').textContent = `● Akun ID: ${ACTIVE_BOT_ID} • Terhubung ke Server & Database SQLite Laptop`;
+  document.getElementById('btnDeleteAccount').classList.toggle('hidden', ACTIVE_BOT_ID === 'bot_utama');
+}
+
+function switchWhatsAppAccount(newBotId) {
+  if (!newBotId || newBotId === ACTIVE_BOT_ID) return;
+  ACTIVE_BOT_ID = newBotId;
+  try { localStorage.setItem(ACTIVE_BOT_KEY, ACTIVE_BOT_ID); } catch (_) {}
+
+  // Reset form & cache sementara agar langsung memuat milik akun baru
+  isAiFormDirty = false;
+  isOffHoursDirty = false;
+  document.getElementById('aiUnsavedHint').style.display = 'none';
+  document.getElementById('offHoursUnsavedHint').style.display = 'none';
+  resetRuleForm();
+
+  selectedChatNumber = null;
+  activeHistoryBroadcastId = null;
+  contactsCache = [];
+  rawLogsCache = [];
+  bcCampaignsCache = [];
+  excludedNumbersList = [];
+
+  document.getElementById('waChatHeader').classList.add('hidden');
+  document.getElementById('waMessagesContainer').innerHTML =
+    '<div class="wa-empty-state"><div style="font-size:2rem; margin-bottom:8px;">💬</div><div>Pilih salah satu nomor di sebelah kiri untuk melihat riwayat percakapan.</div></div>';
+
+  pollState().then(() => {
+    const activeTab = localStorage.getItem(ACTIVE_TAB_KEY);
+    if (activeTab === 'tab-reports') loadReports();
+    if (activeTab === 'tab-broadcast' || activeTab === 'tab-autoreply') loadContacts(true);
+  });
+}
+
+function openAccountModal(mode) {
+  accountModalMode = mode;
+  const titleEl = document.getElementById('accountModalTitle');
+  const subEl = document.getElementById('accountModalSub');
+  const inputEl = document.getElementById('accountNameModalInput');
+
+  if (mode === 'rename') {
+    const currentAcc = accountsCache.find(a => a.id === ACTIVE_BOT_ID);
+    titleEl.textContent = '✏️ Ubah Nama Akun WhatsApp';
+    subEl.textContent = `Mengubah label untuk sesi ${ACTIVE_BOT_ID}`;
+    inputEl.value = currentAcc?.name || '';
+  } else {
+    titleEl.textContent = '+ Tambah Akun WhatsApp Baru';
+    subEl.textContent = 'Buat profil sesi WA baru dengan aturan & akun AI terpisah';
+    inputEl.value = '';
+  }
+
+  document.getElementById('accountModal').classList.remove('hidden');
+  setTimeout(() => inputEl.focus(), 50);
+}
+
+function closeAccountModal() {
+  document.getElementById('accountModal').classList.add('hidden');
+}
+
+async function submitAccountModal() {
+  const name = document.getElementById('accountNameModalInput').value.trim();
+  if (!name) return alert('Masukkan nama/label akun WhatsApp terlebih dahulu.');
+
+  const btn = document.getElementById('btnSubmitAccountModal');
+  btn.disabled = true;
+  btn.textContent = 'Menyimpan...';
+
+  try {
+    if (accountModalMode === 'rename') {
+      await apiFetch('/api/config', {
+        method: 'POST',
+        body: JSON.stringify({ bot_id: ACTIVE_BOT_ID, account_name: name })
+      });
+      closeAccountModal();
+      await pollState();
+    } else {
+      const res = await apiFetch('/api/accounts', {
+        method: 'POST',
+        body: JSON.stringify({ name })
+      });
+      closeAccountModal();
+      if (res.id) {
+        switchWhatsAppAccount(res.id);
+      } else {
+        await pollState();
+      }
+    }
+  } catch (err) {
+    alert(`Gagal menyimpan akun WA: ${err.message}`);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '💾 Simpan Akun';
+  }
+}
+
+async function deleteCurrentAccount() {
+  if (ACTIVE_BOT_ID === 'bot_utama') return alert('Akun utama tidak dapat dihapus.');
+  const currentAcc = accountsCache.find(a => a.id === ACTIVE_BOT_ID);
+  const label = currentAcc?.name || ACTIVE_BOT_ID;
+  if (!confirm(`Hapus akun "${label}" (${ACTIVE_BOT_ID}) beserta seluruh sesi WA, aturan, dan riwayat chat-nya?`)) return;
+
+  try {
+    await apiFetch(`/api/accounts/${encodeURIComponent(ACTIVE_BOT_ID)}`, { method: 'DELETE' });
+    switchWhatsAppAccount('bot_utama');
+  } catch (err) {
+    alert(`Gagal menghapus akun: ${err.message}`);
+  }
+}
+
+// ============================================================================
+// POLLING UTAMA KE SERVER LAPTOP
+// ============================================================================
+async function pollState() {
+  const badge = document.getElementById('serverConnBadge');
+  if (!SERVER_URL) {
+    badge.style.color = '#fbbf24';
+    badge.textContent = 'Mengambil alamat server dari Supabase...';
+    syncServerUrlFromSupabase();
+    return;
+  }
+
+  try {
+    const data = await apiFetch('/api/state');
+    badge.style.color = '#4ade80';
+    badge.textContent = `Terhubung (${SERVER_URL})`;
+
+    const cfg = data.botConfig;
+    renderAccountSelector(data.accounts || [], cfg);
+
+    const qrSec = document.getElementById('qrSection');
+    const dashSec = document.getElementById('dashboardSection');
+
+    if (cfg.status === 'connected') {
+      qrSec.classList.add('hidden');
+      dashSec.classList.remove('hidden');
+    } else {
+      qrSec.classList.remove('hidden');
+      dashSec.classList.add('hidden');
+      if (cfg.qr_code) {
+        document.getElementById('qrImage').src = cfg.qr_code;
+        document.getElementById('statusText').textContent = 'Silakan scan QR Code di atas dengan WhatsApp HP Anda.';
+      } else {
+        document.getElementById('statusText').textContent = 'Menunggu QR Code dari Server Laptop...';
+      }
+    }
+
+    document.getElementById('toggleActive').checked = Boolean(cfg.enabled);
+    const adminAssistOn = Boolean(cfg.admin_mode_assist);
+    document.getElementById('adminModeAssistCheck').checked = adminAssistOn;
+    document.getElementById('adminAssistActiveBadge').classList.toggle('hidden', !adminAssistOn);
+
+    document.getElementById('contactCountPill').textContent = `${(data.contactsCount || 0).toLocaleString('id-ID')} Kontak`;
+    if (cfg.last_synced_at) {
+      document.getElementById('syncStatusPill').classList.add('ok');
+      document.getElementById('syncStatusPill').textContent = `SQLite Lokal • Sinkron ${formatWitaTime(cfg.last_synced_at)} WITA`;
+    }
+
+    rawLogsCache = data.recentLogs || [];
+    currentRules = data.rules || [];
+    renderRulesList();
+    populateAiForm(cfg);
+    populateOffHoursForm(cfg);
+    populateExcludedForm(cfg);
+
+    renderAdminQueue(data.adminQueue || []);
+    renderGroupedWhatsAppView();
+
+    bcCampaignsCache = data.broadcasts || [];
+    renderBroadcasts();
+  } catch (err) {
+    badge.style.color = '#f87171';
+    badge.textContent = `Gagal terhubung: ${err.message}`;
+    syncServerUrlFromSupabase();
+  }
+}
+
+document.getElementById('toggleActive').addEventListener('change', async (e) => {
+  await apiFetch('/api/config', {
+    method: 'POST',
+    body: JSON.stringify({ bot_id: ACTIVE_BOT_ID, enabled: e.target.checked })
+  });
+});
+
+async function toggleAdminModeAssist(checked) {
+  document.getElementById('adminAssistActiveBadge').classList.toggle('hidden', !checked);
+  try {
+    await apiFetch('/api/config', {
+      method: 'POST',
+      body: JSON.stringify({ bot_id: ACTIVE_BOT_ID, admin_mode_assist: checked })
+    });
+  } catch (err) {
+    alert(`Gagal menyimpan pengaturan Asisten Mode Admin: ${err.message}`);
+    pollState();
+  }
+}
+
+document.getElementById('btnLogout').addEventListener('click', async () => {
+  if (!confirm('Putuskan tautan WhatsApp akun ini dari server laptop?')) return;
+  await apiFetch('/api/action/logout', {
+    method: 'POST',
+    body: JSON.stringify({ bot_id: ACTIVE_BOT_ID })
+  });
+  pollState();
+});
+
+async function triggerChatSync() {
+  await apiFetch('/api/action/sync', {
+    method: 'POST',
+    body: JSON.stringify({ bot_id: ACTIVE_BOT_ID })
+  });
+  pollState();
+}
+
+// ============================================================================
+// ANTREAN ADMIN & RIWAYAT CHAT PER NOMOR
+// ============================================================================
+function renderAdminQueue(queue) {
+  const card = document.getElementById('pausedCard');
+  const listEl = document.getElementById('pausedList');
+  const waitingCount = queue.filter(q => q.needs_reply).length;
+
+  const tabBadge = document.getElementById('tabChatBadge');
+  tabBadge.textContent = waitingCount;
+  tabBadge.classList.toggle('hidden', waitingCount === 0);
+
+  if (queue.length === 0) {
+    card.classList.add('hidden');
+    return;
+  }
+
+  card.classList.remove('hidden');
+  document.getElementById('waitingCountBadge').textContent = `${waitingCount} Menunggu`;
+
+  listEl.innerHTML = queue.map(item => {
+    const cleanPhone = (item.phone || '').replace(/\D/g, '');
+    const waUrl = cleanPhone ? `https://wa.me/${cleanPhone}` : '#';
+    const msgsHtml = (item.recent_messages || []).map(m => `<div><small style="color:#64748b;">[${escapeHtml(m.time)}]</small> ${escapeHtml(m.text)}</div>`).join('');
+    return `
+      <div class="paused-item ${item.needs_reply ? '' : 'replied'}">
+        <div style="flex:1; min-width:220px;">
+          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+            <strong>${escapeHtml(item.name || item.display_number)}</strong>
+            <a href="${waUrl}" target="_blank" class="wa-phone-link">${escapeHtml(item.display_number)}</a>
+            ${item.needs_reply ? `<span class="badge-wait">Butuh Balasan (${item.unread_count || 1})</span>` : `<span class="badge-done">Sudah Dibalas Admin</span>`}
+          </div>
+          ${msgsHtml ? `<div class="msg-preview">${msgsHtml}</div>` : ''}
+          <small style="color:#64748b; display:block; margin-top:4px;">Bot dijeda hingga ${formatWitaTime(item.paused_until)} WITA</small>
+        </div>
+        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+          ${cleanPhone ? `<a href="${waUrl}" target="_blank" class="btn-link sm">💬 Balas di WA</a>` : ''}
+          <button type="button" class="secondary sm" onclick="resumeBotForUser('${escapeHtml(item.jid)}')">✅ Aktifkan Bot</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+async function resumeBotForUser(jid) {
+  await apiFetch('/api/queue/resume', {
+    method: 'POST',
+    body: JSON.stringify({ bot_id: ACTIVE_BOT_ID, jid })
+  });
+  pollState();
+}
+
+async function resumeBotForAllUsers() {
+  if (!confirm('Aktifkan kembali bot untuk semua nomor di antrean admin akun ini?')) return;
+  await apiFetch('/api/queue/resume', {
+    method: 'POST',
+    body: JSON.stringify({ bot_id: ACTIVE_BOT_ID, all: true })
+  });
+  pollState();
+}
+
+function renderGroupedWhatsAppView() {
+  const search = (document.getElementById('chatSearchInput').value || '').toLowerCase().trim();
+  const filter = document.getElementById('logFilterSelect').value;
+
+  const map = new Map();
+  for (const log of rawLogsCache) {
+    const num = log.sender_number || 'Unknown';
+    if (!map.has(num)) {
+      map.set(num, { number: num, name: log.sender_name || num, logs: [], latestAt: log.created_at });
+    }
+    const thread = map.get(num);
+    if (log.sender_name && !log.sender_name.startsWith('+') && log.sender_name !== num) {
+      thread.name = log.sender_name;
+    }
+    thread.logs.push(log);
+  }
+
+  let threads = Array.from(map.values()).filter(t => {
+    if (filter === 'bot_reply' && !t.logs.some(l => l.log_type === 'bot_reply')) return false;
+    if (filter === 'admin_direct' && !t.logs.some(l => l.log_type === 'admin_direct')) return false;
+    if (filter === 'incoming_only' && !t.logs.some(l => l.handed_over || l.log_type === 'customer_msg')) return false;
+    if (search) {
+      const hay = `${t.name} ${t.number} ${t.logs.map(l => `${l.incoming} ${l.reply}`).join(' ')}`.toLowerCase();
+      if (!hay.includes(search)) return false;
+    }
+    return true;
+  });
+
+  const listEl = document.getElementById('waContactList');
+  if (threads.length === 0) {
+    listEl.innerHTML = '<div style="padding:16px; color:#64748b; font-size:0.85rem;">Belum ada riwayat percakapan.</div>';
+    return;
+  }
+
+  listEl.innerHTML = threads.map(t => {
+    const last = t.logs[0];
+    const preview = last.incoming || last.reply || '';
+    const initials = (t.name || 'WA').replace(/[^a-zA-Z0-9]/g, '').slice(0, 2).toUpperCase() || 'WA';
+    const isActive = selectedChatNumber === t.number;
+    return `
+      <div class="wa-contact-item ${isActive ? 'active' : ''}" onclick="openChatThread('${escapeHtml(t.number)}')">
+        <div class="wa-avatar" style="background:#16a34a;">${escapeHtml(initials)}</div>
+        <div class="wa-contact-meta">
+          <div class="wa-contact-top">
+            <span class="wa-contact-name">${escapeHtml(t.name)}</span>
+            <span class="wa-contact-time">${formatWitaTime(last.created_at)}</span>
+          </div>
+          <div class="wa-contact-bottom">
+            <span class="wa-contact-preview">${escapeHtml(preview)}</span>
+            <span class="wa-count-pill">${t.logs.length}</span>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+
+  if (selectedChatNumber && map.has(selectedChatNumber)) {
+    renderChatMessages(map.get(selectedChatNumber));
+  }
+}
+
+function openChatThread(number) {
+  selectedChatNumber = number;
+  document.getElementById('waShell').classList.add('mobile-thread-open');
+  renderGroupedWhatsAppView();
+  scrollChatToBottom();
+}
+
+function closeMobileChat() {
+  document.getElementById('waShell').classList.remove('mobile-thread-open');
+}
+
+function scrollChatToBottom() {
+  const c = document.getElementById('waMessagesContainer');
+  c.scrollTop = c.scrollHeight;
+}
+
+function resolveMediaFullUrl(mediaUrl) {
+  if (!mediaUrl) return '';
+  if (/^https?:\/\//i.test(mediaUrl)) return mediaUrl;
+  return `${SERVER_URL}${mediaUrl.startsWith('/') ? '' : '/'}${mediaUrl}`;
+}
+
+function stripRedundantMediaPrefix(text, hasMediaUrl) {
+  if (!text || !hasMediaUrl) return text || '';
+  return String(text)
+    .replace(/^\[(Gambar|Video|Dokumen:[^\]]+|Voice Note|Audio|Stiker)\]\s*/i, '')
+    .trim();
+}
+
+function buildChatMediaHtml(log) {
+  if (!log.media_url) return '';
+  const fullUrl = resolveMediaFullUrl(log.media_url);
+  const fileName = log.media_filename || log.media_url.split('/').pop() || 'lampiran';
+  const mime = String(log.media_mimetype || '').toLowerCase();
+  const isPdf = mime === 'application/pdf' || /\.pdf$/i.test(fileName);
+
+  const safeUrl = escapeHtml(fullUrl);
+  const safeName = escapeHtml(fileName);
+
+  if (log.media_type === 'image' || log.media_type === 'sticker') {
+    return `
+      <div class="wa-media-wrap">
+        <img
+          src="${safeUrl}"
+          alt="${safeName}"
+          class="wa-media-img"
+          loading="lazy"
+          onclick="openMediaPreview('${safeUrl}', '${safeName}', 'image')"
+        />
+        <div class="wa-media-bar">
+          <button type="button" class="wa-media-btn" onclick="openMediaPreview('${safeUrl}', '${safeName}', 'image')">🔍 Perbesar</button>
+          <button type="button" class="wa-media-btn primary" onclick="downloadChatMedia('${safeUrl}', '${safeName}')">⬇️ Unduh</button>
+        </div>
+      </div>`;
+  }
+
+  if (log.media_type === 'video') {
+    return `
+      <div class="wa-media-wrap">
+        <video src="${safeUrl}" controls style="max-width: 240px; max-height: 220px; border-radius: 7px; display: block;"></video>
+        <div class="wa-media-bar">
+          <button type="button" class="wa-media-btn primary" onclick="downloadChatMedia('${safeUrl}', '${safeName}')">⬇️ Unduh Video</button>
+        </div>
+      </div>`;
+  }
+
+  if (log.media_type === 'audio') {
+    return `
+      <div class="wa-media-wrap">
+        <audio src="${safeUrl}" controls style="max-width: 240px; height: 36px; display: block;"></audio>
+        <div class="wa-media-bar">
+          <button type="button" class="wa-media-btn" onclick="downloadChatMedia('${safeUrl}', '${safeName}')">⬇️ Unduh Audio</button>
+        </div>
+      </div>`;
+  }
+
+  return `
+    <div class="wa-doc-card">
+      <div class="wa-doc-title">
+        <span>${isPdf ? '📕' : '📄'}</span>
+        <span>${safeName}</span>
+      </div>
+      <div class="wa-media-bar">
+        ${isPdf ? `<button type="button" class="wa-media-btn" onclick="openMediaPreview('${safeUrl}', '${safeName}', 'pdf')">👁️ Preview PDF</button>` : ''}
+        <button type="button" class="wa-media-btn primary" onclick="downloadChatMedia('${safeUrl}', '${safeName}')">⬇️ Unduh</button>
+      </div>
+    </div>`;
+}
+
+function openMediaPreview(url, filename, kind) {
+  document.getElementById('mediaPreviewTitle').textContent = filename || 'Preview Lampiran';
+  document.getElementById('mediaPreviewSub').textContent =
+    kind === 'pdf' ? 'Preview Dokumen PDF' : 'Preview Gambar Lampiran';
+
+  const dlBtn = document.getElementById('btnDownloadPreviewMedia');
+  dlBtn.onclick = () => downloadChatMedia(url, filename);
+
+  const body = document.getElementById('mediaPreviewBody');
+  if (kind === 'pdf') {
+    body.innerHTML = `<iframe src="${escapeHtml(url)}" style="width: 100%; height: 100%; border: none; border-radius: 8px; background: #fff;"></iframe>`;
+  } else {
+    body.innerHTML = `<img src="${escapeHtml(url)}" alt="${escapeHtml(filename)}" style="max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 6px;" />`;
+  }
+
+  document.getElementById('mediaPreviewModal').classList.remove('hidden');
+}
+
+function closeMediaPreviewModal() {
+  document.getElementById('mediaPreviewModal').classList.add('hidden');
+  document.getElementById('mediaPreviewBody').innerHTML = '';
+}
+
+async function downloadChatMedia(url, filename) {
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const blob = await res.blob();
+    const blobUrl = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = blobUrl;
+    a.download = filename || 'lampiran_wa';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 5000);
+  } catch (_) {
+    window.open(url, '_blank', 'noopener,noreferrer');
+  }
+}
+
+function renderChatMessages(thread) {
+  document.getElementById('waChatHeader').classList.remove('hidden');
+  document.getElementById('waHeaderName').textContent = thread.name;
+  document.getElementById('waHeaderSub').textContent = thread.number;
+
+  const cleanPhone = thread.number.replace(/\D/g, '');
+  const linkEl = document.getElementById('waHeaderOpenLink');
+  if (cleanPhone) {
+    linkEl.href = `https://wa.me/${cleanPhone}`;
+    linkEl.classList.remove('hidden');
+  } else {
+    linkEl.classList.add('hidden');
+  }
+
+  const ordered = [...thread.logs].reverse();
+  let lastDate = '';
+  let html = '';
+
+  for (const log of ordered) {
+    const dk = toWitaDateKey(log.created_at);
+    if (dk !== lastDate) {
+      lastDate = dk;
+      html += `<div class="wa-date-divider">${escapeHtml(formatWitaDateLabel(dk))}</div>`;
+    }
+
+    const mediaHtml = buildChatMediaHtml(log);
+
+    if (log.incoming || (mediaHtml && log.log_type !== 'admin_direct')) {
+      const captionText = stripRedundantMediaPrefix(log.incoming, Boolean(log.media_url));
+      html += `
+        <div class="wa-bubble in">
+          ${mediaHtml}
+          ${captionText ? `<div>${escapeHtml(captionText)}</div>` : ''}
+          <div class="wa-bubble-foot">${formatWitaTime(log.incoming_at || log.created_at)}</div>
+        </div>`;
+    }
+
+    if (log.reply) {
+      const isAdmin = log.log_type === 'admin_direct';
+      const replyMediaHtml = isAdmin && !log.incoming ? mediaHtml : '';
+      const replyText = stripRedundantMediaPrefix(log.reply, Boolean(replyMediaHtml));
+      html += `
+        <div class="wa-bubble ${isAdmin ? 'out-admin' : 'out-bot'}">
+          <span class="wa-role-tag ${isAdmin ? 'admin' : 'bot'}">${isAdmin ? '👤 Admin' : '🤖 Auto-Reply / AI'}</span>
+          ${replyMediaHtml}
+          ${replyText ? `<div>${escapeHtml(replyText)}</div>` : ''}
+          <div class="wa-bubble-foot">${formatWitaTime(log.created_at)}</div>
+        </div>`;
+    }
+  }
+
+  const container = document.getElementById('waMessagesContainer');
+  const nearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 120;
+  container.innerHTML = html;
+  if (nearBottom) scrollChatToBottom();
+}
+
+// ============================================================================
+// BROADCAST ANTI-SPAM
+// ============================================================================
+async function loadContacts(force = false) {
+  if (!force && contactsCache.length > 0) return;
+  const data = await apiFetch('/api/contacts');
+  contactsCache = data.contacts || [];
+  document.getElementById('contactCountPill').textContent = `${contactsCache.length.toLocaleString('id-ID')} Kontak`;
+  if (excludedNumbersList.length > 0) {
+    renderExcludedContactsList();
+  }
+}
+
+function insertBroadcastSample() {
+  document.getElementById('bcMessageInput').value =
+    '{Halo|Hai|Assalamualaikum} Kak *{nama}* 👋, {salam}!\n\n' +
+    '{Kabar gembira|Info spesial} dari *Muflih Print Makassar* — pemesanan cetak undangan, stiker, & dokumen PDF bisa dilakukan secara online (COD) di:\n' +
+    '👉 https://muflihprint.vercel.app\n\n' +
+    '{Silakan balas pesan ini jika ingin tanya-tanya dulu ya, Kak!|Langsung hubungi kami kapan saja jika butuh bantuan cetak ya, Kak!} 😊';
+  previewBroadcastSample();
+}
+
+function previewBroadcastSample() {
+  const tpl = document.getElementById('bcMessageInput').value.trim();
+  const box = document.getElementById('bcLivePreviewBox');
+  if (!tpl) return box.classList.add('hidden');
+  box.innerHTML =
+    `<strong>Contoh Variasi 1:</strong>\n${escapeHtml(renderClientSpintax(tpl, 'Budi'))}\n\n` +
+    `<strong>Contoh Variasi 2:</strong>\n${escapeHtml(renderClientSpintax(tpl, 'Siti'))}`;
+  box.classList.remove('hidden');
+}
+
+document.getElementById('btnStartBroadcast').addEventListener('click', async () => {
+  await loadContacts(true);
+  const title = document.getElementById('bcTitleInput').value.trim() || 'Broadcast Promo';
+  const targetMode = document.getElementById('bcTargetSelect').value;
+  const message_template = document.getElementById('bcMessageInput').value.trim();
+  const extraRaw = document.getElementById('bcExtraNumbersInput').value;
+
+  if (!message_template) return alert('Isi pesan broadcast terlebih dahulu.');
+
+  const recipientMap = new Map();
+  if (targetMode !== 'manual_only') {
+    for (const c of contactsCache) {
+      if (targetMode === 'chat_only' && c.source !== 'chat_history') continue;
+      if (targetMode === 'never_broadcasted' && c.last_broadcast_at) continue;
+      const p = normalizePhone(c.phone);
+      if (p) recipientMap.set(p, { phone: p, name: c.name || '' });
+    }
+  }
+  for (const p of extraRaw.split(/[\s,;\n]+/).map(normalizePhone).filter(Boolean)) {
+    if (!recipientMap.has(p)) recipientMap.set(p, { phone: p, name: '' });
+  }
+
+  const recipients = Array.from(recipientMap.values());
+  if (recipients.length === 0) return alert('Tidak ada nomor kontak sesuai kriteria.');
+
+  const daily_limit = Math.max(10, Number(document.getElementById('bcDailyLimitInput').value || 100));
+  if (!confirm(`Kirim broadcast "${title}" ke ${recipients.length} nomor dari akun ${ACTIVE_BOT_ID}?`)) return;
+
+  const res = await apiFetch('/api/broadcasts', {
+    method: 'POST',
+    body: JSON.stringify({
+      bot_id: ACTIVE_BOT_ID,
+      title,
+      message_template,
+      recipients,
+      min_delay_sec: Number(document.getElementById('bcMinDelayInput').value || 15),
+      max_delay_sec: Number(document.getElementById('bcMaxDelayInput').value || 35),
+      batch_size: Number(document.getElementById('bcBatchSizeInput').value || 15),
+      batch_pause_min: Number(document.getElementById('bcBatchPauseInput').value || 3),
+      daily_limit,
+      safe_hours_only: document.getElementById('bcSafeHoursCheck').checked
+    })
+  });
+
+  activeHistoryBroadcastId = res.id;
+  document.getElementById('bcTitleInput').value = '';
+  document.getElementById('bcExtraNumbersInput').value = '';
+  pollState();
+});
+
+function renderBroadcasts() {
+  const hasRunning = bcCampaignsCache.some(b => b.status === 'running');
+  document.getElementById('tabBroadcastBadge').classList.toggle('hidden', !hasRunning);
+  document.getElementById('bcCampaignCountPill').textContent = `${bcCampaignsCache.length} Broadcast`;
+
+  const listEl = document.getElementById('bcCampaignList');
+  if (bcCampaignsCache.length === 0) {
+    listEl.innerHTML = '<div style="padding:16px; color:#64748b; font-size:0.85rem;">Belum ada riwayat broadcast.</div>';
+    document.getElementById('bcHistoryTableBody').innerHTML = '';
+    return;
+  }
+
+  if (!activeHistoryBroadcastId || !bcCampaignsCache.some(b => b.id === activeHistoryBroadcastId)) {
+    activeHistoryBroadcastId = bcCampaignsCache[0].id;
+  }
+
+  listEl.innerHTML = bcCampaignsCache.map(bc => {
+    const done = (bc.sent_count || 0) + (bc.failed_count || 0);
+    const pct = bc.total_recipients > 0 ? Math.min(100, Math.round((done / bc.total_recipients) * 100)) : 0;
+    const isActive = bc.id === activeHistoryBroadcastId;
+    return `
+      <div class="bc-campaign-item ${isActive ? 'active' : ''}" onclick="selectBroadcastCampaign('${bc.id}')">
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:6px;">
+          <strong style="font-size:0.88rem;">${escapeHtml(bc.title)}</strong>
+          <span class="bc-status-pill ${bc.status}">${bc.status}</span>
+        </div>
+        <div class="bc-progress-track"><div class="bc-progress-fill" style="width:${pct}%"></div></div>
+        <div style="font-size:0.75rem; color:#475569;">Terkirim: <strong>${bc.sent_count}</strong> / ${bc.total_recipients} (Gagal: ${bc.failed_count})</div>
+        <div style="font-size:0.72rem; color:#64748b; margin-top:3px;">${escapeHtml(bc.current_note || '')}</div>
+        <div style="display:flex; gap:5px; margin-top:8px;" onclick="event.stopPropagation()">
+          ${bc.status === 'running' ? `<button class="warn sm" onclick="changeBroadcastStatus('${bc.id}', 'paused')">Jeda</button>` : ''}
+          ${bc.status === 'paused' ? `<button class="sm" onclick="changeBroadcastStatus('${bc.id}', 'running')">Lanjut</button>` : ''}
+          ${bc.status === 'running' || bc.status === 'paused' ? `<button class="danger sm" onclick="changeBroadcastStatus('${bc.id}', 'cancelled')">Batal</button>` : ''}
+          <button class="secondary sm" onclick="deleteBroadcast('${bc.id}')">Hapus</button>
+        </div>
+      </div>`;
+  }).join('');
+
+  loadBroadcastRecipients(activeHistoryBroadcastId);
+}
+
+async function selectBroadcastCampaign(id) {
+  activeHistoryBroadcastId = id;
+  renderBroadcasts();
+}
+
+async function loadBroadcastRecipients(id) {
+  const bc = bcCampaignsCache.find(b => b.id === id);
+  if (!bc) return;
+  document.getElementById('bcHistoryTitle').textContent = `📋 ${bc.title}`;
+  document.getElementById('bcHistorySubtitle').textContent = `Total ${bc.total_recipients} penerima • Status: ${bc.status.toUpperCase()}`;
+
+  const data = await apiFetch(`/api/broadcasts/${id}/recipients`);
+  bcHistoryRowsCache = data.recipients || [];
+  renderBroadcastHistoryTable();
+}
+
+function renderBroadcastHistoryTable() {
+  const statusFilter = document.getElementById('bcHistoryStatusFilter').value;
+  const search = (document.getElementById('bcHistorySearchInput').value || '').toLowerCase().trim();
+
+  const filtered = bcHistoryRowsCache.filter(r => {
+    if (statusFilter === 'sent' && r.status !== 'sent') return false;
+    if (statusFilter === 'failed' && r.status !== 'failed' && r.status !== 'skipped') return false;
+    if (statusFilter === 'pending' && r.status !== 'pending') return false;
+    if (search) {
+      const hay = `${r.name} ${r.phone} ${r.rendered_message || ''} ${r.error_msg || ''}`.toLowerCase();
+      if (!hay.includes(search)) return false;
+    }
+    return true;
+  });
+
+  const tbody = document.getElementById('bcHistoryTableBody');
+  if (filtered.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="4" style="color:#64748b; text-align:center;">Tidak ada data penerima untuk filter ini.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(r => `
+    <tr>
+      <td>${r.sent_at ? formatWitaTime(r.sent_at) : '-'}</td>
+      <td><strong>${escapeHtml(r.name || '-')}</strong><br><small>+${escapeHtml(r.phone)}</small></td>
+      <td><span class="bc-status-pill ${r.status === 'sent' ? 'completed' : r.status === 'pending' ? 'paused' : 'cancelled'}">${r.status}</span></td>
+      <td style="white-space:pre-wrap; font-size:0.78rem;">${escapeHtml(r.rendered_message || r.error_msg || 'Menunggu antrean...')}</td>
+    </tr>
+  `).join('');
+}
+
+async function changeBroadcastStatus(id, status) {
+  await apiFetch(`/api/broadcasts/${id}/status`, {
+    method: 'POST',
+    body: JSON.stringify({ bot_id: ACTIVE_BOT_ID, status })
+  });
+  pollState();
+}
+
+async function deleteBroadcast(id) {
+  if (!confirm('Hapus riwayat broadcast ini?')) return;
+  await apiFetch(`/api/broadcasts/${id}`, { method: 'DELETE' });
+  pollState();
+}
+
+// ============================================================================
+// PENGATURAN AI (TERPISAH PER AKUN WA), LUAR JAM KERJA & ATURAN AUTO-REPLY
+// ============================================================================
+function toggleSecretInput(inputId, btnEl) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  const isPass = input.type === 'password';
+  input.type = isPass ? 'text' : 'password';
+  if (btnEl) btnEl.textContent = isPass ? '🙈' : '👁️';
+}
+
+function updateCustomKeyBadge() {
+  const g = (document.getElementById('aiGroqKeyInput').value || '').trim();
+  const gem = (document.getElementById('aiGeminiKeyInput').value || '').trim();
+  const or = (document.getElementById('aiOpenRouterKeyInput').value || '').trim();
+  const count = [g, gem, or].filter(Boolean).length;
+  const badge = document.getElementById('aiCustomKeyBadge');
+  if (count > 0) {
+    badge.className = 'sync-pill ai';
+    badge.textContent = `🔑 ${count} Key Khusus Aktif`;
+  } else {
+    badge.className = 'sync-pill';
+    badge.textContent = 'Memakai Default .env';
+  }
+}
+
+function markAiFormDirty() {
+  isAiFormDirty = true;
+  document.getElementById('aiUnsavedHint').style.display = 'inline';
+}
+
+function updateAiLiveBadge() {
+  const enabled = document.getElementById('aiEnabledCheck').checked;
+  document.getElementById('aiConfigFieldsBox').classList.toggle('hidden', !enabled);
+  const pill = document.getElementById('aiLiveStatusPill');
+  const desc = document.getElementById('aiModeDescriptionBox');
+  if (enabled) {
+    pill.classList.add('ai');
+    pill.textContent = '🧠 AI Aktif';
+    desc.classList.remove('off');
+    desc.innerHTML = '<strong>Mode AI Aktif:</strong> Semua balasan dijawab otomatis oleh AI menggunakan API Key &amp; pengetahuan khusus nomor WA ini.';
+  } else {
+    pill.classList.remove('ai');
+    pill.textContent = '⚪ AI Nonaktif';
+    desc.classList.add('off');
+    desc.innerHTML = '<strong>Mode AI Nonaktif:</strong> Balasan dikirim berdasarkan pencocokan kata kunci di bawah.';
+  }
+  updateCustomKeyBadge();
+}
+
+function populateAiForm(cfg) {
+  document.getElementById('aiRulesRefCountPill').textContent = `📚 ${currentRules.length} Aturan Auto-Reply`;
+  if (isAiFormDirty) return updateAiLiveBadge();
+  document.getElementById('aiEnabledCheck').checked = Boolean(cfg.ai_enabled);
+  if (cfg.ai_model) document.getElementById('aiModelSelect').value = cfg.ai_model;
+
+  if (document.activeElement !== document.getElementById('aiGroqKeyInput')) {
+    document.getElementById('aiGroqKeyInput').value = cfg.groq_api_key || '';
+  }
+  if (document.activeElement !== document.getElementById('aiGeminiKeyInput')) {
+    document.getElementById('aiGeminiKeyInput').value = cfg.gemini_api_key || '';
+  }
+  if (document.activeElement !== document.getElementById('aiOpenRouterKeyInput')) {
+    document.getElementById('aiOpenRouterKeyInput').value = cfg.openrouter_api_key || '';
+  }
+  if (document.activeElement !== document.getElementById('aiSystemPromptInput')) {
+    document.getElementById('aiSystemPromptInput').value = cfg.ai_system_prompt || '';
+  }
+  if (document.activeElement !== document.getElementById('aiBusinessKnowledgeInput')) {
+    document.getElementById('aiBusinessKnowledgeInput').value = cfg.ai_business_knowledge || '';
+  }
+
+  updateAiLiveBadge();
+}
+
+document.getElementById('btnSaveAiConfig').addEventListener('click', async () => {
+  const ai_enabled = document.getElementById('aiEnabledCheck').checked;
+  await apiFetch('/api/config', {
+    method: 'POST',
+    body: JSON.stringify({
+      bot_id: ACTIVE_BOT_ID,
+      ai_enabled,
+      ai_mode: ai_enabled ? 'ai_only' : 'manual',
+      ai_model: document.getElementById('aiModelSelect').value,
+      groq_api_key: document.getElementById('aiGroqKeyInput').value.trim(),
+      gemini_api_key: document.getElementById('aiGeminiKeyInput').value.trim(),
+      openrouter_api_key: document.getElementById('aiOpenRouterKeyInput').value.trim(),
+      ai_system_prompt: document.getElementById('aiSystemPromptInput').value.trim(),
+      ai_business_knowledge: document.getElementById('aiBusinessKnowledgeInput').value.trim()
+    })
+  });
+  isAiFormDirty = false;
+  document.getElementById('aiUnsavedHint').style.display = 'none';
+  alert(`Pengaturan & akun AI untuk ${ACTIVE_BOT_ID} berhasil disimpan!`);
+  pollState();
+});
+
+async function testCurrentAccountAi() {
+  if (isAiFormDirty) {
+    return alert('Simpan pengaturan AI terlebih dahulu sebelum melakukan pengujian.');
+  }
+  const btn = document.getElementById('btnTestAccountAi');
+  btn.disabled = true;
+  btn.textContent = '⏳ Menguji AI...';
+  try {
+    const res = await apiFetch('/api/test-ai?q=' + encodeURIComponent('Halo kak, info harga cetak atau produk?'));
+    alert(
+      `✅ Tes AI Berhasil (${ACTIVE_BOT_ID})\n` +
+      `Provider: ${res.provider_used || '-'}\n` +
+      `Model: ${res.model_used || '-'}\n\n` +
+      `Contoh Balasan:\n${res.sample_reply || '-'}`
+    );
+  } catch (err) {
+    alert(`❌ Tes AI Gagal (${ACTIVE_BOT_ID}):\n${err.message}`);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🧪 Tes AI Akun Ini';
+  }
+}
+
+function markOffHoursDirty() {
+  isOffHoursDirty = true;
+  document.getElementById('offHoursUnsavedHint').style.display = 'inline';
+}
+
+function populateOffHoursForm(cfg) {
+  if (isOffHoursDirty) return;
+  document.getElementById('offHoursStartInput').value = cfg.off_hours_start || '18:00';
+  document.getElementById('offHoursEndInput').value = cfg.off_hours_end || '08:00';
+  document.getElementById('offHoursCooldownInput').value = cfg.off_hours_cooldown_min ?? 60;
+  const days = String(cfg.off_hours_days ?? '0').split(',').map(s => s.trim());
+  document.querySelectorAll('#offHoursDaysGroup input[type="checkbox"]').forEach(cb => {
+    cb.checked = days.includes(cb.value);
+  });
+  if (document.activeElement !== document.getElementById('offHoursReplyInput')) {
+    document.getElementById('offHoursReplyInput').value = cfg.off_hours_reply || '';
+  }
+}
+
+function insertOffHoursSample() {
+  document.getElementById('offHoursReplyInput').value =
+    '──────────────\n🌙 *Info Jam Tutup:*\nSaat ini *Muflih Print* sedang tutup (Senin – Sabtu, 08.00 – 18.00 WITA, Ahad Libur). Pesan tetap kami terima dan akan dibalas saat jam buka. 🙏';
+  markOffHoursDirty();
+}
+
+// --- DAFTAR KONTAK PENGECUALIAN (READ-ONLY DENGAN NAMA + HAPUS PER ITEM) ---
+function resolveContactName(phone) {
+  const norm = normalizePhone(phone);
+  if (!norm) return '';
+
+  const foundContact = contactsCache.find(c => normalizePhone(c.phone) === norm);
+  if (foundContact && foundContact.name && !String(foundContact.name).startsWith('+')) {
+    return String(foundContact.name).trim();
+  }
+
+  const foundLog = rawLogsCache.find(
+    l => normalizePhone(l.sender_number) === norm && l.sender_name && !String(l.sender_name).startsWith('+')
+  );
+  if (foundLog) {
+    return String(foundLog.sender_name).trim();
+  }
+
+  return '';
+}
+
+function renderExcludedContactsList() {
+  document.getElementById('excludedCountPill').textContent = `${excludedNumbersList.length} Kontak`;
+  const boxEl = document.getElementById('excludedContactsReadonlyList');
+
+  if (excludedNumbersList.length === 0) {
+    boxEl.innerHTML =
+      '<div style="padding: 16px; text-align: center; color: #64748b; font-size: 0.85rem;">Belum ada kontak yang dikecualikan.</div>';
+    return;
+  }
+
+  boxEl.innerHTML = excludedNumbersList.map(phone => {
+    const resolvedName = resolveContactName(phone);
+    const displayName = resolvedName || 'Kontak Belum Bernama';
+    const initials = (resolvedName || 'WA').replace(/[^a-zA-Z0-9]/g, '').slice(0, 2).toUpperCase() || 'WA';
+
+    return `
+      <div class="excluded-item-row">
+        <div style="display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1;">
+          <div class="wa-avatar" style="width: 34px; height: 34px; font-size: 0.78rem; background: ${resolvedName ? '#16a34a' : '#64748b'};">${escapeHtml(initials)}</div>
+          <div style="min-width: 0;">
+            <div style="font-weight: 700; font-size: 0.88rem; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(displayName)}</div>
+            <div style="font-size: 0.76rem; color: #64748b;">+${escapeHtml(phone)}</div>
+          </div>
+        </div>
+        <button type="button" class="danger sm" onclick="removeExcludedContact('${escapeHtml(phone)}')" title="Hapus dari daftar pengecualian">🗑️ Hapus</button>
+      </div>`;
+  }).join('');
+}
+
+function populateExcludedForm(cfg) {
+  const parsed = Array.from(
+    new Set(
+      String(cfg.excluded_numbers || '')
+        .split(/[\s,;\n]+/)
+        .map(normalizePhone)
+        .filter(Boolean)
+    )
+  );
+
+  if (parsed.length > 0 && contactsCache.length === 0) {
+    loadContacts(true).catch(() => {});
+  }
+
+  excludedNumbersList = parsed;
+  renderExcludedContactsList();
+}
+
+async function removeExcludedContact(phone) {
+  const norm = normalizePhone(phone);
+  if (!norm) return;
+  const updated = excludedNumbersList.filter(p => p !== norm);
+  excludedNumbersList = updated;
+  renderExcludedContactsList();
+
+  try {
+    await apiFetch('/api/config', {
+      method: 'POST',
+      body: JSON.stringify({ bot_id: ACTIVE_BOT_ID, excluded_numbers: updated.join('\n') })
+    });
+  } catch (err) {
+    alert(`Gagal menghapus kontak dari pengecualian: ${err.message}`);
+    pollState();
+  }
+}
+
+async function addManualExcludedContact() {
+  const input = document.getElementById('manualExcludedInput');
+  const norm = normalizePhone(input.value);
+  if (!norm) return alert('Masukkan nomor WhatsApp yang valid (contoh: 081234567890).');
+  if (excludedNumbersList.includes(norm)) {
+    input.value = '';
+    return alert('Kontak tersebut sudah ada dalam daftar pengecualian.');
+  }
+
+  const updated = [...excludedNumbersList, norm];
+  excludedNumbersList = updated;
+  input.value = '';
+  renderExcludedContactsList();
+
+  try {
+    await apiFetch('/api/config', {
+      method: 'POST',
+      body: JSON.stringify({ bot_id: ACTIVE_BOT_ID, excluded_numbers: updated.join('\n') })
+    });
+  } catch (err) {
+    alert(`Gagal menambahkan nomor: ${err.message}`);
+    pollState();
+  }
+}
+
+// --- MODAL PILIH KONTAK UNTUK DAFTAR PENGECUALIAN ---
+async function openExcludedContactModal() {
+  selectedExcludedSet = new Set(excludedNumbersList);
+
+  document.getElementById('excludedModalSearchInput').value = '';
+  document.getElementById('excludedModalFilterSelect').value = 'all';
+  document.getElementById('excludedContactModal').classList.remove('hidden');
+  document.getElementById('excludedModalList').innerHTML =
+    '<div style="padding: 20px; text-align: center; color: #64748b; font-size: 0.86rem;">Memuat daftar kontak dari server...</div>';
+
+  try {
+    await loadContacts(true);
+  } catch (err) {
+    console.warn('Gagal memuat daftar kontak:', err.message);
+  }
+
+  renderExcludedModalList();
+  setTimeout(() => document.getElementById('excludedModalSearchInput').focus(), 50);
+}
+
+function closeExcludedContactModal() {
+  document.getElementById('excludedContactModal').classList.add('hidden');
+}
+
+async function refreshExcludedModalContacts() {
+  document.getElementById('excludedModalList').innerHTML =
+    '<div style="padding: 20px; text-align: center; color: #64748b; font-size: 0.86rem;">Menyegarkan kontak...</div>';
+  await loadContacts(true);
+  renderExcludedModalList();
+}
+
+function getMergedModalContacts() {
+  const map = new Map();
+  for (const c of contactsCache) {
+    const p = normalizePhone(c.phone);
+    if (!p) continue;
+    map.set(p, {
+      phone: p,
+      name: (c.name && !String(c.name).startsWith('+')) ? String(c.name).trim() : '',
+      source: c.source || 'chat_history'
+    });
+  }
+  for (const p of selectedExcludedSet) {
+    if (!map.has(p)) {
+      map.set(p, { phone: p, name: resolveContactName(p), source: 'manual' });
+    }
+  }
+  return Array.from(map.values()).sort((a, b) => {
+    if (a.name && !b.name) return -1;
+    if (!a.name && b.name) return 1;
+    if (a.name && b.name) return a.name.localeCompare(b.name, 'id');
+    return a.phone.localeCompare(b.phone);
+  });
+}
+
+function getFilteredModalContacts() {
+  const searchRaw = (document.getElementById('excludedModalSearchInput').value || '').toLowerCase().trim();
+  const searchDigits = searchRaw.replace(/\D/g, '');
+  const altSearchDigits = searchDigits.startsWith('0') ? '62' + searchDigits.slice(1) : '';
+  const filterMode = document.getElementById('excludedModalFilterSelect').value;
+
+  return getMergedModalContacts().filter(item => {
+    const isChecked = selectedExcludedSet.has(item.phone);
+    if (filterMode === 'selected' && !isChecked) return false;
+    if (filterMode === 'unselected' && isChecked) return false;
+
+    if (searchRaw) {
+      const nameMatch = item.name.toLowerCase().includes(searchRaw);
+      const localPhone = item.phone.startsWith('62') ? '0' + item.phone.slice(2) : item.phone;
+      const phoneMatch =
+        item.phone.includes(searchRaw) ||
+        `+${item.phone}`.includes(searchRaw) ||
+        localPhone.includes(searchRaw) ||
+        (searchDigits && (item.phone.includes(searchDigits) || localPhone.includes(searchDigits))) ||
+        (altSearchDigits && item.phone.includes(altSearchDigits));
+      return nameMatch || phoneMatch;
+    }
+    return true;
+  });
+}
+
+function updateExcludedModalCounters(filteredCount) {
+  document.getElementById('excludedModalResultInfo').textContent = `${filteredCount} kontak ditampilkan`;
+  document.getElementById('excludedModalSelectedCount').textContent = `${selectedExcludedSet.size} Kontak Dipilih`;
+}
+
+function toggleExcludedContactSelection(phone, checked, checkboxEl) {
+  if (checked) {
+    selectedExcludedSet.add(phone);
+  } else {
+    selectedExcludedSet.delete(phone);
+  }
+  if (checkboxEl) {
+    checkboxEl.closest('.contact-pick-item')?.classList.toggle('selected', checked);
+  }
+  document.getElementById('excludedModalSelectedCount').textContent = `${selectedExcludedSet.size} Kontak Dipilih`;
+}
+
+function toggleSelectFilteredExcluded(shouldSelect) {
+  const filtered = getFilteredModalContacts();
+  for (const item of filtered) {
+    if (shouldSelect) selectedExcludedSet.add(item.phone);
+    else selectedExcludedSet.delete(item.phone);
+  }
+  renderExcludedModalList();
+}
+
+function renderExcludedModalList() {
+  const filtered = getFilteredModalContacts();
+  updateExcludedModalCounters(filtered.length);
+
+  const listEl = document.getElementById('excludedModalList');
+  if (filtered.length === 0) {
+    listEl.innerHTML =
+      '<div style="padding: 24px 12px; text-align: center; color: #64748b; font-size: 0.86rem;">Tidak ada kontak yang cocok dengan pencarian atau filter.</div>';
+    return;
+  }
+
+  listEl.innerHTML = filtered.map(item => {
+    const isChecked = selectedExcludedSet.has(item.phone);
+    const displayName = item.name || `+${item.phone}`;
+    const initials = (item.name || 'WA').replace(/[^a-zA-Z0-9]/g, '').slice(0, 2).toUpperCase() || 'WA';
+    const isPhonebook = item.source === 'wa_contact';
+    const sourceLabel = isPhonebook ? 'Buku Kontak' : item.source === 'manual' ? 'Manual' : 'Riwayat Chat';
+
+    return `
+      <label class="contact-pick-item ${isChecked ? 'selected' : ''}">
+        <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleExcludedContactSelection('${escapeHtml(item.phone)}', this.checked, this)" />
+        <div class="wa-avatar" style="width: 34px; height: 34px; font-size: 0.78rem; background: ${isPhonebook ? '#16a34a' : '#475569'};">${escapeHtml(initials)}</div>
+        <div style="flex: 1; min-width: 0;">
+          <div style="font-weight: 700; font-size: 0.88rem; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(displayName)}</div>
+          <div style="font-size: 0.76rem; color: #64748b;">+${escapeHtml(item.phone)}</div>
+        </div>
+        <span class="contact-source-badge ${isPhonebook ? 'phonebook' : ''}">${sourceLabel}</span>
+      </label>`;
+  }).join('');
+}
+
+async function applyExcludedModalSelection() {
+  const btn = document.getElementById('btnApplyExcludedModal');
+  btn.disabled = true;
+  btn.textContent = 'Menyimpan...';
+
+  try {
+    const updatedList = Array.from(selectedExcludedSet);
+    await apiFetch('/api/config', {
+      method: 'POST',
+      body: JSON.stringify({ bot_id: ACTIVE_BOT_ID, excluded_numbers: updatedList.join('\n') })
+    });
+
+    excludedNumbersList = updatedList;
+    renderExcludedContactsList();
+    closeExcludedContactModal();
+  } catch (err) {
+    alert(`Gagal menyimpan daftar pengecualian: ${err.message}`);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '💾 Terapkan & Simpan';
+  }
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    const accModal = document.getElementById('accountModal');
+    if (accModal && !accModal.classList.contains('hidden')) {
+      closeAccountModal();
+      return;
+    }
+
+    const mediaModal = document.getElementById('mediaPreviewModal');
+    if (mediaModal && !mediaModal.classList.contains('hidden')) {
+      closeMediaPreviewModal();
+      return;
+    }
+
+    const excludedModal = document.getElementById('excludedContactModal');
+    if (excludedModal && !excludedModal.classList.contains('hidden')) {
+      closeExcludedContactModal();
+    }
+  }
+});
+
+document.getElementById('btnSaveOffHours').addEventListener('click', async () => {
+  const selectedDays = Array.from(document.querySelectorAll('#offHoursDaysGroup input:checked')).map(cb => cb.value).join(',');
+  await apiFetch('/api/config', {
+    method: 'POST',
+    body: JSON.stringify({
+      bot_id: ACTIVE_BOT_ID,
+      off_hours_start: document.getElementById('offHoursStartInput').value,
+      off_hours_end: document.getElementById('offHoursEndInput').value,
+      off_hours_cooldown_min: Number(document.getElementById('offHoursCooldownInput').value || 60),
+      off_hours_days: selectedDays,
+      off_hours_reply: document.getElementById('offHoursReplyInput').value.trim()
+    })
+  });
+  isOffHoursDirty = false;
+  document.getElementById('offHoursUnsavedHint').style.display = 'none';
+  alert('Pengaturan luar jam kerja tersimpan!');
+});
+
+function toggleRuleFormVisibility() {
+  const isDef = document.getElementById('isDefaultCheck').checked;
+  document.getElementById('keywordFieldsGrid').classList.toggle('hidden', isDef);
+  document.getElementById('pauseBotLabel').classList.toggle('hidden', isDef);
+  document.getElementById('followupCheckLabel').classList.toggle('hidden', isDef);
+  const expFollow = !isDef && document.getElementById('expectsFollowupCheck').checked;
+  document.getElementById('followupFieldsBox').classList.toggle('hidden', !expFollow);
+}
+
+function resetRuleForm() {
+  editingRuleId = null;
+  document.getElementById('formTitle').textContent = 'Tambah Format Balasan Baru';
+  document.getElementById('btnAddRule').textContent = '+ Simpan Aturan Balasan';
+  document.getElementById('btnCancelEdit').classList.add('hidden');
+  document.getElementById('ruleFormCard').classList.remove('editing-highlight');
+  document.getElementById('isDefaultCheck').checked = false;
+  document.getElementById('exactKeywordInput').value = '';
+  document.getElementById('containsKeywordInput').value = '';
+  document.getElementById('pauseBotCheck').checked = false;
+  document.getElementById('replyInput').value = '';
+  document.getElementById('expectsFollowupCheck').checked = false;
+  document.getElementById('followupKeywordsInput').value = '';
+  document.getElementById('followupReplyInput').value = '';
+  document.getElementById('followupPauseCheck').checked = true;
+  toggleRuleFormVisibility();
+}
+
+function startEditRule(id) {
+  const r = currentRules.find(item => item.id === id);
+  if (!r) return;
+  editingRuleId = id;
+  document.getElementById('formTitle').textContent = 'Edit Format Balasan';
+  document.getElementById('btnAddRule').textContent = '💾 Simpan Perubahan';
+  document.getElementById('btnCancelEdit').classList.remove('hidden');
+  document.getElementById('ruleFormCard').classList.add('editing-highlight');
+
+  document.getElementById('isDefaultCheck').checked = Boolean(r.is_default);
+  document.getElementById('exactKeywordInput').value = r.exact_keywords || '';
+  document.getElementById('containsKeywordInput').value = r.contains_keywords || '';
+  document.getElementById('pauseBotCheck').checked = Boolean(r.pause_bot);
+  document.getElementById('replyInput').value = r.reply || '';
+  document.getElementById('expectsFollowupCheck').checked = Boolean(r.expects_followup);
+  document.getElementById('followupKeywordsInput').value = r.followup_keywords || '';
+  document.getElementById('followupReplyInput').value = r.followup_reply || '';
+  document.getElementById('followupPauseCheck').checked = r.followup_pause_bot !== false;
+  toggleRuleFormVisibility();
+  document.getElementById('ruleFormCard').scrollIntoView({ behavior: 'smooth' });
+}
+
+document.getElementById('btnAddRule').addEventListener('click', async () => {
+  const payload = {
+    bot_id: ACTIVE_BOT_ID,
+    is_default: document.getElementById('isDefaultCheck').checked,
+    exact_keywords: document.getElementById('exactKeywordInput').value.trim(),
+    contains_keywords: document.getElementById('containsKeywordInput').value.trim(),
+    pause_bot: document.getElementById('pauseBotCheck').checked,
+    reply: document.getElementById('replyInput').value.trim(),
+    expects_followup: document.getElementById('expectsFollowupCheck').checked,
+    followup_keywords: document.getElementById('followupKeywordsInput').value.trim(),
+    followup_reply: document.getElementById('followupReplyInput').value.trim(),
+    followup_pause_bot: document.getElementById('followupPauseCheck').checked
+  };
+
+  if (!payload.reply) return alert('Isi pesan balasan tidak boleh kosong.');
+
+  if (editingRuleId) {
+    await apiFetch(`/api/rules/${editingRuleId}`, { method: 'PUT', body: JSON.stringify(payload) });
+  } else {
+    await apiFetch('/api/rules', { method: 'POST', body: JSON.stringify(payload) });
+  }
+
+  resetRuleForm();
+  pollState();
+});
+
+async function deleteRule(id) {
+  if (!confirm('Hapus aturan balasan ini?')) return;
+  await apiFetch(`/api/rules/${id}`, { method: 'DELETE' });
+  pollState();
+}
+
+function renderRulesList() {
+  const listEl = document.getElementById('rulesList');
+  if (currentRules.length === 0) {
+    listEl.innerHTML = '<div style="color:#64748b;">Belum ada aturan balasan.</div>';
+    return;
+  }
+
+  listEl.innerHTML = currentRules.map(r => `
+    <div class="rule-item">
+      <div style="flex:1;">
+        <div class="kw-row">
+          ${r.is_default ? '<span class="badge-default">Default / Info Umum</span>' : ''}
+          ${r.exact_keywords ? `<span class="badge-exact">Persis:</span> <span class="kw-chip">${escapeHtml(r.exact_keywords)}</span>` : ''}
+          ${r.contains_keywords ? `<span class="badge-contains">Mengandung:</span> <span class="kw-chip">${escapeHtml(r.contains_keywords)}</span>` : ''}
+          ${r.pause_bot ? '<span class="badge-admin">Alihkan Admin</span>' : ''}
+        </div>
+        <div style="white-space:pre-wrap; font-size:0.86rem; color:#1e293b; margin-top:6px;">${escapeHtml(r.reply)}</div>
+      </div>
+      <div style="display:flex; gap:6px;">
+        <button class="edit sm" onclick="startEditRule('${r.id}')">Edit</button>
+        <button class="danger sm" onclick="deleteRule('${r.id}')">Hapus</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ============================================================================
+// LAPORAN CHAT MASUK & DURASI BALAS
+// ============================================================================
+async function loadReports() {
+  const days = Number(document.getElementById('reportPeriodSelect').value || 7);
+  const data = await apiFetch(`/api/reports?days=${days}`);
+  const logs = data.logs || [];
+  const firstSeenMap = new Map((data.firstSeenRows || []).map(r => [r.sender_number, toWitaDateKey(r.first_at)]));
+
+  const validDateKeys = new Set();
+  for (let i = 0; i < days; i++) {
+    validDateKeys.add(toWitaDateKey(Date.now() - i * 86400000));
+  }
+
+  const dailyMap = new Map();
+  for (const dk of validDateKeys) {
+    dailyMap.set(dk, { dateKey: dk, numbers: new Set(), newContacts: new Set(), totalIncoming: 0, adminHandover: 0 });
+  }
+
+  const pendingIncomingByNumber = new Map();
+  const adminResponseSecs = [];
+  const botResponseSecs = [];
+
+  for (const log of logs) {
+    const dk = toWitaDateKey(log.created_at);
+    const num = log.sender_number;
+
+    if (log.incoming && log.log_type !== 'admin_direct') {
+      pendingIncomingByNumber.set(num, new Date(log.incoming_at || log.created_at).getTime());
+      if (dailyMap.has(dk)) {
+        const d = dailyMap.get(dk);
+        d.numbers.add(num);
+        d.totalIncoming++;
+        if (log.handed_over) d.adminHandover++;
+        if (firstSeenMap.get(num) === dk) d.newContacts.add(num);
+      }
+    }
+
+    if (log.reply && pendingIncomingByNumber.has(num)) {
+      const diffSec = Math.max(0, (new Date(log.created_at).getTime() - pendingIncomingByNumber.get(num)) / 1000);
+      if (diffSec <= 24 * 3600) {
+        if (log.log_type === 'admin_direct') adminResponseSecs.push(diffSec);
+        else if (log.log_type === 'bot_reply') botResponseSecs.push(diffSec);
+      }
+      pendingIncomingByNumber.delete(num);
+    }
+  }
+
+  const dailyRows = Array.from(dailyMap.values()).sort((a, b) => b.dateKey.localeCompare(a.dateKey));
+  const uniqueNumbers = new Set();
+  const newNumbers = new Set();
+  let totalIncoming = 0;
+  let totalAdminReq = 0;
+
+  for (const r of dailyRows) {
+    r.numbers.forEach(n => uniqueNumbers.add(n));
+    r.newContacts.forEach(n => newNumbers.add(n));
+    totalIncoming += r.totalIncoming;
+    totalAdminReq += r.adminHandover;
+  }
+
+  const avg = arr => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : null;
+
+  document.getElementById('kpiUniqueChats').textContent = uniqueNumbers.size;
+  document.getElementById('kpiNewContactsSub').textContent = `${newNumbers.size} kontak baru pertama kali`;
+  document.getElementById('kpiTotalIncoming').textContent = totalIncoming;
+  document.getElementById('kpiAdminReqSub').textContent = `${totalAdminReq} butuh admin`;
+  document.getElementById('kpiAvgAdminTime').textContent = formatDuration(avg(adminResponseSecs));
+  document.getElementById('kpiAdminCountSub').textContent = `${adminResponseSecs.length} balasan admin`;
+  document.getElementById('kpiAvgBotTime').textContent = formatDuration(avg(botResponseSecs));
+  document.getElementById('kpiBotCountSub').textContent = `${botResponseSecs.length} balasan otomatis`;
+
+  cachedReportMetrics = { adminResponseSecs, allResponseSecs: [...adminResponseSecs, ...botResponseSecs] };
+  renderDurationBuckets();
+
+  document.getElementById('dailyReportBody').innerHTML = dailyRows.map(r => `
+    <tr>
+      <td>${escapeHtml(formatWitaDateLabel(r.dateKey))}</td>
+      <td class="num-col">${r.numbers.size}</td>
+      <td class="num-col">${r.newContacts.size}</td>
+      <td class="num-col">${r.totalIncoming}</td>
+      <td class="num-col">${r.adminHandover}</td>
+    </tr>
+  `).join('');
+}
+
+function renderDurationBuckets() {
+  if (!cachedReportMetrics) return;
+  const scope = document.getElementById('durationScopeSelect').value;
+  const list = scope === 'admin' ? cachedReportMetrics.adminResponseSecs : cachedReportMetrics.allResponseSecs;
+  const total = list.length || 1;
+
+  const buckets = [
+    { label: '< 1 Menit (Sangat Cepat)', count: list.filter(s => s < 60).length, color: '#16a34a' },
+    { label: '1 – 5 Menit (Cepat)', count: list.filter(s => s >= 60 && s < 300).length, color: '#2563eb' },
+    { label: '5 – 30 Menit (Normal)', count: list.filter(s => s >= 300 && s < 1800).length, color: '#d97706' },
+    { label: '> 30 Menit (Lambat)', count: list.filter(s => s >= 1800).length, color: '#dc2626' }
+  ];
+
+  document.getElementById('durationBucketsBox').innerHTML = buckets.map(b => {
+    const pct = list.length ? Math.round((b.count / total) * 100) : 0;
+    return `
+      <div class="duration-row">
+        <div class="duration-meta"><span>${b.label}</span><span>${b.count} (${pct}%)</span></div>
+        <div class="bar-track"><div class="bar-fill" style="width:${pct}%; background:${b.color};"></div></div>
+      </div>`;
+  }).join('');
+}
+
+// Inisialisasi awal
+const savedTab = localStorage.getItem(ACTIVE_TAB_KEY);
+if (savedTab) switchTab(savedTab);
+
+syncServerUrlFromSupabase().finally(() => {
+  pollState();
+});
+setInterval(pollState, 3000);
+</script>
+</body>
+</html>
