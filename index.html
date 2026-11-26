@@ -1432,7 +1432,7 @@
         </select>
       </div>
       <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; margin-top: 8px;">
-        <small id="excludedModalResultInfo" style="color: #475569; font-weight: 600;">0 kontak ditemukan</small>
+        <small id="excludedModalResultInfo" style="color: #475569; font-weight: 600;">0 kontak ditampilkan</small>
         <div style="display: flex; gap: 6px;">
           <button type="button" class="secondary sm" style="padding: 4px 9px; font-size: 0.75rem;" onclick="toggleSelectFilteredExcluded(true)">☑️ Centang Hasil</button>
           <button type="button" class="secondary sm" style="padding: 4px 9px; font-size: 0.75rem;" onclick="toggleSelectFilteredExcluded(false)">⬜ Batal Hasil</button>
@@ -1554,15 +1554,18 @@ const STORE_VAR_DEFS = [
   { key: '{maps_toko}', field: 'store_maps_url', label: 'Link Maps' }
 ];
 
-function getMergedStoreConfig(cfg = latestBotConfig || window.currentBotConfig || {}) {
+function getMergedStoreConfig(cfg) {
+  const safeCfg = (cfg && typeof cfg === 'object')
+    ? cfg
+    : (latestBotConfig || window.currentBotConfig || {});
   const formVals = getActiveStoreValues();
   return {
-    store_name: formVals.store_name || cfg.store_name || '',
-    store_admin_name: formVals.store_admin_name || cfg.store_admin_name || '',
-    store_wa_number: formVals.store_wa_number || cfg.store_wa_number || '',
-    store_website: formVals.store_website || cfg.store_website || '',
-    store_address: formVals.store_address || cfg.store_address || '',
-    store_maps_url: formVals.store_maps_url || cfg.store_maps_url || ''
+    store_name: formVals.store_name || safeCfg.store_name || '',
+    store_admin_name: formVals.store_admin_name || safeCfg.store_admin_name || '',
+    store_wa_number: formVals.store_wa_number || safeCfg.store_wa_number || '',
+    store_website: formVals.store_website || safeCfg.store_website || '',
+    store_address: formVals.store_address || safeCfg.store_address || '',
+    store_maps_url: formVals.store_maps_url || safeCfg.store_maps_url || ''
   };
 }
 
@@ -1703,13 +1706,13 @@ function switchTab(tabId) {
   try { localStorage.setItem(ACTIVE_TAB_KEY, targetId); } catch (_) {}
 
   if ((targetId === 'tab-broadcast' || targetId === 'tab-autoreply') && contactsCache.length === 0) {
-    loadContacts(true);
+    loadContacts(true).catch(() => {});
   }
   if (targetId === 'tab-autoreply') {
     renderAiConnectedStoreBanner('aiConnectedStoreBanner', latestBotConfig);
     refreshAllStoreLivePreviews();
   }
-  if (targetId === 'tab-reports') loadReports();
+  if (targetId === 'tab-reports') loadReports().catch(() => {});
 }
 
 function escapeHtml(str) {
@@ -1869,8 +1872,8 @@ function switchWhatsAppAccount(newBotId) {
 
   pollState().then(() => {
     const activeTab = localStorage.getItem(ACTIVE_TAB_KEY);
-    if (activeTab === 'tab-reports') loadReports();
-    if (activeTab === 'tab-broadcast' || activeTab === 'tab-autoreply') loadContacts(true);
+    if (activeTab === 'tab-reports') loadReports().catch(() => {});
+    if (activeTab === 'tab-broadcast' || activeTab === 'tab-autoreply') loadContacts(true).catch(() => {});
   });
 }
 
@@ -1967,7 +1970,7 @@ async function pollState() {
     badge.style.color = '#4ade80';
     badge.textContent = `Terhubung (${SERVER_URL})`;
 
-    const cfg = data.botConfig;
+    const cfg = data.botConfig || {};
     latestBotConfig = cfg;
     window.currentBotConfig = cfg;
     renderAccountSelector(data.accounts || [], cfg);
@@ -2079,18 +2082,19 @@ function markStoreFormDirty() {
 
 function populateStoreForm(cfg) {
   if (isStoreFormDirty) return;
+  const safeCfg = (cfg && typeof cfg === 'object') ? cfg : {};
 
   let localCached = {};
   try {
     localCached = JSON.parse(localStorage.getItem(`${STORE_CACHE_PREFIX}${ACTIVE_BOT_ID}`) || '{}');
   } catch (_) {}
 
-  const storeName = cfg.store_name !== undefined ? cfg.store_name : (localCached.store_name || '');
-  const storeAdmin = cfg.store_admin_name !== undefined ? cfg.store_admin_name : (localCached.store_admin_name || '');
-  const storeWa = cfg.store_wa_number !== undefined ? cfg.store_wa_number : (localCached.store_wa_number || '');
-  const storeWeb = cfg.store_website !== undefined ? cfg.store_website : (localCached.store_website || '');
-  const storeAddr = cfg.store_address !== undefined ? cfg.store_address : (localCached.store_address || '');
-  const storeMaps = cfg.store_maps_url !== undefined ? cfg.store_maps_url : (localCached.store_maps_url || '');
+  const storeName = safeCfg.store_name !== undefined ? safeCfg.store_name : (localCached.store_name || '');
+  const storeAdmin = safeCfg.store_admin_name !== undefined ? safeCfg.store_admin_name : (localCached.store_admin_name || '');
+  const storeWa = safeCfg.store_wa_number !== undefined ? safeCfg.store_wa_number : (localCached.store_wa_number || '');
+  const storeWeb = safeCfg.store_website !== undefined ? safeCfg.store_website : (localCached.store_website || '');
+  const storeAddr = safeCfg.store_address !== undefined ? safeCfg.store_address : (localCached.store_address || '');
+  const storeMaps = safeCfg.store_maps_url !== undefined ? safeCfg.store_maps_url : (localCached.store_maps_url || '');
 
   if (document.activeElement !== document.getElementById('storeNameInput')) {
     document.getElementById('storeNameInput').value = storeName || '';
@@ -2865,10 +2869,33 @@ function renderChatMessages(thread) {
 // ============================================================================
 // BROADCAST ANTI-SPAM
 // ============================================================================
+function buildFallbackContactsFromLogs() {
+  const map = new Map();
+  for (const log of rawLogsCache) {
+    const p = normalizePhone(log.sender_number);
+    if (!p) continue;
+    if (!map.has(p)) {
+      map.set(p, {
+        phone: p,
+        name: (log.sender_name && !String(log.sender_name).startsWith('+')) ? String(log.sender_name).trim() : '',
+        source: 'chat_history'
+      });
+    }
+  }
+  return Array.from(map.values());
+}
+
 async function loadContacts(force = false) {
   if (!force && contactsCache.length > 0) return;
-  const data = await apiFetch('/api/contacts');
-  contactsCache = data.contacts || [];
+  try {
+    const data = await apiFetch('/api/contacts');
+    contactsCache = data.contacts || [];
+  } catch (err) {
+    console.warn('Gagal mengambil /api/contacts, menggunakan fallback riwayat chat:', err.message);
+    if (contactsCache.length === 0) {
+      contactsCache = buildFallbackContactsFromLogs();
+    }
+  }
   document.getElementById('contactCountPill').textContent = `${contactsCache.length.toLocaleString('id-ID')} Kontak`;
   if (excludedNumbersList.length > 0) {
     renderExcludedContactsList();
@@ -2997,9 +3024,11 @@ async function loadBroadcastRecipients(id) {
   document.getElementById('bcHistoryTitle').textContent = `📋 ${bc.title}`;
   document.getElementById('bcHistorySubtitle').textContent = `Total ${bc.total_recipients} penerima • Status: ${bc.status.toUpperCase()}`;
 
-  const data = await apiFetch(`/api/broadcasts/${id}/recipients`);
-  bcHistoryRowsCache = data.recipients || [];
-  renderBroadcastHistoryTable();
+  try {
+    const data = await apiFetch(`/api/broadcasts/${id}/recipients`);
+    bcHistoryRowsCache = data.recipients || [];
+    renderBroadcastHistoryTable();
+  } catch (_) {}
 }
 
 function renderBroadcastHistoryTable() {
@@ -3100,23 +3129,25 @@ function updateAiLiveBadge() {
 function populateAiForm(cfg) {
   document.getElementById('aiRulesRefCountPill').textContent = `📚 ${currentRules.length} Aturan Auto-Reply`;
   if (isAiFormDirty) return updateAiLiveBadge();
-  document.getElementById('aiEnabledCheck').checked = Boolean(cfg.ai_enabled);
-  if (cfg.ai_model) document.getElementById('aiModelSelect').value = cfg.ai_model;
+  const safeCfg = (cfg && typeof cfg === 'object') ? cfg : {};
+
+  document.getElementById('aiEnabledCheck').checked = Boolean(safeCfg.ai_enabled);
+  if (safeCfg.ai_model) document.getElementById('aiModelSelect').value = safeCfg.ai_model;
 
   if (document.activeElement !== document.getElementById('aiGroqKeyInput')) {
-    document.getElementById('aiGroqKeyInput').value = cfg.groq_api_key || '';
+    document.getElementById('aiGroqKeyInput').value = safeCfg.groq_api_key || '';
   }
   if (document.activeElement !== document.getElementById('aiGeminiKeyInput')) {
-    document.getElementById('aiGeminiKeyInput').value = cfg.gemini_api_key || '';
+    document.getElementById('aiGeminiKeyInput').value = safeCfg.gemini_api_key || '';
   }
   if (document.activeElement !== document.getElementById('aiOpenRouterKeyInput')) {
-    document.getElementById('aiOpenRouterKeyInput').value = cfg.openrouter_api_key || '';
+    document.getElementById('aiOpenRouterKeyInput').value = safeCfg.openrouter_api_key || '';
   }
   if (document.activeElement !== document.getElementById('aiSystemPromptInput')) {
-    document.getElementById('aiSystemPromptInput').value = cfg.ai_system_prompt || '';
+    document.getElementById('aiSystemPromptInput').value = safeCfg.ai_system_prompt || '';
   }
   if (document.activeElement !== document.getElementById('aiBusinessKnowledgeInput')) {
-    document.getElementById('aiBusinessKnowledgeInput').value = cfg.ai_business_knowledge || '';
+    document.getElementById('aiBusinessKnowledgeInput').value = safeCfg.ai_business_knowledge || '';
   }
 
   updateAiLiveBadge();
@@ -3186,15 +3217,17 @@ function markOffHoursDirty() {
 
 function populateOffHoursForm(cfg) {
   if (isOffHoursDirty) return;
-  document.getElementById('offHoursStartInput').value = cfg.off_hours_start || '18:00';
-  document.getElementById('offHoursEndInput').value = cfg.off_hours_end || '08:00';
-  document.getElementById('offHoursCooldownInput').value = cfg.off_hours_cooldown_min ?? 60;
-  const days = String(cfg.off_hours_days ?? '0').split(',').map(s => s.trim());
+  const safeCfg = (cfg && typeof cfg === 'object') ? cfg : {};
+
+  document.getElementById('offHoursStartInput').value = safeCfg.off_hours_start || '18:00';
+  document.getElementById('offHoursEndInput').value = safeCfg.off_hours_end || '08:00';
+  document.getElementById('offHoursCooldownInput').value = safeCfg.off_hours_cooldown_min ?? 60;
+  const days = String(safeCfg.off_hours_days ?? '0').split(',').map(s => s.trim());
   document.querySelectorAll('#offHoursDaysGroup input[type="checkbox"]').forEach(cb => {
     cb.checked = days.includes(cb.value);
   });
   if (document.activeElement !== document.getElementById('offHoursReplyInput')) {
-    document.getElementById('offHoursReplyInput').value = cfg.off_hours_reply || '';
+    document.getElementById('offHoursReplyInput').value = safeCfg.off_hours_reply || '';
   }
 }
 
@@ -3256,9 +3289,10 @@ function renderExcludedContactsList() {
 }
 
 function populateExcludedForm(cfg) {
+  const safeCfg = (cfg && typeof cfg === 'object') ? cfg : {};
   const parsed = Array.from(
     new Set(
-      String(cfg.excluded_numbers || '')
+      String(safeCfg.excluded_numbers || '')
         .split(/[\s,;\n]+/)
         .map(normalizePhone)
         .filter(Boolean)
@@ -3326,11 +3360,7 @@ async function openExcludedContactModal() {
   document.getElementById('excludedModalList').innerHTML =
     '<div style="padding: 20px; text-align: center; color: #64748b; font-size: 0.86rem;">Memuat daftar kontak dari server...</div>';
 
-  try {
-    await loadContacts(true);
-  } catch (err) {
-    console.warn('Gagal memuat daftar kontak:', err.message);
-  }
+  await loadContacts(true).catch(() => {});
 
   renderExcludedModalList();
   setTimeout(() => document.getElementById('excludedModalSearchInput').focus(), 50);
@@ -3343,7 +3373,7 @@ function closeExcludedContactModal() {
 async function refreshExcludedModalContacts() {
   document.getElementById('excludedModalList').innerHTML =
     '<div style="padding: 20px; text-align: center; color: #64748b; font-size: 0.86rem;">Menyegarkan kontak...</div>';
-  await loadContacts(true);
+  await loadContacts(true).catch(() => {});
   renderExcludedModalList();
 }
 
