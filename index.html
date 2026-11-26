@@ -1523,16 +1523,33 @@ function appendBotQuery(endpoint) {
 
 async function apiFetch(endpoint, options = {}) {
   if (!SERVER_URL) throw new Error('URL Server Laptop belum diisi.');
-  const headers = {
-    'Content-Type': 'application/json',
-    'x-api-key': SERVER_SECRET,
-    ...(options.headers || {})
-  };
-  const finalEndpoint = appendBotQuery(endpoint);
-  const res = await fetch(`${SERVER_URL}${finalEndpoint}`, { ...options, headers });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
-  return data;
+  const controller = new AbortController();
+  const timeoutMs = options.timeoutMs || 8000;
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const headers = {
+      'Content-Type': 'application/json',
+      'x-api-key': SERVER_SECRET,
+      ...(options.headers || {})
+    };
+    const finalEndpoint = appendBotQuery(endpoint);
+    const res = await fetch(`${SERVER_URL}${finalEndpoint}`, {
+      ...options,
+      headers,
+      signal: controller.signal
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+    return data;
+  } catch (err) {
+    if (err.name === 'AbortError') {
+      throw new Error('Koneksi timeout (tunnel lambat)');
+    }
+    throw err;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 let accountsCache = [];
@@ -1962,20 +1979,28 @@ async function deleteCurrentAccount() {
   }
 }
 
-// ============================================================================
-// POLLING UTAMA KE SERVER LAPTOP
-// ============================================================================
-async function pollState() {
+let isPolling = false;
+let consecutivePollFailures = 0;
+
+async function pollState(force = false) {
+  if (!force && isPolling) return;
+  isPolling = true;
+
   const badge = document.getElementById('serverConnBadge');
-  if (!SERVER_URL) {
-    badge.style.color = '#fbbf24';
-    badge.textContent = 'Mengambil alamat server dari Supabase...';
-    syncServerUrlFromSupabase();
-    return;
-  }
+  const requestedBotId = ACTIVE_BOT_ID;
 
   try {
+    if (!SERVER_URL) {
+      badge.style.color = '#fbbf24';
+      badge.textContent = 'Mengambil alamat server dari Supabase...';
+      await syncServerUrlFromSupabase();
+      return;
+    }
+
     const data = await apiFetch('/api/state');
+    if (requestedBotId !== ACTIVE_BOT_ID) return;
+
+    consecutivePollFailures = 0;
     badge.style.color = '#4ade80';
     badge.textContent = `Terhubung (${SERVER_URL})`;
 
@@ -2036,9 +2061,15 @@ async function pollState() {
     bcCampaignsCache = data.broadcasts || [];
     renderBroadcasts();
   } catch (err) {
-    badge.style.color = '#f87171';
-    badge.textContent = `Gagal terhubung: ${err.message}`;
-    syncServerUrlFromSupabase();
+    if (requestedBotId !== ACTIVE_BOT_ID) return;
+    consecutivePollFailures++;
+    await syncServerUrlFromSupabase();
+    if (consecutivePollFailures >= 2) {
+      badge.style.color = '#f87171';
+      badge.textContent = `Gagal terhubung: ${err.message}`;
+    }
+  } finally {
+    isPolling = false;
   }
 }
 
