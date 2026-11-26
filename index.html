@@ -600,7 +600,7 @@
   </div>
   <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
     <span id="multiAccountSummaryPill" class="sync-pill ok">1 Akun WA</span>
-    <button type="button" class="secondary sm" onclick="syncServerUrlFromSupabase().then(pollState)">🔄 Segarkan Koneksi</button>
+    <button type="button" class="secondary sm" onclick="syncServerUrlFromSupabase().then(() => pollState(true))">🔄 Segarkan Koneksi</button>
   </div>
 </div>
 
@@ -693,7 +693,7 @@
            <option value="admin_direct">Dibalas Admin</option>
            <option value="incoming_only">Dialihkan / Masuk</option>
          </select>
-         <button class="secondary sm" onclick="triggerChatSync()">🔄 Sinkronkan</button>
+         <button class="secondary sm" onclick="triggerChatSync(this)">🔄 Sinkronkan</button>
        </div>
      </div>
 
@@ -880,11 +880,12 @@
      </div>
    </div>
 
-   <div class="card" style="border-color: #c4b5fd;">
+  
+  <div class="card" style="border-color: #c4b5fd;">
      <div class="header-bar" style="margin-bottom: 0.75rem;">
        <div>
-         <h2 style="margin: 0;">🧠 Opsi & Akun AI Khusus Nomor WA Ini</h2>
-         <small style="color: #64748b;">Setiap nomor WA dapat memakai API Key AI (Groq / Gemini / OpenRouter), prompt, dan pengetahuan bisnis terpisah</small>
+         <h2 style="margin: 0;">🧠 Peran Bot &amp; Pengaturan Prompt AI (100% di Browser)</h2>
+         <small style="color: #64748b;">Seluruh instruksi prompt, peran bot (CS, Admin, Sekretaris, Sales, dll.), dan API Key diatur langsung di sini tanpa perlu mengubah kode server</small>
        </div>
        <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
          <span id="aiRulesRefCountPill" class="sync-pill">📚 0 Aturan Auto-Reply</span>
@@ -892,9 +893,55 @@
        </div>
      </div>
 
+     <!-- PENGATURAN PERAN & TARGET AUTO-REPLY (BERLAKU UNTUK MODE AI MAUPUN MANUAL) -->
+     <div style="background: #f0fdf4; border: 1px solid #86efac; border-radius: 10px; padding: 12px; margin-bottom: 12px;">
+       <div style="font-weight: 800; font-size: 0.88rem; color: #15803d; margin-bottom: 6px;">🎭 Konfigurasi Peran &amp; Target Pengirim Auto-Reply</div>
+       <div class="kw-grid">
+         <div>
+           <label for="botRoleNameInput" style="margin-top: 0;">Nama Peran Bot / Akun Ini</label>
+           <input type="text" id="botRoleNameInput" placeholder="Contoh: Customer Service / Asisten Admin / Sekretaris" oninput="markAiFormDirty(); updateAiLiveBadge();" />
+         </div>
+         <div>
+           <label for="replyTargetModeSelect" style="margin-top: 0;">Siapa yang Dilayani Auto-Reply?</label>
+           <select id="replyTargetModeSelect" onchange="markAiFormDirty()">
+             <option value="customers_and_admin" selected>Pelanggan &amp; Admin (Peran Adaptif / Ganda)</option>
+             <option value="customer_only">Hanya Pelanggan / Eksternal (Abaikan Nomor Admin)</option>
+             <option value="admin_only">Khusus Admin / Internal Saja (Bot Pribadi Admin)</option>
+           </select>
+         </div>
+       </div>
+
+       <div class="kw-grid" style="margin-top: 8px;">
+         <div>
+           <label for="adminNumbersInput" style="margin-top: 0;">Daftar Nomor WhatsApp Admin / Internal (Pisahkan koma/baris)</label>
+           <input type="text" id="adminNumbersInput" placeholder="Contoh: 081234567890, 085299887766" oninput="markAiFormDirty()" />
+         </div>
+         <div>
+           <label for="adminCommandPrefixInput" style="margin-top: 0;">Awalan Perintah Admin (Self-Chat / WA Sendiri)</label>
+           <input type="text" id="adminCommandPrefixInput" value="!ai, /ai, !bot, /bot" placeholder="!ai, /ai, !bot, /bot" oninput="markAiFormDirty()" />
+         </div>
+       </div>
+
+       <div class="kw-grid" style="margin-top: 8px;">
+         <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin-top: 0; background: #fff; padding: 8px 10px; border-radius: 8px; border: 1px solid #bbf7d0;">
+           <input type="checkbox" id="allowSelfCommandCheck" checked onchange="markAiFormDirty()" />
+           <span>Aktifkan Perintah Admin dari WA Sendiri (awalan di atas)</span>
+         </label>
+         <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin-top: 0; background: #fff; padding: 8px 10px; border-radius: 8px; border: 1px solid #bbf7d0;">
+  <input type="checkbox" id="allowGroupReplyCheck" onchange="markAiFormDirty(); updateAiLiveBadge();" />
+  <span>Aktifkan di Grup WA (awalan: <code id="groupPrefixHint">!bot, /ai</code>)</span>
+</label>
+       </div>
+
+       <div id="groupPrefixBox" class="hidden" style="margin-top: 8px;">
+  <label for="groupTriggerPrefixInput" style="margin-top: 0;">Awalan Pemicu Auto-Reply di Grup WA</label>
+  <input type="text" id="groupTriggerPrefixInput" value="!bot, /ai" placeholder="Contoh: !bot, /ai, @admin" oninput="markAiFormDirty(); document.getElementById('groupPrefixHint').textContent = this.value.trim() || '!bot, /ai';" />
+</div>
+     </div>
+
      <label style="display: flex; align-items: center; gap: 8px; background: #f5f3ff; border: 1px solid #ddd6fe; padding: 11px 12px; border-radius: 8px; cursor: pointer; margin-top: 0;">
        <input type="checkbox" id="aiEnabledCheck" onchange="markAiFormDirty(); updateAiLiveBadge();" />
-       <span><strong>Aktifkan AI pada Auto-Reply</strong> (Jika aktif, balasan chat hanya dari AI mengacu pada pesan auto-reply &amp; akun AI nomor WA ini)</span>
+       <span><strong>Aktifkan AI pada Auto-Reply</strong> (Semua prompt di bawah diatur langsung dari browser ini)</span>
      </label>
 
      <div id="aiModeDescriptionBox" class="ai-mode-info off">
@@ -905,20 +952,36 @@
      <div id="aiConnectedStoreBanner"></div>
 
      <div id="aiConfigFieldsBox" class="hidden" style="margin-top: 10px;">
-       <div>
-         <label for="aiModelSelect">Prioritas Model AI Utama</label>
-         <select id="aiModelSelect" onchange="markAiFormDirty()">
-           <optgroup label="⚡ Groq AI (Utama — Super Cepat & Gratis)">
-             <option value="qwen/qwen3-32b" selected>qwen/qwen3-32b (Terbaik untuk Bahasa Indonesia)</option>
-             <option value="llama-3.3-70b-versatile">llama-3.3-70b-versatile (Akurasi Katalog &amp; Harga Tinggi)</option>
-             <option value="openai/gpt-oss-120b">openai/gpt-oss-120b (Penalaran Kompleks)</option>
-             <option value="openai/gpt-oss-20b">openai/gpt-oss-20b (Ringan &amp; Hemat Kuota Token)</option>
-           </optgroup>
-           <optgroup label="✨ Google Gemini (Cadangan 1)">
-             <option value="gemini-2.5-flash">gemini-2.5-flash (Konteks 1 Juta Token)</option>
-             <option value="gemini-2.5-flash-lite">gemini-2.5-flash-lite (Super Ringan &amp; Hemat)</option>
-           </optgroup>
-         </select>
+       <div class="kw-grid">
+         <div>
+           <label for="aiModelSelect" style="margin-top: 0;">Prioritas Model AI Utama</label>
+           <select id="aiModelSelect" onchange="markAiFormDirty()">
+             <optgroup label="⚡ Groq AI (Utama — Super Cepat &amp; Gratis)">
+               <option value="qwen/qwen3-32b" selected>qwen/qwen3-32b (Terbaik untuk Bahasa Indonesia)</option>
+               <option value="llama-3.3-70b-versatile">llama-3.3-70b-versatile (Akurasi Data &amp; Harga Tinggi)</option>
+               <option value="openai/gpt-oss-120b">openai/gpt-oss-120b (Penalaran Kompleks)</option>
+               <option value="openai/gpt-oss-20b">openai/gpt-oss-20b (Ringan &amp; Hemat Kuota Token)</option>
+             </optgroup>
+             <optgroup label="✨ Google Gemini (Cadangan 1)">
+               <option value="gemini-2.5-flash">gemini-2.5-flash (Konteks 1 Juta Token)</option>
+               <option value="gemini-2.5-flash-lite">gemini-2.5-flash-lite (Super Ringan &amp; Hemat)</option>
+             </optgroup>
+           </select>
+         </div>
+         <div>
+           <label for="aiRolePresetSelect" style="margin-top: 0;">✨ Template Prompt Siap Pakai (Isi ke Editor)</label>
+           <div style="display: flex; gap: 6px; margin-top: 4px;">
+             <select id="aiRolePresetSelect" style="margin-top: 0;">
+               <option value="cs_store">1. Customer Service (Toko / Bisnis)</option>
+               <option value="admin_copilot">2. Asisten Admin &amp; Operasional Internal</option>
+               <option value="dual_role">3. Peran Ganda (CS Pelanggan + Asisten Admin)</option>
+               <option value="sales_consultant">4. Sales, Konsultan &amp; Penawaran</option>
+               <option value="secretary">5. Sekretaris Pribadi &amp; Penjadwalan</option>
+               <option value="tech_support">6. Technical Support / Helpdesk</option>
+             </select>
+             <button type="button" class="secondary sm" onclick="applyRolePromptPreset()" style="white-space: nowrap;">Terapkan</button>
+           </div>
+         </div>
        </div>
 
        <!-- KREDENSIAL AKUN AI PER NOMOR WA -->
@@ -928,7 +991,7 @@
            <span id="aiCustomKeyBadge" class="sync-pill">Memakai Default .env</span>
          </div>
          <div class="var-hint" style="margin-top: 3px;">
-           Isi dengan API Key akun AI khusus nomor WA ini agar kuota token/rate-limit terpisah dari akun WA lain. Jika dikosongkan, server otomatis memakai API Key default dari file <code>.env</code>.
+           Kosongkan jika ingin memakai API Key default dari file <code>.env</code> server.
          </div>
 
          <div class="grid-3" style="margin-top: 8px;">
@@ -956,36 +1019,57 @@
          </div>
        </div>
 
-       <label for="aiSystemPromptInput">Aturan Dasar & Gaya Bahasa AI</label>
+       <label for="aiSystemPromptInput">1. Prompt Peran Utama (Untuk Pelanggan / Pengirim Umum)</label>
        <textarea
          id="aiSystemPromptInput"
-         rows="10"
-         style="font-family: monospace; font-size: 0.85rem;"
+         rows="7"
+         style="font-family: monospace; font-size: 0.84rem;"
          oninput="markAiFormDirty()"
-         placeholder="Aturan perilaku AI, cara baca katalog harga, dan syarat pengalihan ke admin..."
+         placeholder="Tulis peran utama AI, gaya bahasa, cara menjawab pertanyaan, dan syarat pengalihan [ALIHKAN_ADMIN]..."
        ></textarea>
 
-       <label for="aiBusinessKnowledgeInput">Pengetahuan & Aturan Khusus Bisnis (Promo, S&amp;K)</label>
+       <label for="aiAdminPromptInput">2. Prompt Khusus Peran Admin / Internal (Saat Nomor Admin atau Perintah <code>!ai</code> Digunakan)</label>
+       <textarea
+         id="aiAdminPromptInput"
+         rows="6"
+         style="font-family: monospace; font-size: 0.84rem;"
+         oninput="markAiFormDirty()"
+         placeholder="Tulis instruksi khusus ketika Admin menghubungi bot atau memakai awalan perintah (!ai / !bot), misalnya menyusun draf balasan, menghitung estimasi, atau merangkum SOP..."
+       ></textarea>
+
+       <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; margin-top: 0.75rem;">
+         <label for="aiRuntimePromptInput" style="margin: 0;">3. Prompt Instruksi Konteks Sesi, Jam Kerja &amp; Eskalasi (Dikelola di Browser)</label>
+         <button type="button" class="secondary sm" onclick="insertDefaultRuntimePrompt()">✨ Isi Template Konteks Standar</button>
+       </div>
+       <textarea
+         id="aiRuntimePromptInput"
+         rows="6"
+         style="font-family: monospace; font-size: 0.83rem;"
+         oninput="markAiFormDirty()"
+         placeholder="Aturan dinamis untuk sesi BARU/LANJUTAN, mode asisten admin, jam buka/tutup, dan tag [ALIHKAN_ADMIN] / [SKIP_ADMIN_MODE]..."
+       ></textarea>
+       <div class="var-hint">
+         Variabel dinamis yang tersedia: <code>{peran_bot}</code>, <code>{peran_pengirim}</code>, <code>{nama_pengirim}</code>, <code>{nomor_pengirim}</code>, <code>{status_sesi}</code>, <code>{status_admin_assist}</code>, <code>{status_jam_kerja}</code>, <code>{jam_buka}</code>, <code>{jam_tutup}</code>, <code>{waktu_wita}</code>.
+       </div>
+
+       <label for="aiBusinessKnowledgeInput">4. Pengetahuan Bisnis, Produk &amp; SOP Operasional</label>
        <textarea
          id="aiBusinessKnowledgeInput"
-         rows="9"
-         style="font-family: monospace; font-size: 0.85rem;"
+         rows="7"
+         style="font-family: monospace; font-size: 0.84rem;"
          oninput="markAiFormDirty()"
-         placeholder="Masukkan rincian promo cetak, syarat undangan, jam buka, nomor rekening... (Info alamat/kontak toko otomatis terhubung dari Tab Data Toko)"
+         placeholder="Masukkan daftar layanan, harga, SOP, syarat &amp; ketentuan, info rekening, atau catatan khusus..."
        ></textarea>
-
-       <div class="var-hint">
-         Edit bagian ini kapan saja dari browser. Data alamat, link Maps, website, dan kontak toko pada Tab Data Toko otomatis dibaca oleh AI tanpa perlu ditulis ulang di sini.
-       </div>
      </div>
 
-     <div style="margin-top: 12px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-       <button type="button" id="btnSaveAiConfig" class="ai-btn">💾 Simpan Pengaturan AI</button>
-       <button type="button" id="btnTestAccountAi" class="secondary sm" onclick="testCurrentAccountAi()">🧪 Tes AI Akun Ini</button>
-       <small id="aiUnsavedHint" style="color: #d97706; font-weight: 600; display: none;">● Perubahan AI belum disimpan</small>
+     <div style="margin-top: 12px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+       <button type="button" id="btnSaveAiConfig" class="ai-btn">💾 Simpan Semua Pengaturan Peran &amp; AI</button>
+       <button type="button" id="btnTestAccountAi" class="secondary sm" onclick="testCurrentAccountAi('customer')">🧪 Tes AI (Peran Utama)</button>
+       <button type="button" id="btnTestAdminAi" class="secondary sm" onclick="testCurrentAccountAi('admin')">🛠️ Tes AI (Peran Admin)</button>
+       <small id="aiUnsavedHint" style="color: #d97706; font-weight: 600; display: none;">● Perubahan belum disimpan</small>
      </div>
    </div>
-
+   
    <div class="card" style="border-color: #a5b4fc;">
      <div class="header-bar" style="margin-bottom: 0.75rem;">
        <div>
@@ -1063,15 +1147,17 @@
        </div>
      </div>
 
-     <label style="display: flex; align-items: flex-start; gap: 10px; background: #f0fdf4; border: 1px solid #86efac; padding: 11px 12px; border-radius: 8px; cursor: pointer; margin-top: 0; margin-bottom: 1rem;">
-       <input type="checkbox" id="adminModeAssistCheck" style="margin-top: 3px;" onchange="toggleAdminModeAssist(this.checked)" />
-       <div>
-         <div style="font-weight: 700; color: #15803d;">🤝 Bantu Admin Balas Chat Saat Mode Admin</div>
-         <div style="font-size: 0.78rem; color: #334155; font-weight: 400; margin-top: 2px;">
-           Meski nomor sedang dialihkan ke Admin, bot/AI tetap membantu menjawab otomatis jika pertanyaan pelanggan sesuai dengan daftar auto-reply (tanpa balasan default).
-         </div>
+     <div style="background: #f0fdf4; border: 1px solid #86efac; padding: 11px 12px; border-radius: 8px; margin-bottom: 1rem;">
+       <label for="adminAssistPolicySelect" style="margin-top: 0; font-weight: 700; color: #15803d;">🤝 Kebijakan Auto-Reply Saat Chat Berada di Antrean Admin</label>
+       <select id="adminAssistPolicySelect" onchange="changeAdminAssistPolicy(this.value)">
+         <option value="off">Nonaktif — Bot Diam Total Selama Ditangani Admin</option>
+         <option value="rules_only" selected>Bantu Sesuai Aturan Kata Kunci (Tanpa Balasan Default)</option>
+         <option value="ai_full">Asisten Penuh — AI &amp; Aturan Tetap Membantu Membalas</option>
+       </select>
+       <div style="font-size: 0.78rem; color: #334155; margin-top: 4px;">
+         Mengatur bagaimana bot/AI bersikap ketika suatu nomor pelanggan sedang dialihkan ke Admin.
        </div>
-     </label>
+     </div>
 
      <h3 id="formTitle" style="margin-bottom: 0.5rem;">Tambah Format Balasan Baru</h3>
 
@@ -1079,6 +1165,13 @@
        <input type="checkbox" id="isDefaultCheck" onchange="toggleRuleFormVisibility()" />
        <span>Jadikan sebagai <strong>Balasan Default / Info Umum</strong></span>
      </label>
+
+     <label for="ruleTargetRoleSelect">Target Pengirim untuk Aturan Ini</label>
+     <select id="ruleTargetRoleSelect">
+       <option value="all" selected>Semua Pengirim (Pelanggan &amp; Admin)</option>
+       <option value="customer">Khusus Pelanggan / Eksternal</option>
+       <option value="admin">Khusus Admin / Perintah Internal</option>
+     </select>
 
      <div id="keywordFieldsGrid" class="kw-grid">
        <div>
@@ -1472,6 +1565,7 @@
   </div>
 </div>
 
+<script src="./dashboard-config.js"></script>
 <script>
 const STORAGE_URL_KEY = 'wa_local_server_url';
 const STORAGE_SECRET_KEY = 'wa_local_server_secret';
@@ -1479,13 +1573,36 @@ const ACTIVE_TAB_KEY = 'wa_dashboard_active_tab';
 const ACTIVE_BOT_KEY = 'wa_dashboard_active_bot_id';
 const STORE_CACHE_PREFIX = 'wa_store_profile_';
 
-const SUPABASE_ENDPOINT_URL = 'https://zqxeoveanevsvynptckm.supabase.co/rest/v1/wa_server_endpoint?id=eq.utama&select=tunnel_url';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpxeGVvdmVhbmV2c3Z5bnB0Y2ttIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNzUzODEsImV4cCI6MjA4OTg1MTM4MX0.eeIaytpW1wtWPJc2FbhufkDkhONUt9yypTZU4dTVmsM';
+// Kunci Supabase anon/publishable adalah konfigurasi publik. Jangan pernah
+// menaruh SUPABASE_SERVICE_ROLE_KEY atau API_SECRET di file dashboard ini.
+const DASHBOARD_CONFIG = window.WA_DASHBOARD_CONFIG || {};
+const SUPABASE_URL = String(DASHBOARD_CONFIG.supabaseUrl || '').trim().replace(/\/+$/, '');
+const SUPABASE_ANON_KEY = String(DASHBOARD_CONFIG.supabaseAnonKey || '').trim();
+const SUPABASE_ENDPOINT_ID = String(DASHBOARD_CONFIG.endpointId || 'utama').trim() || 'utama';
+const SUPABASE_ENDPOINT_URL = SUPABASE_URL
+  ? `${SUPABASE_URL}/rest/v1/wa_server_endpoint?id=eq.${encodeURIComponent(SUPABASE_ENDPOINT_ID)}&select=tunnel_url`
+  : '';
 
-let SERVER_URL = localStorage.getItem(STORAGE_URL_KEY) || (window.location.hostname === 'localhost' ? 'http://localhost:3000' : '');
-let SERVER_SECRET = localStorage.getItem(STORAGE_SECRET_KEY) || 'muflihprint_rahasia_2026';
+let SERVER_URL = localStorage.getItem(STORAGE_URL_KEY) ||
+  ((window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') ? window.location.origin : '');
+// API_SECRET hanya disimpan di sessionStorage dan tidak pernah ditanam di source.
+try { localStorage.removeItem(STORAGE_SECRET_KEY); } catch (_) {}
+let SERVER_SECRET = sessionStorage.getItem(STORAGE_SECRET_KEY) || '';
+let secretPromptCancelled = false;
 let ACTIVE_BOT_ID = localStorage.getItem(ACTIVE_BOT_KEY) || 'bot_utama';
 
+function ensureServerSecret() {
+  if (SERVER_SECRET) return SERVER_SECRET;
+  if (secretPromptCancelled) throw new Error('API_SECRET belum dimasukkan. Muat ulang halaman untuk mencoba lagi.');
+  const value = window.prompt('Masukkan API_SECRET dari file .env server laptop:');
+  if (!value || !value.trim()) {
+    secretPromptCancelled = true;
+    throw new Error('API_SECRET belum dimasukkan.');
+  }
+  SERVER_SECRET = value.trim();
+  sessionStorage.setItem(STORAGE_SECRET_KEY, SERVER_SECRET);
+  return SERVER_SECRET;
+}
 const LEGACY_MODEL_MAP = {
   'qwen/qwen3.8-27b': 'qwen/qwen3-32b',
   'gemini-3.8-flash': 'gemini-2.5-flash',
@@ -1497,8 +1614,11 @@ function normalizeAiModelValue(modelName) {
   return LEGACY_MODEL_MAP[raw] || raw || 'qwen/qwen3-32b';
 }
 
+
+
 async function syncServerUrlFromSupabase() {
   if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') return;
+  if (!SUPABASE_ENDPOINT_URL || !SUPABASE_ANON_KEY) return;
   try {
     const res = await fetch(SUPABASE_ENDPOINT_URL, {
       headers: {
@@ -1509,9 +1629,13 @@ async function syncServerUrlFromSupabase() {
     if (!res.ok) return;
     const rows = await res.json();
     const latestUrl = String(rows?.[0]?.tunnel_url || '').trim().replace(/\/+$/, '');
-    if (latestUrl && latestUrl !== SERVER_URL) {
-      SERVER_URL = latestUrl;
-      localStorage.setItem(STORAGE_URL_KEY, SERVER_URL);
+    if (latestUrl) {
+      const parsedUrl = new URL(latestUrl);
+      if (!['http:', 'https:'].includes(parsedUrl.protocol)) return;
+      if (latestUrl !== SERVER_URL) {
+        SERVER_URL = parsedUrl.origin + parsedUrl.pathname.replace(/\/$/, '');
+        localStorage.setItem(STORAGE_URL_KEY, SERVER_URL);
+      }
     }
   } catch (_) {}
 }
@@ -1522,20 +1646,21 @@ function appendBotQuery(endpoint) {
 }
 
 async function apiFetch(endpoint, options = {}) {
-  if (!SERVER_URL) throw new Error('URL Server Laptop belum diisi.');
+  if (!SERVER_URL) throw new Error('URL Server Laptop belum diisi. Periksa koneksi Supabase atau buka dashboard di laptop server.');
+  const apiSecret = ensureServerSecret();
+  const { timeoutMs = 8000, headers: extraHeaders = {}, ...fetchOptions } = options;
   const controller = new AbortController();
-  const timeoutMs = options.timeoutMs || 8000;
   const timer = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
     const headers = {
       'Content-Type': 'application/json',
-      'x-api-key': SERVER_SECRET,
-      ...(options.headers || {})
+      'x-api-key': apiSecret,
+      ...extraHeaders
     };
     const finalEndpoint = appendBotQuery(endpoint);
     const res = await fetch(`${SERVER_URL}${finalEndpoint}`, {
-      ...options,
+      ...fetchOptions,
       headers,
       signal: controller.signal
     });
@@ -1543,9 +1668,7 @@ async function apiFetch(endpoint, options = {}) {
     if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
     return data;
   } catch (err) {
-    if (err.name === 'AbortError') {
-      throw new Error('Koneksi timeout (tunnel lambat)');
-    }
+    if (err.name === 'AbortError') throw new Error('Koneksi timeout (tunnel lambat).');
     throw err;
   } finally {
     clearTimeout(timer);
@@ -1559,6 +1682,7 @@ let currentRules = [];
 let editingRuleId = null;
 let rawLogsCache = [];
 let contactsCache = [];
+let hasLoadedContactsOnce = false;
 let selectedChatNumber = null;
 let bcCampaignsCache = [];
 let activeHistoryBroadcastId = null;
@@ -1611,17 +1735,19 @@ function autoConvertStoreTextToVars(rawText, cfg) {
   if (!text.trim()) return text;
 
   const activeStore = getMergedStoreConfig(cfg);
+  const autoFields = ['store_name', 'store_wa_number', 'store_website', 'store_address', 'store_maps_url'];
   const pairs = STORE_VAR_DEFS
+    .filter((d) => autoFields.includes(d.field))
     .map((d) => ({
       varTag: d.key,
       value: String(activeStore[d.field] || '').trim()
     }))
-    .filter((p) => p.value.length >= 4)
+    .filter((p) => p.value.length >= 5)
     .sort((a, b) => b.value.length - a.value.length);
 
   for (const { varTag, value } of pairs) {
     const escaped = value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const regex = new RegExp(escaped, 'gi');
+    const regex = new RegExp(`(?<!\\[)${escaped}(?!\\])`, 'gi');
     text = text.replace(regex, varTag);
   }
   return text;
@@ -1731,8 +1857,11 @@ function switchTab(tabId) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === targetId));
   try { localStorage.setItem(ACTIVE_TAB_KEY, targetId); } catch (_) {}
 
-  if ((targetId === 'tab-broadcast' || targetId === 'tab-autoreply') && contactsCache.length === 0) {
-    loadContacts(true);
+  if ((targetId === 'tab-broadcast' || targetId === 'tab-autoreply') && !hasLoadedContactsOnce) {
+  loadContacts(true);
+}
+  if (targetId === 'tab-broadcast' && activeHistoryBroadcastId) {
+    loadBroadcastRecipients(activeHistoryBroadcastId);
   }
   if (targetId === 'tab-autoreply') {
     renderAiConnectedStoreBanner('aiConnectedStoreBanner', latestBotConfig);
@@ -1885,18 +2014,24 @@ function switchWhatsAppAccount(newBotId) {
   document.getElementById('storeUnsavedHint').style.display = 'none';
   resetRuleForm();
 
+  latestBotConfig = null;
+  window.currentBotConfig = null;
+  currentRules = [];
   selectedChatNumber = null;
   activeHistoryBroadcastId = null;
   contactsCache = [];
   rawLogsCache = [];
   bcCampaignsCache = [];
+  bcHistoryRowsCache = [];
   excludedNumbersList = [];
+  hasLoadedContactsOnce = false;
+loadedRecipientsForBroadcastId = null;
 
   document.getElementById('waChatHeader').classList.add('hidden');
   document.getElementById('waMessagesContainer').innerHTML =
     '<div class="wa-empty-state"><div style="font-size:2rem; margin-bottom:8px;">💬</div><div>Pilih salah satu nomor di sebelah kiri untuk melihat riwayat percakapan.</div></div>';
 
-  pollState().then(() => {
+  pollState(true).then(() => {
     const activeTab = localStorage.getItem(ACTIVE_TAB_KEY);
     if (activeTab === 'tab-reports') loadReports();
     if (activeTab === 'tab-broadcast' || activeTab === 'tab-autoreply') loadContacts(true);
@@ -1943,7 +2078,7 @@ async function submitAccountModal() {
         body: JSON.stringify({ bot_id: ACTIVE_BOT_ID, name, account_name: name })
       });
       closeAccountModal();
-      await pollState();
+      await pollState(true);
     } else {
       const res = await apiFetch('/api/accounts', {
         method: 'POST',
@@ -1953,7 +2088,7 @@ async function submitAccountModal() {
       if (res.id) {
         switchWhatsAppAccount(res.id);
       } else {
-        await pollState();
+        await pollState(true);
       }
     }
   } catch (err) {
@@ -2026,10 +2161,9 @@ async function pollState(force = false) {
       }
     }
 
-    document.getElementById('toggleActive').checked = Boolean(cfg.enabled);
-    const adminAssistOn = Boolean(cfg.admin_mode_assist);
-    document.getElementById('adminModeAssistCheck').checked = adminAssistOn;
-    document.getElementById('adminAssistActiveBadge').classList.toggle('hidden', !adminAssistOn);
+   document.getElementById('toggleActive').checked = Boolean(cfg.enabled);
+    const assistPolicy = cfg.admin_assist_policy || (cfg.admin_mode_assist ? 'rules_only' : 'off');
+    document.getElementById('adminAssistActiveBadge').classList.toggle('hidden', assistPolicy === 'off');
 
     document.getElementById('contactCountPill').textContent = `${(data.contactsCount || 0).toLocaleString('id-ID')} Kontak`;
     if (cfg.last_synced_at) {
@@ -2050,6 +2184,8 @@ async function pollState(force = false) {
     mountStoreVarToolbar('followupReplyInput', 'followupReplyLivePreview');
     mountStoreVarToolbar('offHoursReplyInput', 'offHoursReplyLivePreview');
     mountStoreVarToolbar('aiSystemPromptInput');
+    mountStoreVarToolbar('aiAdminPromptInput');
+    mountStoreVarToolbar('aiRuntimePromptInput');
     mountStoreVarToolbar('aiBusinessKnowledgeInput');
     mountStoreVarToolbar('bcMessageInput');
     renderAiConnectedStoreBanner('aiConnectedStoreBanner', cfg);
@@ -2074,40 +2210,66 @@ async function pollState(force = false) {
 }
 
 document.getElementById('toggleActive').addEventListener('change', async (e) => {
-  await apiFetch('/api/config', {
-    method: 'POST',
-    body: JSON.stringify({ bot_id: ACTIVE_BOT_ID, enabled: e.target.checked })
-  });
-});
+  const checkbox = e.currentTarget;
+  const nextState = checkbox.checked;
+  checkbox.disabled = true;
 
-async function toggleAdminModeAssist(checked) {
-  document.getElementById('adminAssistActiveBadge').classList.toggle('hidden', !checked);
   try {
     await apiFetch('/api/config', {
       method: 'POST',
-      body: JSON.stringify({ bot_id: ACTIVE_BOT_ID, admin_mode_assist: checked })
+      body: JSON.stringify({ bot_id: ACTIVE_BOT_ID, enabled: nextState })
     });
   } catch (err) {
-    alert(`Gagal menyimpan pengaturan Asisten Mode Admin: ${err.message}`);
-    pollState();
+    checkbox.checked = !nextState;
+    alert(`Gagal mengubah status Auto-Reply: ${err.message}`);
+  } finally {
+    checkbox.disabled = false;
   }
-}
-
-document.getElementById('btnLogout').addEventListener('click', async () => {
-  if (!confirm('Putuskan tautan WhatsApp akun ini dari server laptop?')) return;
-  await apiFetch('/api/action/logout', {
-    method: 'POST',
-    body: JSON.stringify({ bot_id: ACTIVE_BOT_ID })
-  });
-  pollState();
 });
 
-async function triggerChatSync() {
-  await apiFetch('/api/action/sync', {
-    method: 'POST',
-    body: JSON.stringify({ bot_id: ACTIVE_BOT_ID })
-  });
-  pollState();
+document.getElementById('btnLogout').addEventListener('click', async (e) => {
+  if (!confirm('Putuskan tautan WhatsApp akun ini dari server laptop?')) return;
+
+  const btn = e.currentTarget;
+  const origText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = '⏳ Memutuskan...';
+
+  try {
+    await apiFetch('/api/action/logout', {
+      method: 'POST',
+      body: JSON.stringify({ bot_id: ACTIVE_BOT_ID })
+    });
+    await pollState(true);
+  } catch (err) {
+    alert(`Gagal memutuskan koneksi WhatsApp: ${err.message}`);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = origText;
+  }
+});
+
+async function triggerChatSync(btnEl) {
+  const origText = btnEl ? btnEl.textContent : '';
+  if (btnEl) {
+    btnEl.disabled = true;
+    btnEl.textContent = '⏳ Menyinkronkan...';
+  }
+
+  try {
+    await apiFetch('/api/action/sync', {
+      method: 'POST',
+      body: JSON.stringify({ bot_id: ACTIVE_BOT_ID })
+    });
+    await pollState(true);
+  } catch (err) {
+    alert(`Gagal menyinkronkan chat: ${err.message}`);
+  } finally {
+    if (btnEl) {
+      btnEl.disabled = false;
+      btnEl.textContent = origText;
+    }
+  }
 }
 
 // ============================================================================
@@ -2223,6 +2385,8 @@ function injectStoreToAiKnowledge() {
   }
 
   markAiFormDirty();
+  document.getElementById('aiEnabledCheck').checked = true;
+updateAiLiveBadge();
   switchTab('tab-autoreply');
   knowledgeEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
   alert('Variabel Data Toko berhasil disisipkan ke kolom Pengetahuan Bisnis AI. Klik "Simpan Pengaturan AI" untuk menerapkan.');
@@ -2256,7 +2420,7 @@ async function saveStoreProfile() {
     renderAiConnectedStoreBanner('aiConnectedStoreBanner', latestBotConfig);
     refreshAllStoreLivePreviews();
     alert(`Data Toko / Usaha untuk akun ${ACTIVE_BOT_ID} berhasil disimpan dan otomatis terhubung ke Auto-Reply AI & Manual!`);
-    pollState();
+    pollState(true);
   } catch (err) {
     alert(`Gagal menyimpan data toko: ${err.message}`);
   } finally {
@@ -2300,13 +2464,24 @@ function buildExportBundleObject() {
   };
 
   if (includeAi) {
+    const assistPolicy = document.getElementById('adminAssistPolicySelect').value;
     bundle.ai_config = {
+      bot_role_name: document.getElementById('botRoleNameInput').value.trim() || 'Customer Service',
+      reply_target_mode: document.getElementById('replyTargetModeSelect').value,
+      admin_numbers: document.getElementById('adminNumbersInput').value.trim(),
+      admin_command_prefix: document.getElementById('adminCommandPrefixInput').value.trim(),
+      allow_self_command: document.getElementById('allowSelfCommandCheck').checked,
+      allow_group_reply: document.getElementById('allowGroupReplyCheck').checked,
+      group_trigger_prefix: document.getElementById('groupTriggerPrefixInput').value.trim(),
       ai_enabled: document.getElementById('aiEnabledCheck').checked,
       ai_mode: document.getElementById('aiEnabledCheck').checked ? 'ai_only' : 'manual',
       ai_model: document.getElementById('aiModelSelect').value,
       ai_system_prompt: document.getElementById('aiSystemPromptInput').value.trim(),
+      ai_admin_prompt: document.getElementById('aiAdminPromptInput').value.trim(),
+      ai_runtime_prompt: document.getElementById('aiRuntimePromptInput').value.trim(),
       ai_business_knowledge: document.getElementById('aiBusinessKnowledgeInput').value.trim(),
-      admin_mode_assist: document.getElementById('adminModeAssistCheck').checked
+      admin_assist_policy: assistPolicy,
+      admin_mode_assist: assistPolicy !== 'off'
     };
   }
 
@@ -2325,6 +2500,7 @@ function buildExportBundleObject() {
 
   if (includeManual) {
     bundle.rules = currentRules.map(r => ({
+      target_role: r.target_role || 'all',
       is_default: Boolean(r.is_default),
       exact_keywords: r.exact_keywords || '',
       contains_keywords: r.contains_keywords || '',
@@ -2490,16 +2666,35 @@ async function executeImportRules() {
 
     if (applyAi) {
       const ac = parsedImportBundle.ai_config;
+      if (ac.bot_role_name !== undefined) configPatch.bot_role_name = ac.bot_role_name;
+      if (ac.reply_target_mode !== undefined) configPatch.reply_target_mode = ac.reply_target_mode;
+      if (ac.admin_numbers !== undefined) configPatch.admin_numbers = ac.admin_numbers;
+      if (ac.admin_command_prefix !== undefined) configPatch.admin_command_prefix = ac.admin_command_prefix;
+      if (ac.allow_self_command !== undefined) configPatch.allow_self_command = Boolean(ac.allow_self_command);
+      if (ac.allow_group_reply !== undefined) configPatch.allow_group_reply = Boolean(ac.allow_group_reply);
+      if (ac.group_trigger_prefix !== undefined) configPatch.group_trigger_prefix = ac.group_trigger_prefix;
       if (ac.ai_enabled !== undefined) configPatch.ai_enabled = Boolean(ac.ai_enabled);
       if (ac.ai_mode) configPatch.ai_mode = ac.ai_mode;
       if (ac.ai_model) configPatch.ai_model = normalizeAiModelValue(ac.ai_model);
       if (ac.ai_system_prompt !== undefined) {
         configPatch.ai_system_prompt = autoConvertStoreTextToVars(ac.ai_system_prompt, latestBotConfig);
       }
+      if (ac.ai_admin_prompt !== undefined) {
+        configPatch.ai_admin_prompt = autoConvertStoreTextToVars(ac.ai_admin_prompt, latestBotConfig);
+      }
+      if (ac.ai_runtime_prompt !== undefined) {
+        configPatch.ai_runtime_prompt = autoConvertStoreTextToVars(ac.ai_runtime_prompt, latestBotConfig);
+      }
       if (ac.ai_business_knowledge !== undefined) {
         configPatch.ai_business_knowledge = autoConvertStoreTextToVars(ac.ai_business_knowledge, latestBotConfig);
       }
-      if (ac.admin_mode_assist !== undefined) configPatch.admin_mode_assist = Boolean(ac.admin_mode_assist);
+      if (ac.admin_assist_policy !== undefined) {
+        configPatch.admin_assist_policy = ac.admin_assist_policy;
+        configPatch.admin_mode_assist = ac.admin_assist_policy !== 'off';
+      } else if (ac.admin_mode_assist !== undefined) {
+        configPatch.admin_mode_assist = Boolean(ac.admin_mode_assist);
+        configPatch.admin_assist_policy = ac.admin_mode_assist ? 'rules_only' : 'off';
+      }
       hasConfigChange = true;
     }
 
@@ -2541,7 +2736,7 @@ async function executeImportRules() {
     const existingSignatures = new Set(
       mergeMode === 'replace'
         ? []
-        : currentRules.map(r => `${r.is_default ? '1' : '0'}|${(r.exact_keywords || '').trim().toLowerCase()}|${(r.contains_keywords || '').trim().toLowerCase()}|${(r.reply || '').trim()}`)
+        : currentRules.map(r => `${r.target_role || 'all'}|${r.is_default ? '1' : '0'}|${(r.exact_keywords || '').trim().toLowerCase()}|${(r.contains_keywords || '').trim().toLowerCase()}|${(r.reply || '').trim()}`)
     );
 
     let addedCount = 0;
@@ -2554,7 +2749,7 @@ async function executeImportRules() {
       const convertedReply = autoConvertStoreTextToVars(String(r.reply || '').trim(), latestBotConfig);
       const convertedFollowup = autoConvertStoreTextToVars(String(r.followup_reply || '').trim(), latestBotConfig);
 
-      const sig = `${r.is_default ? '1' : '0'}|${String(r.exact_keywords || '').trim().toLowerCase()}|${String(r.contains_keywords || '').trim().toLowerCase()}|${convertedReply}`;
+      const sig = `${r.target_role || 'all'}|${r.is_default ? '1' : '0'}|${String(r.exact_keywords || '').trim().toLowerCase()}|${String(r.contains_keywords || '').trim().toLowerCase()}|${convertedReply}`;
       if (existingSignatures.has(sig)) {
         skippedDupCount++;
         continue;
@@ -2565,6 +2760,7 @@ async function executeImportRules() {
         method: 'POST',
         body: JSON.stringify({
           bot_id: ACTIVE_BOT_ID,
+          target_role: r.target_role || 'all',
           is_default: Boolean(r.is_default),
           exact_keywords: String(r.exact_keywords || '').trim(),
           contains_keywords: String(r.contains_keywords || '').trim(),
@@ -2581,7 +2777,7 @@ async function executeImportRules() {
     }
 
     closeImportRulesModal();
-    await pollState();
+    await pollState(true);
     alert(
       `✅ Import Selesai pada akun ${ACTIVE_BOT_ID}!\n` +
       `• Aturan ditambahkan: ${addedCount}\n` +
@@ -2645,20 +2841,29 @@ function renderAdminQueue(queue) {
 }
 
 async function resumeBotForUser(jid) {
-  await apiFetch('/api/queue/resume', {
-    method: 'POST',
-    body: JSON.stringify({ bot_id: ACTIVE_BOT_ID, jid })
-  });
-  pollState();
+  try {
+    await apiFetch('/api/queue/resume', {
+      method: 'POST',
+      body: JSON.stringify({ bot_id: ACTIVE_BOT_ID, jid })
+    });
+    await pollState(true);
+  } catch (err) {
+    alert(`Gagal mengaktifkan kembali bot untuk nomor ini: ${err.message}`);
+  }
 }
 
 async function resumeBotForAllUsers() {
   if (!confirm('Aktifkan kembali bot untuk semua nomor di antrean admin akun ini?')) return;
-  await apiFetch('/api/queue/resume', {
-    method: 'POST',
-    body: JSON.stringify({ bot_id: ACTIVE_BOT_ID, all: true })
-  });
-  pollState();
+
+  try {
+    await apiFetch('/api/queue/resume', {
+      method: 'POST',
+      body: JSON.stringify({ bot_id: ACTIVE_BOT_ID, all: true })
+    });
+    await pollState(true);
+  } catch (err) {
+    alert(`Gagal mengaktifkan kembali bot untuk semua nomor: ${err.message}`);
+  }
 }
 
 function renderGroupedWhatsAppView() {
@@ -2750,6 +2955,14 @@ function stripRedundantMediaPrefix(text, hasMediaUrl) {
     .trim();
 }
 
+function handleMediaBtnClick(el, action) {
+  const url = el?.dataset?.url || '';
+  const name = el?.dataset?.name || 'lampiran';
+  if (!url) return;
+  if (action === 'download') return downloadChatMedia(url, name);
+  return openMediaPreview(url, name, action);
+}
+
 function buildChatMediaHtml(log) {
   if (!log.media_url) return '';
   const fullUrl = resolveMediaFullUrl(log.media_url);
@@ -2768,11 +2981,13 @@ function buildChatMediaHtml(log) {
           alt="${safeName}"
           class="wa-media-img"
           loading="lazy"
-          onclick="openMediaPreview('${safeUrl}', '${safeName}', 'image')"
+          data-url="${safeUrl}"
+          data-name="${safeName}"
+          onclick="handleMediaBtnClick(this, 'image')"
         />
         <div class="wa-media-bar">
-          <button type="button" class="wa-media-btn" onclick="openMediaPreview('${safeUrl}', '${safeName}', 'image')">🔍 Perbesar</button>
-          <button type="button" class="wa-media-btn primary" onclick="downloadChatMedia('${safeUrl}', '${safeName}')">⬇️ Unduh</button>
+          <button type="button" class="wa-media-btn" data-url="${safeUrl}" data-name="${safeName}" onclick="handleMediaBtnClick(this, 'image')">🔍 Perbesar</button>
+          <button type="button" class="wa-media-btn primary" data-url="${safeUrl}" data-name="${safeName}" onclick="handleMediaBtnClick(this, 'download')">⬇️ Unduh</button>
         </div>
       </div>`;
   }
@@ -2782,7 +2997,7 @@ function buildChatMediaHtml(log) {
       <div class="wa-media-wrap">
         <video src="${safeUrl}" controls style="max-width: 240px; max-height: 220px; border-radius: 7px; display: block;"></video>
         <div class="wa-media-bar">
-          <button type="button" class="wa-media-btn primary" onclick="downloadChatMedia('${safeUrl}', '${safeName}')">⬇️ Unduh Video</button>
+          <button type="button" class="wa-media-btn primary" data-url="${safeUrl}" data-name="${safeName}" onclick="handleMediaBtnClick(this, 'download')">⬇️ Unduh Video</button>
         </div>
       </div>`;
   }
@@ -2792,7 +3007,7 @@ function buildChatMediaHtml(log) {
       <div class="wa-media-wrap">
         <audio src="${safeUrl}" controls style="max-width: 240px; height: 36px; display: block;"></audio>
         <div class="wa-media-bar">
-          <button type="button" class="wa-media-btn" onclick="downloadChatMedia('${safeUrl}', '${safeName}')">⬇️ Unduh Audio</button>
+          <button type="button" class="wa-media-btn" data-url="${safeUrl}" data-name="${safeName}" onclick="handleMediaBtnClick(this, 'download')">⬇️ Unduh Audio</button>
         </div>
       </div>`;
   }
@@ -2804,11 +3019,12 @@ function buildChatMediaHtml(log) {
         <span>${safeName}</span>
       </div>
       <div class="wa-media-bar">
-        ${isPdf ? `<button type="button" class="wa-media-btn" onclick="openMediaPreview('${safeUrl}', '${safeName}', 'pdf')">👁️ Preview PDF</button>` : ''}
-        <button type="button" class="wa-media-btn primary" onclick="downloadChatMedia('${safeUrl}', '${safeName}')">⬇️ Unduh</button>
+        ${isPdf ? `<button type="button" class="wa-media-btn" data-url="${safeUrl}" data-name="${safeName}" onclick="handleMediaBtnClick(this, 'pdf')">👁️ Preview PDF</button>` : ''}
+        <button type="button" class="wa-media-btn primary" data-url="${safeUrl}" data-name="${safeName}" onclick="handleMediaBtnClick(this, 'download')">⬇️ Unduh</button>
       </div>
     </div>`;
 }
+
 
 function openMediaPreview(url, filename, kind) {
   document.getElementById('mediaPreviewTitle').textContent = filename || 'Preview Lampiran';
@@ -2851,73 +3067,132 @@ async function downloadChatMedia(url, filename) {
   }
 }
 
-function renderChatMessages(thread) {
-  document.getElementById('waChatHeader').classList.remove('hidden');
-  document.getElementById('waHeaderName').textContent = thread.name;
-  document.getElementById('waHeaderSub').textContent = thread.number;
+function renderChatMessages(threadOrList) {
+  const container = document.getElementById('waMessagesContainer');
+  const headerEl = document.getElementById('waChatHeader');
+  if (!container) return;
 
-  const cleanPhone = thread.number.replace(/\D/g, '');
-  const linkEl = document.getElementById('waHeaderOpenLink');
-  if (cleanPhone) {
-    linkEl.href = `https://wa.me/${cleanPhone}`;
-    linkEl.classList.remove('hidden');
-  } else {
-    linkEl.classList.add('hidden');
+  const isThreadObj = threadOrList && !Array.isArray(threadOrList) && Array.isArray(threadOrList.logs);
+  const logs = isThreadObj
+    ? threadOrList.logs
+    : Array.isArray(threadOrList)
+      ? threadOrList
+      : [];
+
+  if (isThreadObj && headerEl) {
+    headerEl.classList.remove('hidden');
+    const displayName = threadOrList.name || threadOrList.number || '-';
+    const initials = displayName.replace(/[^a-zA-Z0-9]/g, '').slice(0, 2).toUpperCase() || 'WA';
+    document.getElementById('waHeaderAvatar').textContent = initials;
+    document.getElementById('waHeaderName').textContent = displayName;
+    document.getElementById('waHeaderSub').textContent = `${threadOrList.number} • ${logs.length} pesan`;
+
+    const cleanPhone = normalizePhone(threadOrList.number);
+    const waLinkEl = document.getElementById('waHeaderOpenLink');
+    if (cleanPhone && waLinkEl) {
+      waLinkEl.href = `https://wa.me/${cleanPhone}`;
+      waLinkEl.classList.remove('hidden');
+    } else if (waLinkEl) {
+      waLinkEl.classList.add('hidden');
+    }
   }
 
-  const ordered = [...thread.logs].reverse();
-  let lastDate = '';
-  let html = '';
+  if (logs.length === 0) {
+    container.innerHTML = `
+      <div class="wa-empty-state">
+        <div style="font-size: 2rem; margin-bottom: 8px;">💬</div>
+        <div>Belum ada riwayat percakapan untuk nomor ini.</div>
+      </div>`;
+    return;
+  }
 
-  for (const log of ordered) {
-    const dk = toWitaDateKey(log.created_at);
-    if (dk !== lastDate) {
-      lastDate = dk;
-      html += `<div class="wa-date-divider">${escapeHtml(formatWitaDateLabel(dk))}</div>`;
+  const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 90;
+
+  const orderedLogs = [...logs].sort((a, b) => {
+    const timeA = new Date(a.incoming_at || a.replied_at || a.created_at || 0).getTime();
+    const timeB = new Date(b.incoming_at || b.replied_at || b.created_at || 0).getTime();
+    return timeA - timeB;
+  });
+
+  const htmlParts = [];
+  let lastDateKey = '';
+
+  for (const log of orderedLogs) {
+    const baseTs = log.incoming_at || log.replied_at || log.created_at || Date.now();
+    const dateKey = toWitaDateKey(baseTs);
+    if (dateKey !== lastDateKey) {
+      lastDateKey = dateKey;
+      htmlParts.push(`<div class="wa-date-divider">${escapeHtml(formatWitaDateLabel(dateKey))}</div>`);
     }
 
     const mediaHtml = buildChatMediaHtml(log);
+    const hasMedia = Boolean(mediaHtml);
+    const cleanIncoming = stripRedundantMediaPrefix(log.incoming, hasMedia);
+    const cleanReply = stripRedundantMediaPrefix(log.reply, hasMedia);
+    const hasIncoming = Boolean(cleanIncoming && cleanIncoming.trim() !== '');
+    const hasReply = Boolean(cleanReply && cleanReply.trim() !== '');
+    const isAdmin = log.log_type === 'admin_direct';
 
-    if (log.incoming || (mediaHtml && log.log_type !== 'admin_direct')) {
-      const captionText = stripRedundantMediaPrefix(log.incoming, Boolean(log.media_url));
-      html += `
+    if (hasIncoming || (hasMedia && !hasReply && !isAdmin && log.log_type !== 'bot_reply')) {
+      const inTime = formatWitaTime(log.incoming_at || log.created_at);
+      htmlParts.push(`
         <div class="wa-bubble in">
-          ${mediaHtml}
-          ${captionText ? `<div>${escapeHtml(captionText)}</div>` : ''}
-          <div class="wa-bubble-foot">${formatWitaTime(log.incoming_at || log.created_at)}</div>
-        </div>`;
+          ${hasMedia && !hasReply ? mediaHtml : ''}
+          ${hasIncoming ? `<div>${escapeHtml(cleanIncoming)}</div>` : ''}
+          <div class="wa-bubble-foot">${inTime} WITA</div>
+        </div>`);
     }
 
-    if (log.reply) {
-      const isAdmin = log.log_type === 'admin_direct';
-      const replyMediaHtml = isAdmin && !log.incoming ? mediaHtml : '';
-      const replyText = stripRedundantMediaPrefix(log.reply, Boolean(replyMediaHtml));
-      html += `
-        <div class="wa-bubble ${isAdmin ? 'out-admin' : 'out-bot'}">
-          <span class="wa-role-tag ${isAdmin ? 'admin' : 'bot'}">${isAdmin ? '👤 Admin' : '🤖 Auto-Reply / AI'}</span>
-          ${replyMediaHtml}
-          ${replyText ? `<div>${escapeHtml(replyText)}</div>` : ''}
-          <div class="wa-bubble-foot">${formatWitaTime(log.created_at)}</div>
-        </div>`;
+    if (isAdmin && (hasReply || (!hasIncoming && hasMedia))) {
+      const outTime = formatWitaTime(log.replied_at || log.created_at);
+      htmlParts.push(`
+        <div class="wa-bubble out-admin">
+          <span class="wa-role-tag admin">👤 Admin Langsung</span>
+          ${!hasIncoming && hasMedia ? mediaHtml : ''}
+          ${hasReply ? `<div>${escapeHtml(cleanReply)}</div>` : ''}
+          <div class="wa-bubble-foot">${outTime} WITA</div>
+        </div>`);
+    }
+
+    if (!isAdmin && (hasReply || (!hasIncoming && hasMedia && log.log_type === 'bot_reply'))) {
+      const outTime = formatWitaTime(log.replied_at || log.created_at);
+      const roleTag = log.handed_over
+        ? `<span class="wa-role-tag handover">🟠 Dialihkan ke Admin</span>`
+        : `<span class="wa-role-tag bot">🤖 Auto-Reply / AI</span>`;
+      htmlParts.push(`
+        <div class="wa-bubble out-bot">
+          ${roleTag}
+          ${hasMedia ? mediaHtml : ''}
+          ${hasReply ? `<div>${escapeHtml(cleanReply)}</div>` : ''}
+          <div class="wa-bubble-foot">${outTime} WITA</div>
+        </div>`);
     }
   }
 
-  const container = document.getElementById('waMessagesContainer');
-  const nearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 120;
-  container.innerHTML = html;
-  if (nearBottom) scrollChatToBottom();
+  container.innerHTML = htmlParts.join('');
+  if (isNearBottom) {
+    container.scrollTop = container.scrollHeight;
+  }
 }
-
 // ============================================================================
 // BROADCAST ANTI-SPAM
 // ============================================================================
 async function loadContacts(force = false) {
-  if (!force && contactsCache.length > 0) return;
-  const data = await apiFetch('/api/contacts');
-  contactsCache = data.contacts || [];
-  document.getElementById('contactCountPill').textContent = `${contactsCache.length.toLocaleString('id-ID')} Kontak`;
-  if (excludedNumbersList.length > 0) {
-    renderExcludedContactsList();
+  if (!force && hasLoadedContactsOnce) return;
+  const requestedBotId = ACTIVE_BOT_ID;
+  try {
+    const data = await apiFetch('/api/contacts');
+    if (requestedBotId !== ACTIVE_BOT_ID) return;
+    contactsCache = data.contacts || [];
+    hasLoadedContactsOnce = true;
+    document.getElementById('contactCountPill').textContent = `${contactsCache.length.toLocaleString('id-ID')} Kontak`;
+    if (excludedNumbersList.length > 0) {
+      renderExcludedContactsList();
+    }
+  } catch (err) {
+    if (requestedBotId === ACTIVE_BOT_ID) {
+      console.warn('Gagal memuat kontak:', err.message);
+    }
   }
 }
 
@@ -2940,112 +3215,187 @@ function previewBroadcastSample() {
   box.classList.remove('hidden');
 }
 
-document.getElementById('btnStartBroadcast').addEventListener('click', async () => {
-  await loadContacts(true);
-  const title = document.getElementById('bcTitleInput').value.trim() || 'Broadcast Promo';
-  const targetMode = document.getElementById('bcTargetSelect').value;
-  const rawTemplate = document.getElementById('bcMessageInput').value.trim();
-  const message_template = autoConvertStoreTextToVars(rawTemplate, latestBotConfig);
-  const extraRaw = document.getElementById('bcExtraNumbersInput').value;
+document.getElementById('btnStartBroadcast').addEventListener('click', async (e) => {
+  const btn = e.currentTarget;
+  const origText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = '⏳ Menyiapkan Broadcast...';
 
-  if (!message_template) return alert('Isi pesan broadcast terlebih dahulu.');
+  try {
+    await loadContacts(true);
+    const title = document.getElementById('bcTitleInput').value.trim() || 'Broadcast Promo';
+    const targetMode = document.getElementById('bcTargetSelect').value;
+    const rawTemplate = document.getElementById('bcMessageInput').value.trim();
+    const message_template = autoConvertStoreTextToVars(rawTemplate, latestBotConfig);
+    const extraRaw = document.getElementById('bcExtraNumbersInput').value;
 
-  const recipientMap = new Map();
-  if (targetMode !== 'manual_only') {
-    for (const c of contactsCache) {
-      if (targetMode === 'chat_only' && c.source !== 'chat_history') continue;
-      if (targetMode === 'never_broadcasted' && c.last_broadcast_at) continue;
-      const p = normalizePhone(c.phone);
-      if (p) recipientMap.set(p, { phone: p, name: c.name || '' });
+    if (!message_template) return alert('Isi pesan broadcast terlebih dahulu.');
+
+    const recipientMap = new Map();
+    if (targetMode !== 'manual_only') {
+      for (const c of contactsCache) {
+        if (targetMode === 'chat_only' && c.source !== 'chat_history') continue;
+        if (targetMode === 'never_broadcasted' && c.last_broadcast_at) continue;
+        const p = normalizePhone(c.phone);
+        if (p) recipientMap.set(p, { phone: p, name: c.name || '' });
+      }
     }
+    for (const p of extraRaw.split(/[\s,;\n]+/).map(normalizePhone).filter(Boolean)) {
+      if (!recipientMap.has(p)) recipientMap.set(p, { phone: p, name: '' });
+    }
+
+    const recipients = Array.from(recipientMap.values());
+    if (recipients.length === 0) return alert('Tidak ada nomor kontak sesuai kriteria.');
+
+    const daily_limit = Math.max(10, Number(document.getElementById('bcDailyLimitInput').value || 100));
+    if (!confirm(`Kirim broadcast "${title}" ke ${recipients.length} nomor dari akun ${ACTIVE_BOT_ID}?`)) return;
+
+    btn.textContent = '🚀 Mengirim Antrean...';
+    const res = await apiFetch('/api/broadcasts', {
+      method: 'POST',
+      body: JSON.stringify({
+        bot_id: ACTIVE_BOT_ID,
+        title,
+        message_template,
+        recipients,
+        min_delay_sec: Number(document.getElementById('bcMinDelayInput').value || 15),
+        max_delay_sec: Number(document.getElementById('bcMaxDelayInput').value || 35),
+        batch_size: Number(document.getElementById('bcBatchSizeInput').value || 15),
+        batch_pause_min: Number(document.getElementById('bcBatchPauseInput').value || 3),
+        daily_limit,
+        safe_hours_only: document.getElementById('bcSafeHoursCheck').checked
+      })
+    });
+
+    activeHistoryBroadcastId = res.broadcast?.id || res.id;
+    loadedRecipientsForBroadcastId = null;
+    document.getElementById('bcTitleInput').value = '';
+    document.getElementById('bcExtraNumbersInput').value = '';
+    pollState(true);
+  } catch (err) {
+    alert(`Gagal memulai broadcast: ${err.message}`);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = origText;
   }
-  for (const p of extraRaw.split(/[\s,;\n]+/).map(normalizePhone).filter(Boolean)) {
-    if (!recipientMap.has(p)) recipientMap.set(p, { phone: p, name: '' });
-  }
-
-  const recipients = Array.from(recipientMap.values());
-  if (recipients.length === 0) return alert('Tidak ada nomor kontak sesuai kriteria.');
-
-  const daily_limit = Math.max(10, Number(document.getElementById('bcDailyLimitInput').value || 100));
-  if (!confirm(`Kirim broadcast "${title}" ke ${recipients.length} nomor dari akun ${ACTIVE_BOT_ID}?`)) return;
-
-  const res = await apiFetch('/api/broadcasts', {
-    method: 'POST',
-    body: JSON.stringify({
-      bot_id: ACTIVE_BOT_ID,
-      title,
-      message_template,
-      recipients,
-      min_delay_sec: Number(document.getElementById('bcMinDelayInput').value || 15),
-      max_delay_sec: Number(document.getElementById('bcMaxDelayInput').value || 35),
-      batch_size: Number(document.getElementById('bcBatchSizeInput').value || 15),
-      batch_pause_min: Number(document.getElementById('bcBatchPauseInput').value || 3),
-      daily_limit,
-      safe_hours_only: document.getElementById('bcSafeHoursCheck').checked
-    })
-  });
-
-  activeHistoryBroadcastId = res.broadcast?.id || res.id;
-  document.getElementById('bcTitleInput').value = '';
-  document.getElementById('bcExtraNumbersInput').value = '';
-  pollState();
 });
 
-function renderBroadcasts() {
-  const hasRunning = bcCampaignsCache.some(b => b.status === 'running');
-  document.getElementById('tabBroadcastBadge').classList.toggle('hidden', !hasRunning);
-  document.getElementById('bcCampaignCountPill').textContent = `${bcCampaignsCache.length} Broadcast`;
+let loadedRecipientsForBroadcastId = null;
+let loadedRecipientsStatus = null;
 
+function selectBroadcastCampaign(id) {
+  activeHistoryBroadcastId = String(id);
+  loadedRecipientsForBroadcastId = null;
+  loadedRecipientsStatus = null;
+  renderBroadcasts();
+}
+
+function renderBroadcasts() {
   const listEl = document.getElementById('bcCampaignList');
-  if (bcCampaignsCache.length === 0) {
-    listEl.innerHTML = '<div style="padding:16px; color:#64748b; font-size:0.85rem;">Belum ada riwayat broadcast.</div>';
-    document.getElementById('bcHistoryTableBody').innerHTML = '';
+  const countPill = document.getElementById('bcCampaignCountPill');
+  const tabBadge = document.getElementById('tabBroadcastBadge');
+  if (!listEl) return;
+
+  const campaigns = Array.isArray(bcCampaignsCache) ? bcCampaignsCache : [];
+  if (countPill) countPill.textContent = `${campaigns.length} Broadcast`;
+
+  const hasRunning = campaigns.some(c => c.status === 'running');
+  if (tabBadge) tabBadge.classList.toggle('hidden', !hasRunning);
+
+  if (campaigns.length === 0) {
+    activeHistoryBroadcastId = null;
+    loadedRecipientsForBroadcastId = null;
+    loadedRecipientsStatus = null;
+    listEl.innerHTML = '<div style="padding: 16px; color: #64748b; font-size: 0.85rem;">Belum ada riwayat broadcast.</div>';
+    document.getElementById('bcHistoryTitle').textContent = '📋 Riwayat Pengiriman Broadcast';
+    document.getElementById('bcHistorySubtitle').textContent = 'Pilih broadcast di sebelah kiri...';
+    document.getElementById('bcHistoryTableBody').innerHTML =
+      '<tr><td colspan="4" style="color:#64748b; text-align:center;">Belum ada data broadcast.</td></tr>';
     return;
   }
 
-  if (!activeHistoryBroadcastId || !bcCampaignsCache.some(b => String(b.id) === String(activeHistoryBroadcastId))) {
-    activeHistoryBroadcastId = bcCampaignsCache[0].id;
+  let activeBc = campaigns.find(c => String(c.id) === String(activeHistoryBroadcastId));
+  if (!activeBc) {
+    activeBc = campaigns[0];
+    activeHistoryBroadcastId = String(activeBc.id);
   }
 
-  listEl.innerHTML = bcCampaignsCache.map(bc => {
-    const done = (bc.sent_count || 0) + (bc.failed_count || 0);
-    const pct = bc.total_recipients > 0 ? Math.min(100, Math.round((done / bc.total_recipients) * 100)) : 0;
-    const isActive = String(bc.id) === String(activeHistoryBroadcastId);
+  const statusLabelMap = {
+    running: 'Berjalan',
+    paused: 'Dijeda',
+    completed: 'Selesai',
+    cancelled: 'Dibatalkan'
+  };
+
+  listEl.innerHTML = campaigns.map(bc => {
+    const isSelected = String(bc.id) === String(activeBc.id);
+    const total = Number(bc.total_recipients || 0);
+    const sent = Number(bc.sent_count || 0);
+    const failed = Number(bc.failed_count || 0);
+    const pct = total > 0 ? Math.min(100, Math.round(((sent + failed) / total) * 100)) : 0;
+    const pillClass = ['running', 'paused', 'completed', 'cancelled'].includes(bc.status) ? bc.status : 'paused';
+
+    let actionBtns = '';
+    if (bc.status === 'running') {
+      actionBtns = `
+        <button type="button" class="warn sm" onclick="event.stopPropagation(); changeBroadcastStatus('${escapeHtml(bc.id)}', 'paused')">⏸️ Jeda</button>
+        <button type="button" class="danger sm" onclick="event.stopPropagation(); changeBroadcastStatus('${escapeHtml(bc.id)}', 'cancelled')">⏹️ Batal</button>`;
+    } else if (bc.status === 'paused') {
+      actionBtns = `
+        <button type="button" class="sm" onclick="event.stopPropagation(); changeBroadcastStatus('${escapeHtml(bc.id)}', 'running')">▶️ Lanjut</button>
+        <button type="button" class="danger sm" onclick="event.stopPropagation(); changeBroadcastStatus('${escapeHtml(bc.id)}', 'cancelled')">⏹️ Batal</button>`;
+    } else {
+      actionBtns = `
+        <button type="button" class="danger sm" onclick="event.stopPropagation(); deleteBroadcast('${escapeHtml(bc.id)}')">🗑️ Hapus</button>`;
+    }
+
     return `
-      <div class="bc-campaign-item ${isActive ? 'active' : ''}" onclick="selectBroadcastCampaign('${bc.id}')">
-        <div style="display:flex; justify-content:space-between; align-items:center; gap:6px;">
-          <strong style="font-size:0.88rem;">${escapeHtml(bc.title)}</strong>
-          <span class="bc-status-pill ${bc.status}">${bc.status}</span>
+      <div class="bc-campaign-item ${isSelected ? 'active' : ''}" onclick="selectBroadcastCampaign('${escapeHtml(bc.id)}')">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:6px;">
+          <strong style="font-size:0.88rem; color:#0f172a;">${escapeHtml(bc.title || `Broadcast #${bc.id}`)}</strong>
+          <span class="bc-status-pill ${pillClass}">${statusLabelMap[bc.status] || bc.status}</span>
         </div>
-        <div class="bc-progress-track"><div class="bc-progress-fill" style="width:${pct}%"></div></div>
-        <div style="font-size:0.75rem; color:#475569;">Terkirim: <strong>${bc.sent_count}</strong> / ${bc.total_recipients} (Gagal: ${bc.failed_count})</div>
-        <div style="font-size:0.72rem; color:#64748b; margin-top:3px;">${escapeHtml(bc.current_note || '')}</div>
-        <div style="display:flex; gap:5px; margin-top:8px;" onclick="event.stopPropagation()">
-          ${bc.status === 'running' ? `<button class="warn sm" onclick="changeBroadcastStatus('${bc.id}', 'paused')">Jeda</button>` : ''}
-          ${bc.status === 'paused' ? `<button class="sm" onclick="changeBroadcastStatus('${bc.id}', 'running')">Lanjut</button>` : ''}
-          ${bc.status === 'running' || bc.status === 'paused' ? `<button class="danger sm" onclick="changeBroadcastStatus('${bc.id}', 'cancelled')">Batal</button>` : ''}
-          <button class="secondary sm" onclick="deleteBroadcast('${bc.id}')">Hapus</button>
+        <div style="font-size:0.78rem; color:#475569; margin-top:4px;">
+          Terkirim: <strong>${sent}</strong> / ${total} ${failed > 0 ? `• Gagal: <strong style="color:#dc2626;">${failed}</strong>` : ''}
+        </div>
+        <div class="bc-progress-track">
+          <div class="bc-progress-fill" style="width:${pct}%;"></div>
+        </div>
+        <div style="display:flex; gap:6px; justify-content:flex-end; margin-top:6px;">
+          ${actionBtns}
         </div>
       </div>`;
   }).join('');
 
-  loadBroadcastRecipients(activeHistoryBroadcastId);
-}
+  const isNewCampaign = String(loadedRecipientsForBroadcastId) !== String(activeBc.id);
+  const isRunning = activeBc.status === 'running';
+  const isFinalTransition =
+    loadedRecipientsStatus === 'running' &&
+    ['completed', 'paused', 'cancelled'].includes(activeBc.status);
 
-async function selectBroadcastCampaign(id) {
-  activeHistoryBroadcastId = id;
-  renderBroadcasts();
+  if (isNewCampaign || isRunning || isFinalTransition) {
+    loadedRecipientsForBroadcastId = String(activeBc.id);
+    loadedRecipientsStatus = activeBc.status;
+    loadBroadcastRecipients(activeBc.id);
+  }
 }
 
 async function loadBroadcastRecipients(id) {
   const bc = bcCampaignsCache.find(b => String(b.id) === String(id));
   if (!bc) return;
+  const requestedBotId = ACTIVE_BOT_ID;
   document.getElementById('bcHistoryTitle').textContent = `📋 ${bc.title}`;
   document.getElementById('bcHistorySubtitle').textContent = `Total ${bc.total_recipients} penerima • Status: ${bc.status.toUpperCase()}`;
 
-  const data = await apiFetch(`/api/broadcasts/${encodeURIComponent(id)}/recipients`);
-  bcHistoryRowsCache = data.recipients || [];
-  renderBroadcastHistoryTable();
+  try {
+    const data = await apiFetch(`/api/broadcasts/${encodeURIComponent(id)}/recipients`);
+    if (requestedBotId !== ACTIVE_BOT_ID || String(activeHistoryBroadcastId) !== String(id)) return;
+    bcHistoryRowsCache = data.recipients || [];
+    loadedRecipientsForBroadcastId = String(id);
+    renderBroadcastHistoryTable();
+  } catch (err) {
+    console.warn('Gagal memuat detail penerima broadcast:', err.message);
+  }
 }
 
 function renderBroadcastHistoryTable() {
@@ -3080,22 +3430,358 @@ function renderBroadcastHistoryTable() {
 }
 
 async function changeBroadcastStatus(id, status) {
-  await apiFetch(`/api/broadcasts/${encodeURIComponent(id)}/status`, {
-    method: 'POST',
-    body: JSON.stringify({ bot_id: ACTIVE_BOT_ID, status })
-  });
-  pollState();
+  try {
+    await apiFetch(`/api/broadcasts/${encodeURIComponent(id)}/status`, {
+      method: 'POST',
+      body: JSON.stringify({ bot_id: ACTIVE_BOT_ID, status })
+    });
+    await pollState(true);
+  } catch (err) {
+    alert(`Gagal mengubah status broadcast: ${err.message}`);
+  }
 }
 
 async function deleteBroadcast(id) {
   if (!confirm('Hapus riwayat broadcast ini?')) return;
-  await apiFetch(`/api/broadcasts/${encodeURIComponent(id)}`, { method: 'DELETE' });
-  pollState();
+
+  try {
+    await apiFetch(`/api/broadcasts/${encodeURIComponent(id)}`, { method: 'DELETE' });
+    if (String(activeHistoryBroadcastId) === String(id)) {
+  activeHistoryBroadcastId = null;
+  loadedRecipientsForBroadcastId = null;
+  bcHistoryRowsCache = [];
 }
+    await pollState(true);
+  } catch (err) {
+    alert(`Gagal menghapus riwayat broadcast: ${err.message}`);
+  }
+}
+
 
 // ============================================================================
 // PENGATURAN AI (TERPISAH PER AKUN WA), LUAR JAM KERJA & ATURAN AUTO-REPLY
 // ============================================================================
+
+// ============================================================================
+// PRESET PERAN & PROMPT BROWSER (TIDAK LAGI HARDCODED DI SERVER)
+// ============================================================================
+const ROLE_PROMPT_PRESETS = {
+  cs_store: {
+    roleName: 'Customer Service',
+    systemPrompt:
+      'Kamu adalah {peran_bot} resmi dari *{nama_toko}* yang ramah, sopan, komunikatif, dan solutif.\n' +
+      '- Gunakan bahasa Indonesia yang natural, singkat, jelas, dan mudah dibaca di WhatsApp.\n' +
+      '- Jawab pertanyaan pelanggan berdasarkan Identitas Toko, Pengetahuan Bisnis, dan Referensi Aturan Auto-Reply.\n' +
+      '- Jika pelanggan ingin memesan custom, mengirim file, melakukan pembayaran, atau komplain yang butuh penanganan manusia, akhiri jawaban dengan tag [ALIHKAN_ADMIN].',
+    adminPrompt:
+      'Kamu adalah Asisten Internal untuk Admin *{nama_toko}*.\n' +
+      '- Bantu Admin menyusun draf balasan pelanggan yang sopan, menghitung estimasi biaya, atau merangkum informasi layanan secara ringkas dan siap salin.\n' +
+      '- Jangan pernah menambahkan tag [ALIHKAN_ADMIN] saat merespons Admin.',
+    runtimePrompt:
+      '=== ATURAN KONTEKS & SESI ===\n' +
+      '- Jika Sesi Chat = BARU, berikan salam pembuka hangat 1 kali. Jika Sesi Chat = LANJUTAN, langsung jawab inti pertanyaan tanpa mengulang salam/perkenalan.\n' +
+      '- Jika Mode Asisten Admin = AKTIF dan pertanyaan tidak bisa dijawab pasti dari data yang ada, balas hanya dengan [SKIP_ADMIN_MODE].\n' +
+      '- Jangan mengarang harga, promo, atau kebijakan yang tidak tercantum pada data.'
+  },
+  admin_copilot: {
+    roleName: 'Asisten Admin & Operasional',
+    systemPrompt:
+      'Kamu adalah {peran_bot} untuk *{nama_toko}*.\n' +
+      '- Sampaikan informasi secara ringkas, terstruktur (gunakan poin bila perlu), dan profesional.\n' +
+      '- Jika pengirim membutuhkan persetujuan atau tindakan langsung dari Admin utama, sertakan tag [ALIHKAN_ADMIN].',
+    adminPrompt:
+      'Kamu adalah Co-Pilot & Asisten Operasional pribadi Admin.\n' +
+      '- Bantu Admin membuatkan template chat, draf pengumuman broadcast, pengecekan SOP, dan ringkasan jawaban cepat.\n' +
+      '- Gunakan gaya bahasa langsung ke inti (to the point), rapi, dan siap diteruskan ke pelanggan.',
+    runtimePrompt:
+      '=== ATURAN KONTEKS & SESI ===\n' +
+      '- Sesuaikan gaya bahasa dengan Status Pengirim ({peran_pengirim}).\n' +
+      '- Jika Sesi Chat = LANJUTAN, hindari basa-basi berulang.\n' +
+      '- Utamakan keakuratan data dari Identitas Toko dan Pengetahuan Bisnis.'
+  },
+  dual_role: {
+    roleName: 'CS & Asisten Admin',
+    systemPrompt:
+      'Kamu adalah Customer Service *{nama_toko}* yang ramah dan membantu pelanggan.\n' +
+      '- Berikan jawaban akurat mengenai layanan, alamat ({alamat_toko}), dan kontak ({wa_toko}).\n' +
+      '- Untuk transaksi final, negosiasi khusus, atau pengecekan file, sertakan [ALIHKAN_ADMIN].',
+    adminPrompt:
+      'Kamu sedang berbicara dengan ADMIN / PEMILIK ({nama_pengirim}).\n' +
+      '- Bertindaklah sebagai asisten pribadi Admin: bantu buatkan draf balasan WA, format penawaran, atau rangkuman info bisnis dengan cepat dan efisien.\n' +
+      '- Jangan perlakukan Admin sebagai pelanggan.',
+    runtimePrompt:
+      '=== ATURAN PERAN GANDA ===\n' +
+      '- Periksa Status Pengirim: jika ADMIN / INTERNAL, ikuti instruksi Asisten Admin; jika PELANGGAN / EKSTERNAL, ikuti instruksi Customer Service.\n' +
+      '- Jika Sesi Chat = LANJUTAN, langsung ke inti jawaban.'
+  },
+  sales_consultant: {
+    roleName: 'Sales & Konsultan',
+    systemPrompt:
+      'Kamu adalah {peran_bot} dari *{nama_toko}* yang persuasif, ramah, dan berorientasi solusi.\n' +
+      '- Gali kebutuhan calon klien secara singkat, rekomendasikan paket/layanan terbaik, dan arahkan ke pemesanan.\n' +
+      '- Jika klien siap closing atau minta penawaran resmi, sertakan tag [ALIHKAN_ADMIN].',
+    adminPrompt:
+      'Kamu adalah Asisten Strategi Sales untuk Admin.\n' +
+      '- Bantu buatkan draf follow-up prospek, penawaran harga, dan skrip closing yang menarik.',
+    runtimePrompt:
+      '=== ATURAN KONTEKS SALES ===\n' +
+      '- Pada sesi BARU, sambut ramah dan tanyakan kebutuhan utamanya. Pada sesi LANJUTAN, fokus menjawab dan mengarahkan langkah berikutnya.'
+  },
+  secretary: {
+    roleName: 'Sekretaris Pribadi',
+    systemPrompt:
+      'Kamu adalah Sekretaris / Asisten Pribadi untuk {nama_admin}.\n' +
+      '- Terima pesan, catat keperluan pengirim (nama, keperluan, waktu), dan sampaikan bahwa pesan akan diteruskan ke {nama_admin}.\n' +
+      '- Selalu akhiri dengan tag [ALIHKAN_ADMIN] agar masuk ke antrean prioritas.',
+    adminPrompt:
+      'Kamu adalah Sekretaris Pribadi {nama_admin}.\n' +
+      '- Bantu merapikan jadwal, menyusun pesan balasan resmi, atau mencatat poin penting secara terstruktur.',
+    runtimePrompt:
+      '=== ATURAN SEKRETARIS ===\n' +
+      '- Jaga kerahasiaan data internal dan tetap sopan kepada setiap pengirim.'
+  },
+  tech_support: {
+    roleName: 'Technical Support',
+    systemPrompt:
+      'Kamu adalah {peran_bot} yang sabar, sistematis, dan jelas.\n' +
+      '- Bantu pengirim melakukan langkah pengecekan awal secara bertahap.\n' +
+      '- Jika kendala membutuhkan akses teknis tingkat lanjut, sertakan tag [ALIHKAN_ADMIN].',
+    adminPrompt:
+      'Kamu adalah Asisten Teknis Internal untuk Admin.\n' +
+      '- Berikan analisis masalah dan langkah penyelesaian teknis secara ringkas dan akurat.',
+    runtimePrompt:
+      '=== ATURAN SUPPORT ===\n' +
+      '- Gunakan poin bernomor untuk langkah-langkah teknis agar mudah diikuti di layar HP.'
+  }
+};
+
+function applyRolePromptPreset() {
+  const key = document.getElementById('aiRolePresetSelect').value;
+  const preset = ROLE_PROMPT_PRESETS[key];
+  if (!preset) return;
+
+  document.getElementById('botRoleNameInput').value = preset.roleName;
+  document.getElementById('aiSystemPromptInput').value = preset.systemPrompt;
+  document.getElementById('aiAdminPromptInput').value = preset.adminPrompt;
+  document.getElementById('aiRuntimePromptInput').value = preset.runtimePrompt;
+  markAiFormDirty();
+}
+
+function insertDefaultRuntimePrompt() {
+  document.getElementById('aiRuntimePromptInput').value =
+    ROLE_PROMPT_PRESETS.cs_store.runtimePrompt;
+  markAiFormDirty();
+}
+
+async function changeAdminAssistPolicy(policy) {
+  document.getElementById('adminAssistActiveBadge').classList.toggle('hidden', policy === 'off');
+  try {
+    await apiFetch('/api/config', {
+      method: 'POST',
+      body: JSON.stringify({
+        bot_id: ACTIVE_BOT_ID,
+        admin_assist_policy: policy,
+        admin_mode_assist: policy !== 'off'
+      })
+    });
+  } catch (err) {
+    alert(`Gagal menyimpan kebijakan asisten admin: ${err.message}`);
+    pollState();
+  }
+}
+
+// Perbarui updateAiLiveBadge(), populateAiForm(), btnSaveAiConfig, dan testCurrentAccountAi():
+function updateAiLiveBadge() {
+  const enabled = document.getElementById('aiEnabledCheck').checked;
+  const allowGroup = document.getElementById('allowGroupReplyCheck').checked;
+  document.getElementById('aiConfigFieldsBox').classList.toggle('hidden', !enabled);
+  document.getElementById('groupPrefixBox').classList.toggle('hidden', !allowGroup);
+
+  const pill = document.getElementById('aiLiveStatusPill');
+  const desc = document.getElementById('aiModeDescriptionBox');
+  const roleName = document.getElementById('botRoleNameInput').value.trim() || 'Customer Service';
+
+  if (enabled) {
+    pill.classList.add('ai');
+    pill.textContent = `🧠 AI Aktif (${roleName})`;
+    desc.classList.remove('off');
+    desc.innerHTML = `<strong>Mode AI Aktif (${escapeHtml(roleName)}):</strong> Semua balasan menggunakan prompt yang diatur di browser ini sesuai peran pengirim (Pelanggan vs Admin).`;
+  } else {
+    pill.classList.remove('ai');
+    pill.textContent = `⚪ AI Nonaktif (${roleName})`;
+    desc.classList.add('off');
+    desc.innerHTML = '<strong>Mode AI Nonaktif:</strong> Balasan dikirim berdasarkan pencocokan kata kunci &amp; target peran pada daftar aturan di bawah.';
+  }
+  updateCustomKeyBadge();
+}
+
+function populateAiForm(cfg) {
+  document.getElementById('aiRulesRefCountPill').textContent = `📚 ${currentRules.length} Aturan Auto-Reply`;
+  const policy = cfg.admin_assist_policy || (cfg.admin_mode_assist ? 'rules_only' : 'off');
+  document.getElementById('adminAssistPolicySelect').value = policy;
+  document.getElementById('adminAssistActiveBadge').classList.toggle('hidden', policy === 'off');
+
+  if (isAiFormDirty) return updateAiLiveBadge();
+
+  document.getElementById('aiEnabledCheck').checked = Boolean(cfg.ai_enabled);
+  if (document.activeElement !== document.getElementById('botRoleNameInput')) {
+    document.getElementById('botRoleNameInput').value = cfg.bot_role_name || 'Customer Service';
+  }
+  document.getElementById('replyTargetModeSelect').value =
+    cfg.reply_target_mode || 'customers_and_admin';
+
+  if (document.activeElement !== document.getElementById('adminNumbersInput')) {
+    document.getElementById('adminNumbersInput').value = cfg.admin_numbers || '';
+  }
+  if (document.activeElement !== document.getElementById('adminCommandPrefixInput')) {
+    document.getElementById('adminCommandPrefixInput').value =
+      cfg.admin_command_prefix || '!ai, /ai, !bot, /bot';
+  }
+  document.getElementById('allowSelfCommandCheck').checked = cfg.allow_self_command !== false;
+  document.getElementById('allowGroupReplyCheck').checked = Boolean(cfg.allow_group_reply);
+  if (document.activeElement !== document.getElementById('groupTriggerPrefixInput')) {
+    document.getElementById('groupTriggerPrefixInput').value =
+      cfg.group_trigger_prefix || '!bot, /ai';
+  }
+  document.getElementById('groupPrefixHint').textContent =
+    cfg.group_trigger_prefix || '!bot, /ai';
+
+  if (cfg.ai_model) {
+    const modelSel = document.getElementById('aiModelSelect');
+    const mapped = normalizeAiModelValue(cfg.ai_model);
+    if (Array.from(modelSel.options).some(opt => opt.value === mapped)) {
+      modelSel.value = mapped;
+    }
+  }
+
+  if (document.activeElement !== document.getElementById('aiGroqKeyInput')) {
+    document.getElementById('aiGroqKeyInput').value = cfg.groq_api_key || '';
+  }
+  if (document.activeElement !== document.getElementById('aiGeminiKeyInput')) {
+    document.getElementById('aiGeminiKeyInput').value = cfg.gemini_api_key || '';
+  }
+  if (document.activeElement !== document.getElementById('aiOpenRouterKeyInput')) {
+    document.getElementById('aiOpenRouterKeyInput').value = cfg.openrouter_api_key || '';
+  }
+  if (document.activeElement !== document.getElementById('aiSystemPromptInput')) {
+    document.getElementById('aiSystemPromptInput').value = cfg.ai_system_prompt || '';
+  }
+  if (document.activeElement !== document.getElementById('aiAdminPromptInput')) {
+    document.getElementById('aiAdminPromptInput').value = cfg.ai_admin_prompt || '';
+  }
+  if (document.activeElement !== document.getElementById('aiRuntimePromptInput')) {
+    document.getElementById('aiRuntimePromptInput').value = cfg.ai_runtime_prompt || '';
+  }
+  if (document.activeElement !== document.getElementById('aiBusinessKnowledgeInput')) {
+    document.getElementById('aiBusinessKnowledgeInput').value = cfg.ai_business_knowledge || '';
+  }
+
+  updateAiLiveBadge();
+}
+
+document.getElementById('btnSaveAiConfig').addEventListener('click', async (e) => {
+  const btn = e.currentTarget;
+  const origText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = '⏳ Menyimpan...';
+
+  try {
+    const ai_enabled = document.getElementById('aiEnabledCheck').checked;
+    const cleanSystemPrompt = autoConvertStoreTextToVars(
+      document.getElementById('aiSystemPromptInput').value.trim(),
+      latestBotConfig
+    );
+    const cleanAdminPrompt = autoConvertStoreTextToVars(
+      document.getElementById('aiAdminPromptInput').value.trim(),
+      latestBotConfig
+    );
+    const cleanRuntimePrompt = autoConvertStoreTextToVars(
+      document.getElementById('aiRuntimePromptInput').value.trim(),
+      latestBotConfig
+    );
+    const cleanKnowledge = autoConvertStoreTextToVars(
+      document.getElementById('aiBusinessKnowledgeInput').value.trim(),
+      latestBotConfig
+    );
+
+    document.getElementById('aiSystemPromptInput').value = cleanSystemPrompt;
+    document.getElementById('aiAdminPromptInput').value = cleanAdminPrompt;
+    document.getElementById('aiRuntimePromptInput').value = cleanRuntimePrompt;
+    document.getElementById('aiBusinessKnowledgeInput').value = cleanKnowledge;
+
+    await apiFetch('/api/config', {
+      method: 'POST',
+      body: JSON.stringify({
+        bot_id: ACTIVE_BOT_ID,
+        bot_role_name: document.getElementById('botRoleNameInput').value.trim() || 'Customer Service',
+        reply_target_mode: document.getElementById('replyTargetModeSelect').value,
+        admin_numbers: document.getElementById('adminNumbersInput').value.trim(),
+        admin_command_prefix: document.getElementById('adminCommandPrefixInput').value.trim(),
+        allow_self_command: document.getElementById('allowSelfCommandCheck').checked,
+        allow_group_reply: document.getElementById('allowGroupReplyCheck').checked,
+        group_trigger_prefix: document.getElementById('groupTriggerPrefixInput').value.trim(),
+        ai_enabled,
+        ai_mode: ai_enabled ? 'ai_only' : 'manual',
+        ai_model: document.getElementById('aiModelSelect').value,
+        groq_api_key: document.getElementById('aiGroqKeyInput').value.trim(),
+        gemini_api_key: document.getElementById('aiGeminiKeyInput').value.trim(),
+        openrouter_api_key: document.getElementById('aiOpenRouterKeyInput').value.trim(),
+        ai_system_prompt: cleanSystemPrompt,
+        ai_admin_prompt: cleanAdminPrompt,
+        ai_runtime_prompt: cleanRuntimePrompt,
+        ai_business_knowledge: cleanKnowledge
+      })
+    });
+
+    isAiFormDirty = false;
+    document.getElementById('aiUnsavedHint').style.display = 'none';
+    alert(`Pengaturan peran & prompt AI untuk ${ACTIVE_BOT_ID} berhasil disimpan!`);
+    pollState(true);
+  } catch (err) {
+    alert(`Gagal menyimpan pengaturan AI: ${err.message}`);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = origText;
+  }
+});
+
+async function testCurrentAccountAi(role = 'customer') {
+  if (isAiFormDirty) {
+    return alert('Simpan pengaturan terlebih dahulu sebelum melakukan pengujian.');
+  }
+  const sampleQ = prompt(
+    role === 'admin'
+      ? 'Masukkan contoh perintah/pesan dari Admin untuk diuji:'
+      : 'Masukkan contoh pesan dari Pelanggan untuk diuji:',
+    role === 'admin'
+      ? 'Buatkan draf balasan sopan untuk pelanggan yang menanyakan info layanan.'
+      : 'Halo kak, info layanan dan alamat lengkapnya?'
+  );
+  if (sampleQ === null) return;
+
+  const btnId = role === 'admin' ? 'btnTestAdminAi' : 'btnTestAccountAi';
+  const btn = document.getElementById(btnId);
+  const origLabel = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = '⏳ Menguji...';
+
+  try {
+    const res = await apiFetch(
+      `/api/test-ai?role=${encodeURIComponent(role)}&q=${encodeURIComponent(sampleQ)}`
+    );
+    alert(
+      `✅ Tes AI Berhasil (${role.toUpperCase()})\n` +
+      `Provider: ${res.provider_used || '-'} | Model: ${res.model_used || '-'}\n\n` +
+      `Hasil Balasan:\n${res.sample_reply || '-'}`
+    );
+  } catch (err) {
+    alert(`❌ Tes AI Gagal:\n${err.message}`);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = origLabel;
+  }
+}
+
 function toggleSecretInput(inputId, btnEl) {
   const input = document.getElementById(inputId);
   if (!input) return;
@@ -3124,131 +3810,7 @@ function markAiFormDirty() {
   document.getElementById('aiUnsavedHint').style.display = 'inline';
 }
 
-function updateAiLiveBadge() {
-  const enabled = document.getElementById('aiEnabledCheck').checked;
-  document.getElementById('aiConfigFieldsBox').classList.toggle('hidden', !enabled);
-  const pill = document.getElementById('aiLiveStatusPill');
-  const desc = document.getElementById('aiModeDescriptionBox');
-  if (enabled) {
-    pill.classList.add('ai');
-    pill.textContent = '🧠 AI Aktif';
-    desc.classList.remove('off');
-    desc.innerHTML = '<strong>Mode AI Aktif:</strong> Semua balasan dijawab otomatis oleh AI menggunakan API Key &amp; profil Tab Data Toko nomor WA ini.';
-  } else {
-    pill.classList.remove('ai');
-    pill.textContent = '⚪ AI Nonaktif';
-    desc.classList.add('off');
-    desc.innerHTML = '<strong>Mode AI Nonaktif:</strong> Balasan dikirim berdasarkan pencocokan kata kunci di bawah.';
-  }
-  updateCustomKeyBadge();
-}
 
-function populateAiForm(cfg) {
-  document.getElementById('aiRulesRefCountPill').textContent = `📚 ${currentRules.length} Aturan Auto-Reply`;
-  if (isAiFormDirty) return updateAiLiveBadge();
-  document.getElementById('aiEnabledCheck').checked = Boolean(cfg.ai_enabled);
-  if (cfg.ai_model) {
-    const modelSel = document.getElementById('aiModelSelect');
-    const mapped = normalizeAiModelValue(cfg.ai_model);
-    if (Array.from(modelSel.options).some(opt => opt.value === mapped)) {
-      modelSel.value = mapped;
-    }
-  }
-
-  if (document.activeElement !== document.getElementById('aiGroqKeyInput')) {
-    document.getElementById('aiGroqKeyInput').value = cfg.groq_api_key || '';
-  }
-  if (document.activeElement !== document.getElementById('aiGeminiKeyInput')) {
-    document.getElementById('aiGeminiKeyInput').value = cfg.gemini_api_key || '';
-  }
-  if (document.activeElement !== document.getElementById('aiOpenRouterKeyInput')) {
-    document.getElementById('aiOpenRouterKeyInput').value = cfg.openrouter_api_key || '';
-  }
-  if (document.activeElement !== document.getElementById('aiSystemPromptInput')) {
-    document.getElementById('aiSystemPromptInput').value = cfg.ai_system_prompt || '';
-  }
-  if (document.activeElement !== document.getElementById('aiBusinessKnowledgeInput')) {
-    document.getElementById('aiBusinessKnowledgeInput').value = cfg.ai_business_knowledge || '';
-  }
-
-  updateAiLiveBadge();
-}
-
-document.getElementById('btnSaveAiConfig').addEventListener('click', async () => {
-  const ai_enabled = document.getElementById('aiEnabledCheck').checked;
-  const cleanSystemPrompt = autoConvertStoreTextToVars(
-    document.getElementById('aiSystemPromptInput').value.trim(),
-    latestBotConfig
-  );
-  const cleanKnowledge = autoConvertStoreTextToVars(
-    document.getElementById('aiBusinessKnowledgeInput').value.trim(),
-    latestBotConfig
-  );
-
-  document.getElementById('aiSystemPromptInput').value = cleanSystemPrompt;
-  document.getElementById('aiBusinessKnowledgeInput').value = cleanKnowledge;
-
-  await apiFetch('/api/config', {
-    method: 'POST',
-    body: JSON.stringify({
-      bot_id: ACTIVE_BOT_ID,
-      ai_enabled,
-      ai_mode: ai_enabled ? 'ai_only' : 'manual',
-      ai_model: document.getElementById('aiModelSelect').value,
-      groq_api_key: document.getElementById('aiGroqKeyInput').value.trim(),
-      gemini_api_key: document.getElementById('aiGeminiKeyInput').value.trim(),
-      openrouter_api_key: document.getElementById('aiOpenRouterKeyInput').value.trim(),
-      ai_system_prompt: cleanSystemPrompt,
-      ai_business_knowledge: cleanKnowledge
-    })
-  });
-  isAiFormDirty = false;
-  document.getElementById('aiUnsavedHint').style.display = 'none';
-  alert(`Pengaturan & akun AI untuk ${ACTIVE_BOT_ID} berhasil disimpan!`);
-  pollState();
-});
-
-async function testCurrentAccountAi() {
-  if (isAiFormDirty) {
-    return alert('Simpan pengaturan AI terlebih dahulu sebelum melakukan pengujian.');
-  }
-  const btn = document.getElementById('btnTestAccountAi');
-  btn.disabled = true;
-  btn.textContent = '⏳ Menguji AI...';
-  try {
-    const res = await apiFetch('/api/test-ai?q=' + encodeURIComponent('Halo kak, info alamat toko dan harga cetak?'));
-    alert(
-      `✅ Tes AI Berhasil (${ACTIVE_BOT_ID})\n` +
-      `Provider: ${res.provider_used || '-'}\n` +
-      `Model: ${res.model_used || '-'}\n\n` +
-      `Contoh Balasan:\n${res.sample_reply || '-'}`
-    );
-  } catch (err) {
-    alert(`❌ Tes AI Gagal (${ACTIVE_BOT_ID}):\n${err.message}`);
-  } finally {
-    btn.disabled = false;
-    btn.textContent = '🧪 Tes AI Akun Ini';
-  }
-}
-
-function markOffHoursDirty() {
-  isOffHoursDirty = true;
-  document.getElementById('offHoursUnsavedHint').style.display = 'inline';
-}
-
-function populateOffHoursForm(cfg) {
-  if (isOffHoursDirty) return;
-  document.getElementById('offHoursStartInput').value = cfg.off_hours_start || '18:00';
-  document.getElementById('offHoursEndInput').value = cfg.off_hours_end || '08:00';
-  document.getElementById('offHoursCooldownInput').value = cfg.off_hours_cooldown_min ?? 60;
-  const days = String(cfg.off_hours_days ?? '0').split(',').map(s => s.trim());
-  document.querySelectorAll('#offHoursDaysGroup input[type="checkbox"]').forEach(cb => {
-    cb.checked = days.includes(cb.value);
-  });
-  if (document.activeElement !== document.getElementById('offHoursReplyInput')) {
-    document.getElementById('offHoursReplyInput').value = cfg.off_hours_reply || '';
-  }
-}
 
 function insertOffHoursSample() {
   const el = document.getElementById('offHoursReplyInput');
@@ -3317,9 +3879,9 @@ function populateExcludedForm(cfg) {
     )
   );
 
-  if (parsed.length > 0 && contactsCache.length === 0) {
-    loadContacts(true).catch(() => {});
-  }
+ if (parsed.length > 0 && !hasLoadedContactsOnce) {
+  loadContacts(true);
+}
 
   excludedNumbersList = parsed;
   renderExcludedContactsList();
@@ -3548,29 +4110,126 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-document.getElementById('btnSaveOffHours').addEventListener('click', async () => {
-  const selectedDays = Array.from(document.querySelectorAll('#offHoursDaysGroup input:checked')).map(cb => cb.value).join(',');
-  const cleanOffHoursReply = autoConvertStoreTextToVars(
-    document.getElementById('offHoursReplyInput').value.trim(),
-    latestBotConfig
-  );
-  document.getElementById('offHoursReplyInput').value = cleanOffHoursReply;
+function updateOffHoursLivePill() {
+  const pill = document.getElementById('offHoursLiveStatusPill');
+  if (!pill) return;
 
-  await apiFetch('/api/config', {
-    method: 'POST',
-    body: JSON.stringify({
-      bot_id: ACTIVE_BOT_ID,
-      off_hours_start: document.getElementById('offHoursStartInput').value,
-      off_hours_end: document.getElementById('offHoursEndInput').value,
-      off_hours_cooldown_min: Number(document.getElementById('offHoursCooldownInput').value || 60),
-      off_hours_days: selectedDays,
-      off_hours_reply: cleanOffHoursReply
-    })
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Makassar',
+    weekday: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  }).formatToParts(new Date());
+
+  const weekdayMap = { Sun: '0', Mon: '1', Tue: '2', Wed: '3', Thu: '4', Fri: '5', Sat: '6' };
+  const dayStr = weekdayMap[parts.find(p => p.type === 'weekday')?.value] || '0';
+  const hh = Number(parts.find(p => p.type === 'hour')?.value || 0) % 24;
+  const mm = Number(parts.find(p => p.type === 'minute')?.value || 0);
+  const curMin = hh * 60 + mm;
+
+  const offDays = Array.from(document.querySelectorAll('#offHoursDaysGroup input:checked')).map(cb => cb.value);
+  const [sh, sm] = (document.getElementById('offHoursStartInput').value || '18:00').split(':').map(Number);
+  const [eh, em] = (document.getElementById('offHoursEndInput').value || '08:00').split(':').map(Number);
+  const startMin = (sh || 0) * 60 + (sm || 0);
+  const endMin = (eh || 0) * 60 + (em || 0);
+
+  const isDayOff = offDays.includes(dayStr);
+  const isTimeOff = startMin > endMin
+    ? (curMin >= startMin || curMin < endMin)
+    : (startMin < endMin && curMin >= startMin && curMin < endMin);
+
+  if (isDayOff || isTimeOff) {
+    pill.className = 'sync-pill ai';
+    pill.textContent = '🌙 Aktif Sekarang (Jam Tutup)';
+  } else {
+    pill.className = 'sync-pill ok';
+    pill.textContent = '🟢 Siaga (Jam Operasional)';
+  }
+}
+
+function markOffHoursDirty() {
+  isOffHoursDirty = true;
+  document.getElementById('offHoursUnsavedHint').style.display = 'inline';
+  updateOffHoursLivePill();
+}
+
+function populateOffHoursForm(cfg) {
+  if (isOffHoursDirty) {
+    updateOffHoursLivePill();
+    return;
+  }
+
+  const startEl = document.getElementById('offHoursStartInput');
+  const endEl = document.getElementById('offHoursEndInput');
+  const cooldownEl = document.getElementById('offHoursCooldownInput');
+  const replyEl = document.getElementById('offHoursReplyInput');
+
+  if (document.activeElement !== startEl) {
+    startEl.value = cfg.off_hours_start || '18:00';
+  }
+  if (document.activeElement !== endEl) {
+    endEl.value = cfg.off_hours_end || '08:00';
+  }
+  if (document.activeElement !== cooldownEl) {
+    cooldownEl.value = cfg.off_hours_cooldown_min ?? 60;
+  }
+
+  const days = String(cfg.off_hours_days ?? '0').split(',').map(s => s.trim());
+  document.querySelectorAll('#offHoursDaysGroup input[type="checkbox"]').forEach(cb => {
+    cb.checked = days.includes(cb.value);
   });
-  isOffHoursDirty = false;
-  document.getElementById('offHoursUnsavedHint').style.display = 'none';
-  refreshAllStoreLivePreviews();
-  alert('Pengaturan luar jam kerja tersimpan!');
+
+  if (document.activeElement !== replyEl) {
+    replyEl.value = cfg.off_hours_reply || '';
+    if (typeof replyEl.refreshStorePreview === 'function') {
+      replyEl.refreshStorePreview();
+    }
+  }
+
+  updateOffHoursLivePill();
+}
+
+document.getElementById('btnSaveOffHours').addEventListener('click', async (e) => {
+  const btn = e.currentTarget;
+  const origText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = '⏳ Menyimpan...';
+
+  try {
+    const selectedDays = Array.from(document.querySelectorAll('#offHoursDaysGroup input:checked'))
+      .map(cb => cb.value)
+      .join(',');
+    const cleanOffHoursReply = autoConvertStoreTextToVars(
+      document.getElementById('offHoursReplyInput').value.trim(),
+      latestBotConfig
+    );
+    document.getElementById('offHoursReplyInput').value = cleanOffHoursReply;
+
+    await apiFetch('/api/config', {
+      method: 'POST',
+      body: JSON.stringify({
+        bot_id: ACTIVE_BOT_ID,
+        off_hours_start: document.getElementById('offHoursStartInput').value,
+        off_hours_end: document.getElementById('offHoursEndInput').value,
+        off_hours_cooldown_min: Number(document.getElementById('offHoursCooldownInput').value || 60),
+        off_hours_days: selectedDays,
+        off_hours_reply: cleanOffHoursReply
+      })
+    });
+
+    isOffHoursDirty = false;
+    document.getElementById('offHoursUnsavedHint').style.display = 'none';
+    refreshAllStoreLivePreviews();
+    updateOffHoursLivePill();
+    alert('Pengaturan luar jam kerja tersimpan!');
+    pollState(true);
+  } catch (err) {
+    alert(`Gagal menyimpan pengaturan luar jam kerja: ${err.message}`);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = origText;
+  }
 });
 
 function toggleRuleFormVisibility() {
@@ -3597,6 +4256,7 @@ function resetRuleForm() {
   document.getElementById('followupKeywordsInput').value = '';
   document.getElementById('followupReplyInput').value = '';
   document.getElementById('followupPauseCheck').checked = true;
+  document.getElementById('ruleTargetRoleSelect').value = 'all';
   toggleRuleFormVisibility();
   refreshAllStoreLivePreviews();
 }
@@ -3619,12 +4279,13 @@ function startEditRule(id) {
   document.getElementById('followupKeywordsInput').value = r.followup_keywords || '';
   document.getElementById('followupReplyInput').value = r.followup_reply || '';
   document.getElementById('followupPauseCheck').checked = r.followup_pause_bot !== false;
+  document.getElementById('ruleTargetRoleSelect').value = r.target_role || 'all';
   toggleRuleFormVisibility();
   refreshAllStoreLivePreviews();
   document.getElementById('ruleFormCard').scrollIntoView({ behavior: 'smooth' });
 }
 
-document.getElementById('btnAddRule').addEventListener('click', async () => {
+document.getElementById('btnAddRule').addEventListener('click', async (e) => {
   const cleanReply = autoConvertStoreTextToVars(
     document.getElementById('replyInput').value.trim(),
     latestBotConfig
@@ -3641,6 +4302,7 @@ document.getElementById('btnAddRule').addEventListener('click', async () => {
     contains_keywords: document.getElementById('containsKeywordInput').value.trim(),
     pause_bot: document.getElementById('pauseBotCheck').checked,
     reply: cleanReply,
+    target_role: document.getElementById('ruleTargetRoleSelect').value,
     expects_followup: document.getElementById('expectsFollowupCheck').checked,
     followup_keywords: document.getElementById('followupKeywordsInput').value.trim(),
     followup_reply: cleanFollowup,
@@ -3649,20 +4311,44 @@ document.getElementById('btnAddRule').addEventListener('click', async () => {
 
   if (!payload.reply) return alert('Isi pesan balasan tidak boleh kosong.');
 
-  if (editingRuleId !== null && editingRuleId !== undefined) {
-    await apiFetch(`/api/rules/${encodeURIComponent(editingRuleId)}`, { method: 'PUT', body: JSON.stringify(payload) });
-  } else {
-    await apiFetch('/api/rules', { method: 'POST', body: JSON.stringify(payload) });
-  }
+  const btn = e.currentTarget;
+  const origText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = '⏳ Menyimpan...';
 
-  resetRuleForm();
-  pollState();
+  try {
+    if (editingRuleId !== null && editingRuleId !== undefined) {
+      await apiFetch(`/api/rules/${encodeURIComponent(editingRuleId)}`, {
+        method: 'PUT',
+        body: JSON.stringify(payload)
+      });
+    } else {
+      await apiFetch('/api/rules', {
+        method: 'POST',
+        body: JSON.stringify(payload)
+      });
+    }
+
+    btn.textContent = origText;
+    resetRuleForm();
+    pollState(true);
+  } catch (err) {
+    btn.textContent = origText;
+    alert(`Gagal menyimpan aturan balasan: ${err.message}`);
+  } finally {
+    btn.disabled = false;
+  }
 });
 
 async function deleteRule(id) {
   if (!confirm('Hapus aturan balasan ini?')) return;
-  await apiFetch(`/api/rules/${encodeURIComponent(id)}`, { method: 'DELETE' });
-  pollState();
+  try {
+    await apiFetch(`/api/rules/${encodeURIComponent(id)}`, { method: 'DELETE' });
+    if (String(editingRuleId) === String(id)) resetRuleForm();
+    pollState(true);
+  } catch (err) {
+    alert(`Gagal menghapus aturan: ${err.message}`);
+  }
 }
 
 function renderRulesList() {
@@ -3676,11 +4362,17 @@ function renderRulesList() {
   const storeVarPattern = /\{(nama_toko|nama_admin|wa_toko|web_toko|alamat_toko|maps_toko)\}/i;
 
   listEl.innerHTML = currentRules.map(r => {
+    const roleBadge = r.target_role === 'admin'
+      ? '<span class="badge-admin">Khusus Admin</span>'
+      : r.target_role === 'customer'
+        ? '<span class="badge-contains">Khusus Pelanggan</span>'
+        : '';
     const usesStoreVar = storeVarPattern.test(`${r.reply || ''} ${r.followup_reply || ''}`);
     return `
       <div class="rule-item">
         <div style="flex:1;">
           <div class="kw-row">
+            ${roleBadge}
             ${r.is_default ? '<span class="badge-default">Default / Info Umum</span>' : ''}
             ${r.exact_keywords ? `<span class="badge-exact">Persis:</span> <span class="kw-chip">${escapeHtml(r.exact_keywords)}</span>` : ''}
             ${r.contains_keywords ? `<span class="badge-contains">Mengandung:</span> <span class="kw-chip">${escapeHtml(r.contains_keywords)}</span>` : ''}
@@ -3698,90 +4390,158 @@ function renderRulesList() {
   }).join('');
 }
 
-// ============================================================================
-// LAPORAN CHAT MASUK & DURASI BALAS
-// ============================================================================
+function formatResponseDuration(ms) {
+  if (typeof ms !== 'number' || Number.isNaN(ms) || ms < 0) return '-';
+  const totalSec = Math.round(ms / 1000);
+  if (totalSec < 60) return `${totalSec} dtk`;
+
+  const mins = Math.floor(totalSec / 60);
+  const secs = totalSec % 60;
+  if (mins < 60) return secs > 0 ? `${mins} mnt ${secs} dtk` : `${mins} mnt`;
+
+  const hours = Math.floor(mins / 60);
+  const remMins = mins % 60;
+  return remMins > 0 ? `${hours} jam ${remMins} mnt` : `${hours} jam`;
+}
+
 async function loadReports() {
-  const days = Number(document.getElementById('reportPeriodSelect').value || 7);
-  const data = await apiFetch(`/api/reports?days=${days}`);
-  const logs = data.logs || [];
-  const firstSeenMap = new Map((data.firstSeenRows || []).map(r => [r.sender_number, toWitaDateKey(r.first_at)]));
+  const days = Number(document.getElementById('reportPeriodSelect')?.value || 7);
+  const requestedBotId = ACTIVE_BOT_ID;
+  const dailyBody = document.getElementById('dailyReportBody');
 
-  const validDateKeys = new Set();
-  for (let i = 0; i < days; i++) {
-    validDateKeys.add(toWitaDateKey(Date.now() - i * 86400000));
+  if (dailyBody) {
+    dailyBody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#64748b;">Memuat laporan (${days} hari terakhir)...</td></tr>`;
   }
 
-  const dailyMap = new Map();
-  for (const dk of validDateKeys) {
-    dailyMap.set(dk, { dateKey: dk, numbers: new Set(), newContacts: new Set(), totalIncoming: 0, adminHandover: 0 });
-  }
+  try {
+    const data = await apiFetch(`/api/reports?days=${encodeURIComponent(days)}`);
+    if (requestedBotId !== ACTIVE_BOT_ID) return;
 
-  const pendingIncomingByNumber = new Map();
-  const adminResponseSecs = [];
-  const botResponseSecs = [];
+    const logs = Array.isArray(data)
+      ? data
+      : Array.isArray(data?.logs)
+        ? data.logs
+        : Array.isArray(data?.reports)
+          ? data.reports
+          : [];
 
-  for (const log of logs) {
-    const dk = toWitaDateKey(log.created_at);
-    const num = log.sender_number;
+    const chronologicalLogs = [...logs].sort((a, b) => {
+      const tA = new Date(a.incoming_at || a.replied_at || a.created_at || 0).getTime();
+      const tB = new Date(b.incoming_at || b.replied_at || b.created_at || 0).getTime();
+      return tA - tB;
+    });
 
-    if (log.incoming && log.log_type !== 'admin_direct') {
-      pendingIncomingByNumber.set(num, new Date(log.incoming_at || log.created_at).getTime());
-      if (dailyMap.has(dk)) {
-        const d = dailyMap.get(dk);
-        d.numbers.add(num);
-        d.totalIncoming++;
-        if (log.handed_over) d.adminHandover++;
-        if (firstSeenMap.get(num) === dk) d.newContacts.add(num);
+    const uniqueSenders = new Set();
+    const firstSeenMap = new Map();
+    const pendingIncomingByNum = new Map();
+    const adminResponseSecs = [];
+    const botResponseSecs = [];
+    const allResponseSecs = [];
+    const dailyMap = new Map();
+
+    let totalIncoming = 0;
+    let totalAdminReqs = 0;
+
+    for (const log of chronologicalLogs) {
+      const num = String(log.sender_number || log.sender || log.phone || '').trim();
+      const hasIncoming = Boolean(log.incoming && String(log.incoming).trim() !== '');
+      const hasReply = Boolean(log.reply && String(log.reply).trim() !== '');
+      const isAdmin = log.log_type === 'admin_direct';
+
+      const inMs = new Date(log.incoming_at || log.created_at || 0).getTime();
+      const repMs = new Date(log.replied_at || log.created_at || 0).getTime();
+      const refMs = hasIncoming && !Number.isNaN(inMs) ? inMs : repMs;
+      const dateKey = !Number.isNaN(refMs) && refMs > 0 ? toWitaDateKey(refMs) : toWitaDateKey(Date.now());
+
+      if (!dailyMap.has(dateKey)) {
+        dailyMap.set(dateKey, {
+          dateKey,
+          senders: new Set(),
+          newSenders: new Set(),
+          incomingCount: 0,
+          adminReqCount: 0
+        });
+      }
+      const dayBucket = dailyMap.get(dateKey);
+
+      if (hasIncoming) {
+        totalIncoming++;
+        dayBucket.incomingCount++;
+        if (num) {
+          uniqueSenders.add(num);
+          dayBucket.senders.add(num);
+          if (!firstSeenMap.has(num)) {
+            firstSeenMap.set(num, dateKey);
+            dayBucket.newSenders.add(num);
+          }
+        }
+        if (log.handed_over) {
+          totalAdminReqs++;
+          dayBucket.adminReqCount++;
+        }
+      }
+
+      if (hasIncoming && hasReply) {
+        if (!Number.isNaN(inMs) && !Number.isNaN(repMs) && repMs >= inMs) {
+          const sec = (repMs - inMs) / 1000;
+          allResponseSecs.push(sec);
+          if (isAdmin) adminResponseSecs.push(sec);
+          else botResponseSecs.push(sec);
+        }
+        if (num) pendingIncomingByNum.delete(num);
+        continue;
+      }
+
+      if (hasIncoming && num && !Number.isNaN(inMs) && inMs > 0) {
+        if (!pendingIncomingByNum.has(num)) pendingIncomingByNum.set(num, inMs);
+        continue;
+      }
+
+      if (hasReply && num && pendingIncomingByNum.has(num) && !Number.isNaN(repMs)) {
+        const diffSec = (repMs - pendingIncomingByNum.get(num)) / 1000;
+        if (diffSec >= 0) {
+          allResponseSecs.push(diffSec);
+          if (isAdmin) adminResponseSecs.push(diffSec);
+          else botResponseSecs.push(diffSec);
+        }
+        pendingIncomingByNum.delete(num);
       }
     }
 
-    if (log.reply && pendingIncomingByNumber.has(num)) {
-      const diffSec = Math.max(0, (new Date(log.created_at).getTime() - pendingIncomingByNumber.get(num)) / 1000);
-      if (diffSec <= 24 * 3600) {
-        if (log.log_type === 'admin_direct') adminResponseSecs.push(diffSec);
-        else if (log.log_type === 'bot_reply') botResponseSecs.push(diffSec);
-      }
-      pendingIncomingByNumber.delete(num);
+    const avgSec = (arr) => (arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : null);
+
+    document.getElementById('kpiUniqueChats').textContent = uniqueSenders.size.toLocaleString('id-ID');
+    document.getElementById('kpiNewContactsSub').textContent = `${firstSeenMap.size.toLocaleString('id-ID')} kontak pertama kali chat`;
+    document.getElementById('kpiTotalIncoming').textContent = totalIncoming.toLocaleString('id-ID');
+    document.getElementById('kpiAdminReqSub').textContent = `${totalAdminReqs.toLocaleString('id-ID')} butuh admin`;
+    document.getElementById('kpiAvgAdminTime').textContent = formatDuration(avgSec(adminResponseSecs));
+    document.getElementById('kpiAdminCountSub').textContent = `${adminResponseSecs.length.toLocaleString('id-ID')} balasan admin`;
+    document.getElementById('kpiAvgBotTime').textContent = formatDuration(avgSec(botResponseSecs));
+    document.getElementById('kpiBotCountSub').textContent = `${botResponseSecs.length.toLocaleString('id-ID')} balasan otomatis`;
+
+    cachedReportMetrics = { adminResponseSecs, allResponseSecs };
+    renderDurationBuckets();
+
+    if (!dailyBody) return;
+    const dailyRows = Array.from(dailyMap.values()).sort((a, b) => b.dateKey.localeCompare(a.dateKey));
+    if (dailyRows.length === 0) {
+      dailyBody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#64748b;">Belum ada data chat pada ${days} hari terakhir.</td></tr>`;
+      return;
+    }
+
+    dailyBody.innerHTML = dailyRows.map(d => `
+      <tr>
+        <td><strong>${escapeHtml(formatWitaDateLabel(d.dateKey))}</strong><br><small style="color:#64748b;">${escapeHtml(d.dateKey)}</small></td>
+        <td class="num-col">${d.senders.size}</td>
+        <td class="num-col">${d.newSenders.size}</td>
+        <td class="num-col">${d.incomingCount}</td>
+        <td class="num-col">${d.adminReqCount}</td>
+      </tr>`).join('');
+  } catch (err) {
+    if (requestedBotId === ACTIVE_BOT_ID && dailyBody) {
+      dailyBody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#dc2626;">Gagal memuat laporan: ${escapeHtml(err.message)}</td></tr>`;
     }
   }
-
-  const dailyRows = Array.from(dailyMap.values()).sort((a, b) => b.dateKey.localeCompare(a.dateKey));
-  const uniqueNumbers = new Set();
-  const newNumbers = new Set();
-  let totalIncoming = 0;
-  let totalAdminReq = 0;
-
-  for (const r of dailyRows) {
-    r.numbers.forEach(n => uniqueNumbers.add(n));
-    r.newContacts.forEach(n => newNumbers.add(n));
-    totalIncoming += r.totalIncoming;
-    totalAdminReq += r.adminHandover;
-  }
-
-  const avg = arr => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : null;
-
-  document.getElementById('kpiUniqueChats').textContent = uniqueNumbers.size;
-  document.getElementById('kpiNewContactsSub').textContent = `${newNumbers.size} kontak baru pertama kali`;
-  document.getElementById('kpiTotalIncoming').textContent = totalIncoming;
-  document.getElementById('kpiAdminReqSub').textContent = `${totalAdminReq} butuh admin`;
-  document.getElementById('kpiAvgAdminTime').textContent = formatDuration(avg(adminResponseSecs));
-  document.getElementById('kpiAdminCountSub').textContent = `${adminResponseSecs.length} balasan admin`;
-  document.getElementById('kpiAvgBotTime').textContent = formatDuration(avg(botResponseSecs));
-  document.getElementById('kpiBotCountSub').textContent = `${botResponseSecs.length} balasan otomatis`;
-
-  cachedReportMetrics = { adminResponseSecs, allResponseSecs: [...adminResponseSecs, ...botResponseSecs] };
-  renderDurationBuckets();
-
-  document.getElementById('dailyReportBody').innerHTML = dailyRows.map(r => `
-    <tr>
-      <td>${escapeHtml(formatWitaDateLabel(r.dateKey))}</td>
-      <td class="num-col">${r.numbers.size}</td>
-      <td class="num-col">${r.newContacts.size}</td>
-      <td class="num-col">${r.totalIncoming}</td>
-      <td class="num-col">${r.adminHandover}</td>
-    </tr>
-  `).join('');
 }
 
 function renderDurationBuckets() {
@@ -3809,11 +4569,25 @@ function renderDurationBuckets() {
 
 // Inisialisasi awal
 const savedTab = localStorage.getItem(ACTIVE_TAB_KEY);
-if (savedTab) switchTab(savedTab);
+if (savedTab) {
+  const validTabs = ['tab-chat', 'tab-broadcast', 'tab-autoreply', 'tab-store', 'tab-reports'];
+  const targetId = validTabs.includes(savedTab) ? savedTab : 'tab-chat';
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.toggle('hidden', p.id !== targetId));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === targetId));
+}
 
-syncServerUrlFromSupabase().finally(() => {
-  pollState();
+syncServerUrlFromSupabase().finally(async () => {
+  await pollState(true);
+  const activeTab = localStorage.getItem(ACTIVE_TAB_KEY);
+  if (activeTab === 'tab-reports') loadReports();
+  if (activeTab === 'tab-broadcast' || activeTab === 'tab-autoreply') loadContacts(true);
 });
+
+document.getElementById('waMessagesContainer').addEventListener('scroll', function () {
+  const distFromBottom = this.scrollHeight - this.scrollTop - this.clientHeight;
+  document.getElementById('waScrollBottomBtn').classList.toggle('hidden', distFromBottom < 140);
+});
+
 setInterval(pollState, 3000);
 </script>
 </body>
