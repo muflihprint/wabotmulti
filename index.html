@@ -1432,7 +1432,7 @@
         </select>
       </div>
       <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; margin-top: 8px;">
-        <small id="excludedModalResultInfo" style="color: #475569; font-weight: 600;">0 kontak ditampilkan</small>
+        <small id="excludedModalResultInfo" style="color: #475569; font-weight: 600;">0 kontak ditemukan</small>
         <div style="display: flex; gap: 6px;">
           <button type="button" class="secondary sm" style="padding: 4px 9px; font-size: 0.75rem;" onclick="toggleSelectFilteredExcluded(true)">☑️ Centang Hasil</button>
           <button type="button" class="secondary sm" style="padding: 4px 9px; font-size: 0.75rem;" onclick="toggleSelectFilteredExcluded(false)">⬜ Batal Hasil</button>
@@ -1485,17 +1485,6 @@ let SERVER_URL = localStorage.getItem(STORAGE_URL_KEY) || (window.location.hostn
 let SERVER_SECRET = localStorage.getItem(STORAGE_SECRET_KEY) || 'muflihprint_rahasia_2026';
 let ACTIVE_BOT_ID = localStorage.getItem(ACTIVE_BOT_KEY) || 'bot_utama';
 
-function toSafeArray(val) {
-  if (Array.isArray(val)) return val;
-  if (typeof val === 'string' && val.trim()) {
-    try {
-      const parsed = JSON.parse(val);
-      if (Array.isArray(parsed)) return parsed;
-    } catch (_) {}
-  }
-  return [];
-}
-
 async function syncServerUrlFromSupabase() {
   if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') return;
   try {
@@ -1541,7 +1530,6 @@ let currentRules = [];
 let editingRuleId = null;
 let rawLogsCache = [];
 let contactsCache = [];
-let lastContactsAttemptAt = 0;
 let selectedChatNumber = null;
 let bcCampaignsCache = [];
 let activeHistoryBroadcastId = null;
@@ -1566,18 +1554,15 @@ const STORE_VAR_DEFS = [
   { key: '{maps_toko}', field: 'store_maps_url', label: 'Link Maps' }
 ];
 
-function getMergedStoreConfig(cfg) {
-  const safeCfg = (cfg && typeof cfg === 'object')
-    ? cfg
-    : (latestBotConfig || window.currentBotConfig || {});
+function getMergedStoreConfig(cfg = latestBotConfig || window.currentBotConfig || {}) {
   const formVals = getActiveStoreValues();
   return {
-    store_name: formVals.store_name || safeCfg.store_name || '',
-    store_admin_name: formVals.store_admin_name || safeCfg.store_admin_name || '',
-    store_wa_number: formVals.store_wa_number || safeCfg.store_wa_number || '',
-    store_website: formVals.store_website || safeCfg.store_website || '',
-    store_address: formVals.store_address || safeCfg.store_address || '',
-    store_maps_url: formVals.store_maps_url || safeCfg.store_maps_url || ''
+    store_name: formVals.store_name || cfg.store_name || '',
+    store_admin_name: formVals.store_admin_name || cfg.store_admin_name || '',
+    store_wa_number: formVals.store_wa_number || cfg.store_wa_number || '',
+    store_website: formVals.store_website || cfg.store_website || '',
+    store_address: formVals.store_address || cfg.store_address || '',
+    store_maps_url: formVals.store_maps_url || cfg.store_maps_url || ''
   };
 }
 
@@ -1718,13 +1703,13 @@ function switchTab(tabId) {
   try { localStorage.setItem(ACTIVE_TAB_KEY, targetId); } catch (_) {}
 
   if ((targetId === 'tab-broadcast' || targetId === 'tab-autoreply') && contactsCache.length === 0) {
-    loadContacts(false).catch(() => {});
+    loadContacts(true);
   }
   if (targetId === 'tab-autoreply') {
     renderAiConnectedStoreBanner('aiConnectedStoreBanner', latestBotConfig);
     refreshAllStoreLivePreviews();
   }
-  if (targetId === 'tab-reports') loadReports().catch(() => {});
+  if (targetId === 'tab-reports') loadReports();
 }
 
 function escapeHtml(str) {
@@ -1806,9 +1791,8 @@ function renderClientSpintax(template, sampleName = 'Andi') {
 // MULTI-AKUN WHATSAPP SWITCHER & MODAL
 // ============================================================================
 function renderAccountSelector(accounts, currentCfg) {
-  const safeAccounts = toSafeArray(accounts);
-  accountsCache = safeAccounts.length > 0
-    ? safeAccounts
+  accountsCache = Array.isArray(accounts) && accounts.length > 0
+    ? accounts
     : [{
         id: currentCfg?.id || ACTIVE_BOT_ID,
         name: currentCfg?.account_name || (ACTIVE_BOT_ID === 'bot_utama' ? 'Muflih Print Utama' : ACTIVE_BOT_ID),
@@ -1867,7 +1851,6 @@ function switchWhatsAppAccount(newBotId) {
   isAiFormDirty = false;
   isOffHoursDirty = false;
   isStoreFormDirty = false;
-  lastContactsAttemptAt = 0;
   document.getElementById('aiUnsavedHint').style.display = 'none';
   document.getElementById('offHoursUnsavedHint').style.display = 'none';
   document.getElementById('storeUnsavedHint').style.display = 'none';
@@ -1886,8 +1869,8 @@ function switchWhatsAppAccount(newBotId) {
 
   pollState().then(() => {
     const activeTab = localStorage.getItem(ACTIVE_TAB_KEY);
-    if (activeTab === 'tab-reports') loadReports().catch(() => {});
-    if (activeTab === 'tab-broadcast' || activeTab === 'tab-autoreply') loadContacts(true).catch(() => {});
+    if (activeTab === 'tab-reports') loadReports();
+    if (activeTab === 'tab-broadcast' || activeTab === 'tab-autoreply') loadContacts(true);
   });
 }
 
@@ -1984,10 +1967,10 @@ async function pollState() {
     badge.style.color = '#4ade80';
     badge.textContent = `Terhubung (${SERVER_URL})`;
 
-    const cfg = data.botConfig || {};
+    const cfg = data.botConfig;
     latestBotConfig = cfg;
     window.currentBotConfig = cfg;
-    renderAccountSelector(toSafeArray(data.accounts), cfg);
+    renderAccountSelector(data.accounts || [], cfg);
 
     const qrSec = document.getElementById('qrSection');
     const dashSec = document.getElementById('dashboardSection');
@@ -2017,8 +2000,8 @@ async function pollState() {
       document.getElementById('syncStatusPill').textContent = `SQLite Lokal • Sinkron ${formatWitaTime(cfg.last_synced_at)} WITA`;
     }
 
-    rawLogsCache = toSafeArray(data.recentLogs);
-    currentRules = toSafeArray(data.rules);
+    rawLogsCache = data.recentLogs || [];
+    currentRules = data.rules || [];
     renderRulesList();
     populateStoreForm(cfg);
     populateAiForm(cfg);
@@ -2035,10 +2018,10 @@ async function pollState() {
     renderAiConnectedStoreBanner('aiConnectedStoreBanner', cfg);
     refreshAllStoreLivePreviews();
 
-    renderAdminQueue(toSafeArray(data.adminQueue));
+    renderAdminQueue(data.adminQueue || []);
     renderGroupedWhatsAppView();
 
-    bcCampaignsCache = toSafeArray(data.broadcasts);
+    bcCampaignsCache = data.broadcasts || [];
     renderBroadcasts();
   } catch (err) {
     badge.style.color = '#f87171';
@@ -2096,19 +2079,18 @@ function markStoreFormDirty() {
 
 function populateStoreForm(cfg) {
   if (isStoreFormDirty) return;
-  const safeCfg = (cfg && typeof cfg === 'object') ? cfg : {};
 
   let localCached = {};
   try {
     localCached = JSON.parse(localStorage.getItem(`${STORE_CACHE_PREFIX}${ACTIVE_BOT_ID}`) || '{}');
   } catch (_) {}
 
-  const storeName = safeCfg.store_name !== undefined ? safeCfg.store_name : (localCached.store_name || '');
-  const storeAdmin = safeCfg.store_admin_name !== undefined ? safeCfg.store_admin_name : (localCached.store_admin_name || '');
-  const storeWa = safeCfg.store_wa_number !== undefined ? safeCfg.store_wa_number : (localCached.store_wa_number || '');
-  const storeWeb = safeCfg.store_website !== undefined ? safeCfg.store_website : (localCached.store_website || '');
-  const storeAddr = safeCfg.store_address !== undefined ? safeCfg.store_address : (localCached.store_address || '');
-  const storeMaps = safeCfg.store_maps_url !== undefined ? safeCfg.store_maps_url : (localCached.store_maps_url || '');
+  const storeName = cfg.store_name !== undefined ? cfg.store_name : (localCached.store_name || '');
+  const storeAdmin = cfg.store_admin_name !== undefined ? cfg.store_admin_name : (localCached.store_admin_name || '');
+  const storeWa = cfg.store_wa_number !== undefined ? cfg.store_wa_number : (localCached.store_wa_number || '');
+  const storeWeb = cfg.store_website !== undefined ? cfg.store_website : (localCached.store_website || '');
+  const storeAddr = cfg.store_address !== undefined ? cfg.store_address : (localCached.store_address || '');
+  const storeMaps = cfg.store_maps_url !== undefined ? cfg.store_maps_url : (localCached.store_maps_url || '');
 
   if (document.activeElement !== document.getElementById('storeNameInput')) {
     document.getElementById('storeNameInput').value = storeName || '';
@@ -2577,16 +2559,15 @@ async function executeImportRules() {
 // ANTREAN ADMIN & RIWAYAT CHAT PER NOMOR
 // ============================================================================
 function renderAdminQueue(queue) {
-  const safeQueue = toSafeArray(queue);
   const card = document.getElementById('pausedCard');
   const listEl = document.getElementById('pausedList');
-  const waitingCount = safeQueue.filter(q => q && q.needs_reply).length;
+  const waitingCount = queue.filter(q => q.needs_reply).length;
 
   const tabBadge = document.getElementById('tabChatBadge');
   tabBadge.textContent = waitingCount;
   tabBadge.classList.toggle('hidden', waitingCount === 0);
 
-  if (safeQueue.length === 0) {
+  if (queue.length === 0) {
     card.classList.add('hidden');
     return;
   }
@@ -2594,14 +2575,10 @@ function renderAdminQueue(queue) {
   card.classList.remove('hidden');
   document.getElementById('waitingCountBadge').textContent = `${waitingCount} Menunggu`;
 
-  listEl.innerHTML = safeQueue.map(item => {
-    const cleanPhone = String(item.phone || '').replace(/\D/g, '');
+  listEl.innerHTML = queue.map(item => {
+    const cleanPhone = (item.phone || '').replace(/\D/g, '');
     const waUrl = cleanPhone ? `https://wa.me/${cleanPhone}` : '#';
-    const recentMsgs = toSafeArray(item.recent_messages);
-    const msgsHtml = recentMsgs.map(m => {
-      if (typeof m === 'string') return `<div>${escapeHtml(m)}</div>`;
-      return `<div><small style="color:#64748b;">[${escapeHtml(m?.time || '')}]</small> ${escapeHtml(m?.text || '')}</div>`;
-    }).join('');
+    const msgsHtml = (item.recent_messages || []).map(m => `<div><small style="color:#64748b;">[${escapeHtml(m.time)}]</small> ${escapeHtml(m.text)}</div>`).join('');
     return `
       <div class="paused-item ${item.needs_reply ? '' : 'replied'}">
         <div style="flex:1; min-width:220px;">
@@ -2888,36 +2865,10 @@ function renderChatMessages(thread) {
 // ============================================================================
 // BROADCAST ANTI-SPAM
 // ============================================================================
-function buildFallbackContactsFromLogs() {
-  const map = new Map();
-  for (const log of rawLogsCache) {
-    const p = normalizePhone(log.sender_number);
-    if (!p) continue;
-    if (!map.has(p)) {
-      map.set(p, {
-        phone: p,
-        name: (log.sender_name && !String(log.sender_name).startsWith('+')) ? String(log.sender_name).trim() : '',
-        source: 'chat_history'
-      });
-    }
-  }
-  return Array.from(map.values());
-}
-
 async function loadContacts(force = false) {
-  const now = Date.now();
   if (!force && contactsCache.length > 0) return;
-  if (!force && now - lastContactsAttemptAt < 30000) return;
-  lastContactsAttemptAt = now;
-
-  try {
-    const data = await apiFetch('/api/contacts');
-    contactsCache = toSafeArray(data.contacts);
-  } catch (_) {
-    if (contactsCache.length === 0) {
-      contactsCache = buildFallbackContactsFromLogs();
-    }
-  }
+  const data = await apiFetch('/api/contacts');
+  contactsCache = data.contacts || [];
   document.getElementById('contactCountPill').textContent = `${contactsCache.length.toLocaleString('id-ID')} Kontak`;
   if (excludedNumbersList.length > 0) {
     renderExcludedContactsList();
@@ -3046,11 +2997,9 @@ async function loadBroadcastRecipients(id) {
   document.getElementById('bcHistoryTitle').textContent = `📋 ${bc.title}`;
   document.getElementById('bcHistorySubtitle').textContent = `Total ${bc.total_recipients} penerima • Status: ${bc.status.toUpperCase()}`;
 
-  try {
-    const data = await apiFetch(`/api/broadcasts/${id}/recipients`);
-    bcHistoryRowsCache = toSafeArray(data.recipients);
-    renderBroadcastHistoryTable();
-  } catch (_) {}
+  const data = await apiFetch(`/api/broadcasts/${id}/recipients`);
+  bcHistoryRowsCache = data.recipients || [];
+  renderBroadcastHistoryTable();
 }
 
 function renderBroadcastHistoryTable() {
@@ -3151,25 +3100,23 @@ function updateAiLiveBadge() {
 function populateAiForm(cfg) {
   document.getElementById('aiRulesRefCountPill').textContent = `📚 ${currentRules.length} Aturan Auto-Reply`;
   if (isAiFormDirty) return updateAiLiveBadge();
-  const safeCfg = (cfg && typeof cfg === 'object') ? cfg : {};
-
-  document.getElementById('aiEnabledCheck').checked = Boolean(safeCfg.ai_enabled);
-  if (safeCfg.ai_model) document.getElementById('aiModelSelect').value = safeCfg.ai_model;
+  document.getElementById('aiEnabledCheck').checked = Boolean(cfg.ai_enabled);
+  if (cfg.ai_model) document.getElementById('aiModelSelect').value = cfg.ai_model;
 
   if (document.activeElement !== document.getElementById('aiGroqKeyInput')) {
-    document.getElementById('aiGroqKeyInput').value = safeCfg.groq_api_key || '';
+    document.getElementById('aiGroqKeyInput').value = cfg.groq_api_key || '';
   }
   if (document.activeElement !== document.getElementById('aiGeminiKeyInput')) {
-    document.getElementById('aiGeminiKeyInput').value = safeCfg.gemini_api_key || '';
+    document.getElementById('aiGeminiKeyInput').value = cfg.gemini_api_key || '';
   }
   if (document.activeElement !== document.getElementById('aiOpenRouterKeyInput')) {
-    document.getElementById('aiOpenRouterKeyInput').value = safeCfg.openrouter_api_key || '';
+    document.getElementById('aiOpenRouterKeyInput').value = cfg.openrouter_api_key || '';
   }
   if (document.activeElement !== document.getElementById('aiSystemPromptInput')) {
-    document.getElementById('aiSystemPromptInput').value = safeCfg.ai_system_prompt || '';
+    document.getElementById('aiSystemPromptInput').value = cfg.ai_system_prompt || '';
   }
   if (document.activeElement !== document.getElementById('aiBusinessKnowledgeInput')) {
-    document.getElementById('aiBusinessKnowledgeInput').value = safeCfg.ai_business_knowledge || '';
+    document.getElementById('aiBusinessKnowledgeInput').value = cfg.ai_business_knowledge || '';
   }
 
   updateAiLiveBadge();
@@ -3239,17 +3186,15 @@ function markOffHoursDirty() {
 
 function populateOffHoursForm(cfg) {
   if (isOffHoursDirty) return;
-  const safeCfg = (cfg && typeof cfg === 'object') ? cfg : {};
-
-  document.getElementById('offHoursStartInput').value = safeCfg.off_hours_start || '18:00';
-  document.getElementById('offHoursEndInput').value = safeCfg.off_hours_end || '08:00';
-  document.getElementById('offHoursCooldownInput').value = safeCfg.off_hours_cooldown_min ?? 60;
-  const days = String(safeCfg.off_hours_days ?? '0').split(',').map(s => s.trim());
+  document.getElementById('offHoursStartInput').value = cfg.off_hours_start || '18:00';
+  document.getElementById('offHoursEndInput').value = cfg.off_hours_end || '08:00';
+  document.getElementById('offHoursCooldownInput').value = cfg.off_hours_cooldown_min ?? 60;
+  const days = String(cfg.off_hours_days ?? '0').split(',').map(s => s.trim());
   document.querySelectorAll('#offHoursDaysGroup input[type="checkbox"]').forEach(cb => {
     cb.checked = days.includes(cb.value);
   });
   if (document.activeElement !== document.getElementById('offHoursReplyInput')) {
-    document.getElementById('offHoursReplyInput').value = safeCfg.off_hours_reply || '';
+    document.getElementById('offHoursReplyInput').value = cfg.off_hours_reply || '';
   }
 }
 
@@ -3311,10 +3256,9 @@ function renderExcludedContactsList() {
 }
 
 function populateExcludedForm(cfg) {
-  const safeCfg = (cfg && typeof cfg === 'object') ? cfg : {};
   const parsed = Array.from(
     new Set(
-      String(safeCfg.excluded_numbers || '')
+      String(cfg.excluded_numbers || '')
         .split(/[\s,;\n]+/)
         .map(normalizePhone)
         .filter(Boolean)
@@ -3322,7 +3266,7 @@ function populateExcludedForm(cfg) {
   );
 
   if (parsed.length > 0 && contactsCache.length === 0) {
-    loadContacts(false).catch(() => {});
+    loadContacts(true).catch(() => {});
   }
 
   excludedNumbersList = parsed;
@@ -3382,7 +3326,11 @@ async function openExcludedContactModal() {
   document.getElementById('excludedModalList').innerHTML =
     '<div style="padding: 20px; text-align: center; color: #64748b; font-size: 0.86rem;">Memuat daftar kontak dari server...</div>';
 
-  await loadContacts(true).catch(() => {});
+  try {
+    await loadContacts(true);
+  } catch (err) {
+    console.warn('Gagal memuat daftar kontak:', err.message);
+  }
 
   renderExcludedModalList();
   setTimeout(() => document.getElementById('excludedModalSearchInput').focus(), 50);
@@ -3395,7 +3343,7 @@ function closeExcludedContactModal() {
 async function refreshExcludedModalContacts() {
   document.getElementById('excludedModalList').innerHTML =
     '<div style="padding: 20px; text-align: center; color: #64748b; font-size: 0.86rem;">Menyegarkan kontak...</div>';
-  await loadContacts(true).catch(() => {});
+  await loadContacts(true);
   renderExcludedModalList();
 }
 
@@ -3704,8 +3652,8 @@ function renderRulesList() {
 async function loadReports() {
   const days = Number(document.getElementById('reportPeriodSelect').value || 7);
   const data = await apiFetch(`/api/reports?days=${days}`);
-  const logs = toSafeArray(data.logs);
-  const firstSeenMap = new Map(toSafeArray(data.firstSeenRows).map(r => [r.sender_number, toWitaDateKey(r.first_at)]));
+  const logs = data.logs || [];
+  const firstSeenMap = new Map((data.firstSeenRows || []).map(r => [r.sender_number, toWitaDateKey(r.first_at)]));
 
   const validDateKeys = new Set();
   for (let i = 0; i < days; i++) {
