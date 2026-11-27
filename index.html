@@ -589,6 +589,103 @@
    .wa-back-btn { display: inline-flex; }
    .wa-bubble { max-width: 86%; }
  }
+
+ /* INDIKATOR LOADING SINKRONISASI CHAT */
+ @keyframes waSpin {
+   to { transform: rotate(360deg); }
+ }
+ @keyframes waIndeterminateBar {
+   0% { transform: translateX(-100%); }
+   100% { transform: translateX(260%); }
+ }
+ .wa-spinner {
+   width: 16px;
+   height: 16px;
+   border: 2.5px solid rgba(22, 163, 74, 0.22);
+   border-top-color: #16a34a;
+   border-radius: 50%;
+   display: inline-block;
+   animation: waSpin 0.75s linear infinite;
+   flex-shrink: 0;
+ }
+ .wa-spinner.lg {
+   width: 28px;
+   height: 28px;
+   border-width: 3px;
+ }
+ .wa-sync-banner {
+   background: linear-gradient(135deg, #f0fdf4 0%, #eff6ff 100%);
+   border: 1px solid #86efac;
+   border-radius: 10px;
+   padding: 10px 14px;
+   margin-bottom: 12px;
+   display: flex;
+   flex-direction: column;
+   gap: 7px;
+ }
+ .wa-sync-banner-top {
+   display: flex;
+   align-items: center;
+   justify-content: space-between;
+   gap: 10px;
+   flex-wrap: wrap;
+ }
+ .wa-sync-banner-title {
+   display: flex;
+   align-items: center;
+   gap: 9px;
+   font-size: 0.85rem;
+   font-weight: 700;
+   color: #14532d;
+ }
+ .wa-sync-banner-sub {
+   font-size: 0.76rem;
+   color: #475569;
+   font-weight: 600;
+ }
+ .wa-sync-bar-track {
+   width: 100%;
+   height: 5px;
+   background: #dcfce7;
+   border-radius: 999px;
+   overflow: hidden;
+   position: relative;
+ }
+ .wa-sync-bar-fill {
+   height: 100%;
+   background: #16a34a;
+   border-radius: 999px;
+   transition: width 0.35s ease;
+ }
+ .wa-sync-bar-fill.indeterminate {
+   width: 42%;
+   animation: waIndeterminateBar 1.35s ease-in-out infinite;
+ }
+ .wa-shell { position: relative; }
+ .wa-sync-overlay {
+   position: absolute;
+   inset: 0;
+   background: rgba(248, 250, 252, 0.78);
+   backdrop-filter: blur(2px);
+   z-index: 25;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   padding: 16px;
+ }
+ .wa-sync-overlay-card {
+   background: #ffffff;
+   border: 1px solid #cbd5e1;
+   border-radius: 12px;
+   padding: 16px 20px;
+   box-shadow: 0 10px 25px rgba(15, 23, 42, 0.12);
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+   text-align: center;
+   gap: 8px;
+   max-width: 320px;
+ }
 </style>
 </head>
 <body>
@@ -697,7 +794,29 @@
        </div>
      </div>
 
+     <!-- BANNER LOADING SAAT SINKRONISASI CHAT BERJALAN -->
+     <div id="chatSyncLoadingBanner" class="wa-sync-banner hidden" role="status" aria-live="polite">
+       <div class="wa-sync-banner-top">
+         <div class="wa-sync-banner-title">
+           <span class="wa-spinner"></span>
+           <span id="chatSyncBannerText">Sedang menyinkronkan riwayat chat...</span>
+         </div>
+         <span id="chatSyncBannerMeta" class="wa-sync-banner-sub">Mohon tunggu...</span>
+       </div>
+       <div class="wa-sync-bar-track">
+         <div id="chatSyncBannerBar" class="wa-sync-bar-fill indeterminate"></div>
+       </div>
+     </div>
+
      <div id="waShell" class="wa-shell">
+       <!-- OVERLAY LOADING DI AREA CHAT -->
+       <div id="waSyncOverlay" class="wa-sync-overlay hidden">
+         <div class="wa-sync-overlay-card">
+           <span class="wa-spinner lg"></span>
+           <div id="waSyncOverlayTitle" style="font-weight: 800; font-size: 0.92rem; color: #0f172a;">Menyinkronkan Riwayat Chat...</div>
+           <div id="waSyncOverlaySub" style="font-size: 0.78rem; color: #64748b;">Mengambil percakapan terbaru dari WhatsApp &amp; database lokal.</div>
+         </div>
+       </div>
        <div class="wa-sidebar">
          <div class="wa-search-bar">
            <input type="text" id="chatSearchInput" placeholder="🔍 Cari nama, nomor, atau isi chat..." oninput="renderGroupedWhatsAppView()" />
@@ -2030,7 +2149,9 @@ function switchWhatsAppAccount(newBotId) {
   bcHistoryRowsCache = [];
   excludedNumbersList = [];
   hasLoadedContactsOnce = false;
-loadedRecipientsForBroadcastId = null;
+  loadedRecipientsForBroadcastId = null;
+  latestHistorySyncState = null;
+  updateChatSyncLoadingUI(null, null);
 
   document.getElementById('waChatHeader').classList.add('hidden');
   document.getElementById('waMessagesContainer').innerHTML =
@@ -2119,6 +2240,94 @@ async function deleteCurrentAccount() {
   }
 }
 
+let isManualChatSyncing = false;
+let latestHistorySyncState = null;
+
+function updateChatSyncLoadingUI(historySyncState = latestHistorySyncState, cfg = latestBotConfig) {
+  latestHistorySyncState = historySyncState || null;
+
+  const pill = document.getElementById('syncStatusPill');
+  const banner = document.getElementById('chatSyncLoadingBanner');
+  const bannerText = document.getElementById('chatSyncBannerText');
+  const bannerMeta = document.getElementById('chatSyncBannerMeta');
+  const bannerBar = document.getElementById('chatSyncBannerBar');
+  const overlay = document.getElementById('waSyncOverlay');
+  const overlayTitle = document.getElementById('waSyncOverlayTitle');
+  const overlaySub = document.getElementById('waSyncOverlaySub');
+
+  const isAutoHistorySyncing = Boolean(latestHistorySyncState && latestHistorySyncState.syncing);
+  const isAnySyncing = isManualChatSyncing || isAutoHistorySyncing;
+
+  if (!isAnySyncing) {
+    if (banner) banner.classList.add('hidden');
+    if (overlay) overlay.classList.add('hidden');
+    if (pill) {
+      pill.style.display = 'inline-block';
+      pill.style.marginTop = '4px';
+      if (cfg?.last_synced_at) {
+        pill.className = 'sync-pill ok';
+        pill.textContent = `SQLite Lokal • Sinkron ${formatWitaTime(cfg.last_synced_at)} WITA`;
+      } else {
+        pill.className = 'sync-pill';
+        pill.textContent = 'Database Lokal Aktif';
+      }
+    }
+    return;
+  }
+
+  const pct = Number(latestHistorySyncState?.progress);
+  const hasPct = Number.isFinite(pct) && pct >= 0 && pct <= 100;
+  const importedCount = Number(latestHistorySyncState?.importedCount || 0);
+
+  if (pill) {
+    pill.className = 'sync-pill ai';
+    pill.style.display = 'inline-block';
+    pill.style.marginTop = '4px';
+    pill.textContent = isAutoHistorySyncing && hasPct
+      ? `⏳ Sinkronisasi Riwayat (${pct}%)...`
+      : '⏳ Sedang menyinkronkan chat...';
+  }
+
+  if (banner) {
+    banner.classList.remove('hidden');
+    if (isAutoHistorySyncing) {
+      bannerText.textContent = 'Sedang menyinkronkan riwayat chat 7 hari terakhir dari WhatsApp...';
+      const detailParts = [];
+      if (hasPct) detailParts.push(`${pct}% selesai`);
+      if (importedCount > 0) detailParts.push(`${importedCount.toLocaleString('id-ID')} pesan tersimpan`);
+      bannerMeta.textContent = detailParts.length ? detailParts.join(' • ') : 'Memproses paket riwayat...';
+    } else {
+      bannerText.textContent = 'Menyinkronkan riwayat chat & kontak dengan server laptop...';
+      bannerMeta.textContent = 'Memperbarui tampilan percakapan...';
+    }
+
+    if (bannerBar) {
+      if (isAutoHistorySyncing && hasPct) {
+        bannerBar.classList.remove('indeterminate');
+        bannerBar.style.width = `${Math.max(8, pct)}%`;
+      } else {
+        bannerBar.classList.add('indeterminate');
+        bannerBar.style.width = '';
+      }
+    }
+  }
+
+  // Tampilkan overlay penuh saat tombol Sinkronkan diklik manual,
+  // atau saat sinkronisasi riwayat awal berjalan dan daftar chat masih kosong
+  const shouldShowOverlay = isManualChatSyncing || (isAutoHistorySyncing && rawLogsCache.length === 0);
+  if (overlay) {
+    overlay.classList.toggle('hidden', !shouldShowOverlay);
+    if (shouldShowOverlay) {
+      overlayTitle.textContent = isAutoHistorySyncing
+        ? 'Menarik Riwayat Chat 7 Hari...'
+        : 'Menyinkronkan Riwayat Chat...';
+      overlaySub.textContent = isAutoHistorySyncing && importedCount > 0
+        ? `${importedCount.toLocaleString('id-ID')} pesan berhasil dimuat ke database lokal.`
+        : 'Mengambil percakapan terbaru dari WhatsApp & database lokal.';
+    }
+  }
+}
+
 let isPolling = false;
 let consecutivePollFailures = 0;
 
@@ -2171,12 +2380,9 @@ async function pollState(force = false) {
     document.getElementById('adminAssistActiveBadge').classList.toggle('hidden', assistPolicy === 'off');
 
     document.getElementById('contactCountPill').textContent = `${(data.contactsCount || 0).toLocaleString('id-ID')} Kontak`;
-    if (cfg.last_synced_at) {
-      document.getElementById('syncStatusPill').classList.add('ok');
-      document.getElementById('syncStatusPill').textContent = `SQLite Lokal • Sinkron ${formatWitaTime(cfg.last_synced_at)} WITA`;
-    }
 
     rawLogsCache = data.recentLogs || [];
+    updateChatSyncLoadingUI(data.historySync || null, cfg);
     currentRules = data.rules || [];
     renderRulesList();
     populateStoreForm(cfg);
@@ -2255,21 +2461,30 @@ document.getElementById('btnLogout').addEventListener('click', async (e) => {
 });
 
 async function triggerChatSync(btnEl) {
+  if (isManualChatSyncing) return;
   const origText = btnEl ? btnEl.textContent : '';
+  isManualChatSyncing = true;
+  updateChatSyncLoadingUI();
+
   if (btnEl) {
     btnEl.disabled = true;
     btnEl.textContent = '⏳ Menyinkronkan...';
   }
 
   try {
-    await apiFetch('/api/action/sync', {
+    const syncRes = await apiFetch('/api/action/sync', {
       method: 'POST',
       body: JSON.stringify({ bot_id: ACTIVE_BOT_ID })
     });
+    if (syncRes?.historySync) {
+      latestHistorySyncState = syncRes.historySync;
+    }
     await pollState(true);
   } catch (err) {
     alert(`Gagal menyinkronkan chat: ${err.message}`);
   } finally {
+    isManualChatSyncing = false;
+    updateChatSyncLoadingUI();
     if (btnEl) {
       btnEl.disabled = false;
       btnEl.textContent = origText;
@@ -3688,7 +3903,8 @@ function populateAiForm(cfg) {
     document.getElementById('aiAdminPromptInput').value = cfg.ai_admin_prompt || '';
   }
   if (document.activeElement !== document.getElementById('aiRuntimePromptInput')) {
-    document.getElementById('aiRuntimePromptInput').value = cfg.ai_runtime_prompt || '';
+    document.getElementById('aiRuntimePromptInput').value =
+      cfg.ai_runtime_prompt || ROLE_PROMPT_PRESETS.cs_store.runtimePrompt;
   }
   if (document.activeElement !== document.getElementById('aiBusinessKnowledgeInput')) {
     document.getElementById('aiBusinessKnowledgeInput').value = cfg.ai_business_knowledge || '';
