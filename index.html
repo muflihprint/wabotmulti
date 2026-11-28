@@ -1390,6 +1390,33 @@
        <button type="button" class="secondary sm" onclick="openStoreMapsPreview()" title="Buka link Google Maps di tab baru">🗺️ Cek Maps</button>
      </div>
 
+     <div style="background: #f0fdfa; border: 1px solid #99f6e4; border-radius: 10px; padding: 12px; margin-top: 12px;">
+       <div style="font-weight: 800; font-size: 0.88rem; color: #0f766e; margin-bottom: 4px;">
+         🏦 Data Rekening Toko (Filter Bukti Transfer ke Grup)
+       </div>
+       <small style="color: #475569; display: block; margin-bottom: 8px;">
+         Hanya bukti transfer yang <strong>Nama Penerima</strong> dan <strong>Nomor Rekening</strong>-nya cocok dengan data di bawah ini yang diteruskan ke grup WhatsApp.
+       </small>
+
+       <div class="grid-3">
+         <div>
+           <label for="storeBankNameInput" style="margin-top: 0;">Nama Bank</label>
+           <input type="text" id="storeBankNameInput" placeholder="Contoh: BCA" oninput="markStoreFormDirty(); renderStorePreview();" />
+         </div>
+         <div>
+           <label for="storeAccountNumberInput" style="margin-top: 0;">Nomor Rekening Toko</label>
+           <input type="text" id="storeAccountNumberInput" placeholder="Contoh: 3901264081" oninput="markStoreFormDirty(); renderStorePreview();" />
+         </div>
+         <div>
+           <label for="storeAccountHolderInput" style="margin-top: 0;">Nama Penerima / Atas Nama</label>
+           <input type="text" id="storeAccountHolderInput" placeholder="Contoh: MAULVI DZIBYAN SYAIB" oninput="markStoreFormDirty(); renderStorePreview();" />
+         </div>
+       </div>
+
+       <label for="storeExtraAccountsInput">Rekening Tambahan Opsional (1 per baris: <code>Bank | NoRek | Atas Nama</code>)</label>
+       <textarea id="storeExtraAccountsInput" rows="2" placeholder="Contoh: BRI | 123456789012345 | MAULVI DZIBYAN SYAIB" oninput="markStoreFormDirty(); renderStorePreview();"></textarea>
+     </div>
+
      <div class="var-hint" style="margin-top: 8px;">
        Variabel otomatis yang terhubung langsung ke Auto-Reply &amp; Broadcast akun ini:
        <code>{nama_toko}</code>, <code>{nama_admin}</code>, <code>{wa_toko}</code>, <code>{web_toko}</code>, <code>{alamat_toko}</code>, <code>{maps_toko}</code>.
@@ -1828,18 +1855,26 @@ const STORE_VAR_DEFS = [
   { key: '{wa_toko}', field: 'store_wa_number', label: 'WA Toko' },
   { key: '{web_toko}', field: 'store_website', label: 'Website/Katalog' },
   { key: '{alamat_toko}', field: 'store_address', label: 'Alamat Toko' },
-  { key: '{maps_toko}', field: 'store_maps_url', label: 'Link Maps' }
+  { key: '{maps_toko}', field: 'store_maps_url', label: 'Link Maps' },
+  { key: '{bank_toko}', field: 'store_bank_name', label: 'Bank Toko' },
+  { key: '{norek_toko}', field: 'store_account_number', label: 'No. Rekening Toko' },
+  { key: '{atas_nama_toko}', field: 'store_account_holder', label: 'Atas Nama Rekening' }
 ];
 
-function getMergedStoreConfig(cfg = latestBotConfig || window.currentBotConfig || {}) {
+function getMergedStoreConfig(cfg) {
+  const safeCfg = cfg || (typeof latestBotConfig !== 'undefined' ? latestBotConfig : null) || window.currentBotConfig || {};
   const formVals = getActiveStoreValues();
   return {
-    store_name: formVals.store_name || cfg.store_name || '',
-    store_admin_name: formVals.store_admin_name || cfg.store_admin_name || '',
-    store_wa_number: formVals.store_wa_number || cfg.store_wa_number || '',
-    store_website: formVals.store_website || cfg.store_website || '',
-    store_address: formVals.store_address || cfg.store_address || '',
-    store_maps_url: formVals.store_maps_url || cfg.store_maps_url || ''
+    store_name: formVals.store_name || safeCfg.store_name || '',
+    store_admin_name: formVals.store_admin_name || safeCfg.store_admin_name || '',
+    store_wa_number: formVals.store_wa_number || safeCfg.store_wa_number || '',
+    store_website: formVals.store_website || safeCfg.store_website || '',
+    store_address: formVals.store_address || safeCfg.store_address || '',
+    store_maps_url: formVals.store_maps_url || safeCfg.store_maps_url || '',
+    store_bank_name: formVals.store_bank_name || safeCfg.store_bank_name || '',
+    store_account_number: formVals.store_account_number || safeCfg.store_account_number || '',
+    store_account_holder: formVals.store_account_holder || safeCfg.store_account_holder || '',
+    store_extra_accounts: formVals.store_extra_accounts || safeCfg.store_extra_accounts || ''
   };
 }
 
@@ -2047,7 +2082,11 @@ function getActiveStoreValues() {
     store_wa_number: (document.getElementById('storeWaNumberInput')?.value || '').trim(),
     store_website: (document.getElementById('storeWebsiteInput')?.value || '').trim(),
     store_address: (document.getElementById('storeAddressInput')?.value || '').trim(),
-    store_maps_url: (document.getElementById('storeMapsUrlInput')?.value || '').trim()
+    store_maps_url: (document.getElementById('storeMapsUrlInput')?.value || '').trim(),
+    store_bank_name: (document.getElementById('storeBankNameInput')?.value || '').trim(),
+    store_account_number: (document.getElementById('storeAccountNumberInput')?.value || '').trim(),
+    store_account_holder: (document.getElementById('storeAccountHolderInput')?.value || '').trim(),
+    store_extra_accounts: (document.getElementById('storeExtraAccountsInput')?.value || '').trim()
   };
 }
 
@@ -2058,15 +2097,18 @@ function renderClientSpintax(template, sampleName = 'Andi') {
     return opts.length ? opts[Math.floor(Math.random() * opts.length)] : '';
   });
   return spun
-    .replace(/\{nama\}/gi, sampleName)
-    .replace(/\{nomor\}/gi, '6281234567890')
-    .replace(/\{salam\}/gi, 'Selamat siang')
-    .replace(/\{nama_toko\}/gi, st.store_name || 'Nama Toko')
-    .replace(/\{nama_admin\}/gi, st.store_admin_name || 'Admin')
-    .replace(/\{wa_toko\}/gi, st.store_wa_number || '-')
-    .replace(/\{web_toko\}/gi, st.store_website || '-')
-    .replace(/\{alamat_toko\}/gi, st.store_address || '-')
-    .replace(/\{maps_toko\}/gi, st.store_maps_url || '-');
+  .replace(/\{nama\}/gi, sampleName)
+  .replace(/\{nomor\}/gi, '6281234567890')
+  .replace(/\{salam\}/gi, 'Selamat siang')
+  .replace(/\{nama_toko\}/gi, st.store_name || 'Nama Toko')
+  .replace(/\{nama_admin\}/gi, st.store_admin_name || 'Admin')
+  .replace(/\{wa_toko\}/gi, st.store_wa_number || '-')
+  .replace(/\{web_toko\}/gi, st.store_website || '-')
+  .replace(/\{alamat_toko\}/gi, st.store_address || '-')
+  .replace(/\{maps_toko\}/gi, st.store_maps_url || '-')
+  .replace(/\{bank_toko\}/gi, st.store_bank_name || '-')
+  .replace(/\{norek_toko\}/gi, st.store_account_number || '-')
+  .replace(/\{atas_nama_toko\}/gi, st.store_account_holder || '-');
 }
 
 // ============================================================================
@@ -2516,7 +2558,12 @@ function populateStoreForm(cfg) {
   const storeWeb = cfg.store_website !== undefined ? cfg.store_website : (localCached.store_website || '');
   const storeAddr = cfg.store_address !== undefined ? cfg.store_address : (localCached.store_address || '');
   const storeMaps = cfg.store_maps_url !== undefined ? cfg.store_maps_url : (localCached.store_maps_url || '');
+  const storeBank = cfg.store_bank_name !== undefined ? cfg.store_bank_name : (localCached.store_bank_name || '');
+  const storeNorek = cfg.store_account_number !== undefined ? cfg.store_account_number : (localCached.store_account_number || '');
+  const storeHolder = cfg.store_account_holder !== undefined ? cfg.store_account_holder : (localCached.store_account_holder || '');
+  const storeExtraAcc = cfg.store_extra_accounts !== undefined ? cfg.store_extra_accounts : (localCached.store_extra_accounts || '');
 
+  
   if (document.activeElement !== document.getElementById('storeNameInput')) {
     document.getElementById('storeNameInput').value = storeName || '';
   }
@@ -2535,6 +2582,18 @@ function populateStoreForm(cfg) {
   if (document.activeElement !== document.getElementById('storeMapsUrlInput')) {
     document.getElementById('storeMapsUrlInput').value = storeMaps || '';
   }
+  if (document.activeElement !== document.getElementById('storeBankNameInput')) {
+    document.getElementById('storeBankNameInput').value = storeBank || '';
+  }
+  if (document.activeElement !== document.getElementById('storeAccountNumberInput')) {
+    document.getElementById('storeAccountNumberInput').value = storeNorek || '';
+  }
+  if (document.activeElement !== document.getElementById('storeAccountHolderInput')) {
+    document.getElementById('storeAccountHolderInput').value = storeHolder || '';
+  }
+  if (document.activeElement !== document.getElementById('storeExtraAccountsInput')) {
+    document.getElementById('storeExtraAccountsInput').value = storeExtraAcc || '';
+  }
 
   renderStorePreview();
 }
@@ -2552,6 +2611,12 @@ function buildFormattedStoreText() {
   }
   if (st.store_website) lines.push(`🌐 Website / Katalog: ${st.store_website}`);
   if (st.store_admin_name) lines.push(`👤 Admin: ${st.store_admin_name}`);
+  if (st.store_bank_name || st.store_account_number || st.store_account_holder) {
+    const rekText = [st.store_bank_name, st.store_account_number, st.store_account_holder ? `a.n. ${st.store_account_holder}` : '']
+      .filter(Boolean)
+      .join(' ');
+    lines.push(`🏦 Rekening: ${rekText}`);
+  }
   return lines.join('\n');
 }
 
@@ -4596,7 +4661,7 @@ function renderRulesList() {
     return;
   }
 
-  const storeVarPattern = /\{(nama_toko|nama_admin|wa_toko|web_toko|alamat_toko|maps_toko)\}/i;
+  const storeVarPattern = /\{(nama_toko|nama_admin|wa_toko|web_toko|alamat_toko|maps_toko|bank_toko|norek_toko|atas_nama_toko)\}/i;
 
   listEl.innerHTML = currentRules.map(r => {
     const roleBadge = r.target_role === 'admin'
